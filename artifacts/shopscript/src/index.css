@@ -74,7 +74,7 @@
   resize: none;
   width: 100%;
   padding: 12px 16px;
-  min-height: 260px;
+  min-height: 220px;
   caret-color: hsl(25 95% 53%);
 }
 .code-editor::selection { background: hsl(25 95% 53% / 0.3); }
@@ -319,11 +319,22 @@
    ════════════════════════════════════════════════════════════════════════ */
 
 /* ── Desktop default (≥1200px) ─────────────────────────────────────────── */
-.workspace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.workspace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
+.editor-card { display: flex; flex-direction: column; }
+.editor-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+.editor-body .line-numbers { overflow-y: hidden; align-self: stretch; }
+.editor-body .code-editor { flex: 1; min-height: 0; width: auto; }
 .sim-row1 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .sim-row2 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
 .analyzer-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
-.products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.product-img-thumb {
+  width: 100%;
+  height: 72px;
+  object-fit: cover;
+  display: block;
+  background: hsl(30 20% 96%);
+}
 .header-nav { display: flex; align-items: center; gap: 22px; }
 .header-search { display: flex; width: 220px; }
 .hero-illus { display: flex; }

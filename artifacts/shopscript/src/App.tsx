@@ -351,7 +351,7 @@ export default function App() {
         <div className="workspace-grid">
 
           {/* ── LEFT: Editor ─────────────────────────────────────────── */}
-          <div className="ss-card" style={{ overflow:"hidden" }}>
+          <div className="ss-card editor-card" style={{ overflow:"hidden" }}>
             {/* Top bar */}
             <div style={{ background:"#12121c", padding:"10px 12px 0", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
@@ -386,7 +386,7 @@ export default function App() {
               </div>
             </div>
             {/* Code area */}
-            <div style={{ display:"flex", background:"#1e1e2e" }}>
+            <div className="editor-body" style={{ background:"#1e1e2e" }}>
               <div className="line-numbers">
                 {lines.map((_,i) => <div key={i}>{i+1}</div>)}
               </div>
@@ -448,19 +448,19 @@ export default function App() {
                           <img
                             src={p.img}
                             alt={p.name}
-                            className="product-img"
-                            onError={e => { (e.target as HTMLImageElement).src = `https://placehold.co/200x200/f0f0f0/999?text=${encodeURIComponent(p.name)}`; }}
+                            className="product-img-thumb"
+                            onError={e => { (e.target as HTMLImageElement).src = `https://placehold.co/200x80/f0f0f0/999?text=${encodeURIComponent(p.name)}`; }}
                           />
                           {inCart && (
-                            <span style={{ position:"absolute", top:6, right:6, background:"hsl(25 95% 53%)", color:"white", fontSize:10, fontWeight:700, borderRadius:999, padding:"2px 7px", boxShadow:"0 1px 4px hsl(0 0% 0% / 0.2)" }}>
+                            <span style={{ position:"absolute", top:4, right:4, background:"hsl(25 95% 53%)", color:"white", fontSize:9, fontWeight:700, borderRadius:999, padding:"1px 5px", boxShadow:"0 1px 4px hsl(0 0% 0% / 0.2)" }}>
                               {inCart.quantity}
                             </span>
                           )}
                         </div>
-                        <div style={{ padding:"8px 8px 10px", textAlign:"center" }}>
-                          <div style={{ fontSize:11, fontWeight:600, color:"hsl(220 20% 20%)", marginBottom:2, lineHeight:1.3 }}>{p.name}</div>
-                          <div style={{ fontSize:12.5, fontWeight:700, color:"hsl(25 95% 53%)", marginBottom:3 }}>${p.price.toFixed(2)}</div>
-                          <div style={{ fontSize:10, color:"#16a34a", display:"flex", alignItems:"center", gap:3, justifyContent:"center" }}>
+                        <div style={{ padding:"6px 6px 8px", textAlign:"center" }}>
+                          <div style={{ fontSize:10.5, fontWeight:600, color:"hsl(220 20% 20%)", marginBottom:2, lineHeight:1.2 }}>{p.name}</div>
+                          <div style={{ fontSize:12, fontWeight:700, color:"hsl(25 95% 53%)", marginBottom:2 }}>${p.price.toFixed(2)}</div>
+                          <div style={{ fontSize:9.5, color:"#16a34a", display:"flex", alignItems:"center", gap:3, justifyContent:"center" }}>
                             <span style={{ width:5, height:5, borderRadius:"50%", background:"#16a34a", display:"inline-block" }} /> In Stock
                           </div>
                         </div>
