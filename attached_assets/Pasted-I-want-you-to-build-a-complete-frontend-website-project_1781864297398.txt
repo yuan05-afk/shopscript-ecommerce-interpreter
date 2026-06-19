@@ -1,0 +1,294 @@
+I want you to build a complete frontend website project called **ShopScript: Mini Programming Language for E-commerce Simulation**.
+
+I already have the approved website design. I will attach two reference images:
+
+* **Reference Image 1**: the full main ShopScript dashboard/workspace design.
+* **Reference Image 2**: the ShopScript website parts/component design board.
+
+Please use these two images as the main visual basis for the frontend. Match the layout, spacing, color palette, rounded cards, orange-and-white e-commerce theme, friendly Shopee-like shopping vibe, soft shadows, product cards, code editor panel, analyzer panels, cart layout, receipt preview, and responsive preview style. Do not copy the Shopee logo or Shopee name. The design should only be Shopee-inspired through the orange, white, clean, friendly e-commerce visual direction.
+
+Important project context:
+This is **not a real e-commerce website**. This is a Programming Languages final project. The website must demonstrate a **mini programming language/interpreter** where users write simple code to simulate e-commerce actions such as adding products to cart, applying coupons, checking out, and printing a receipt.
+
+Use only:
+
+* HTML
+* CSS
+* JavaScript
+
+Create these files:
+
+* `index.html`
+* `styles.css`
+* `script.js`
+* `README.md`
+
+No backend, no login, no database, no real payment API, and no external payment processing. Everything should run locally in the browser.
+
+Website design requirements:
+Create the website based on the attached designs.
+
+Main layout:
+
+1. **Top Header / Navigation**
+
+   * Left: ShopScript logo/icon and text `ShopScript`
+   * Tagline: `Code. Simulate. Sell.`
+   * Search bar: `Search docs, examples, or commands...`
+   * Navigation links: Home, Docs, Examples, Playground, About
+   * Theme icon button
+   * Orange `New Program +` button
+   * User badge `SS` with green online dot
+
+2. **Hero Banner**
+
+   * Big headline: `Mini Programming Language for E-commerce Simulation`
+   * Subtitle: `Write simple scripts. Simulate carts. See results instantly.`
+   * Use warm orange/peach gradient background
+   * Add visual shopping/cart/robot-like illustration feel using CSS, emoji, or simple decorative elements if custom images are not available
+   * Add feature badges:
+
+     * Lexical
+     * Syntax
+     * Semantic
+     * Scope
+     * Data Types
+     * Control Flow
+     * OOP
+
+3. **Main Workspace**
+   Use a two-column desktop layout.
+
+   Left side: **ShopScript Editor**
+
+   * Card title: `ShopScript Editor`
+   * File tab: `main.shop`
+   * Buttons:
+
+     * `Run Program`
+     * `Clear`
+     * `Load Sample`
+   * Large code editor textarea styled like the reference image
+   * Show line-number feel through layout or visual styling
+   * Footer/status bar:
+
+     * Green dot `Ready`
+     * `Lines 14, Col 1`
+     * `ShopScript v0.1.0`
+
+   Default sample code:
+
+   let user = "Ava";
+   let budget = 1200.00;
+   let cart = [];
+
+   add "Smartphone X" 1 @ 599.00;
+   add "Wireless Earbuds" 1 @ 199.00;
+   add "Phone Case" 2 @ 29.00;
+
+   apply coupon "SAVE10";
+   set shipping = 40.00;
+
+   checkout;
+
+   Right side: **Simulation Panel**
+   Include these cards:
+
+   * Product Inventory
+   * Shopping Cart
+   * Discount Status
+   * Checkout Summary
+   * Receipt Preview
+   * Orange checkout call-to-action card
+
+4. **Product Inventory**
+   Use product cards similar to the reference:
+
+   * Smartphone X — $599.00 — In Stock
+   * Wireless Earbuds — $199.00 — In Stock
+   * Phone Case — $29.00 — In Stock
+   * Urban Backpack — $49.00 — In Stock
+
+   Use clean product card layout with soft shadows, item image placeholder or emoji/icon, price, and green stock status.
+
+5. **Shopping Cart**
+   Show item rows with:
+
+   * Product thumbnail/icon
+   * Product name
+   * Price
+   * Quantity stepper: minus, quantity, plus
+   * Line total
+   * Remove icon
+
+   Display:
+
+   * Smartphone X x1
+   * Wireless Earbuds x1
+   * Phone Case x2
+   * Subtotal: `$856.00`
+
+6. **Discount Status**
+   Show:
+
+   * Coupon Applied
+   * SAVE10 badge
+   * Discount 10%
+   * You saved `$85.60`
+
+7. **Checkout Summary**
+   Show:
+
+   * Subtotal: `$856.00`
+   * Discount: `-$85.60`
+   * Shipping: `$40.00`
+   * Total: `$810.40`
+
+8. **Receipt Preview**
+   Show:
+
+   * `Thank you, Ava!`
+   * Order ID: `#SS-2026-0001`
+   * Total Paid: `$810.40`
+   * Download button, but it can be non-functional or simulated
+
+9. **Analyzer Section**
+   At the bottom, create cards/panels like the reference image:
+
+   * Tokens
+   * Syntax Errors
+   * Semantic Errors
+   * Variable Table
+   * Output Logs
+
+   Tokens should appear as colorful small pill chips.
+   Syntax Errors should show green success when no error.
+   Semantic Errors should show green success when no error.
+   Variable Table should list variables.
+   Output Logs should show execution logs with timestamps or bullet logs.
+
+Functional requirements:
+When the user clicks `Run Program`, the JavaScript should:
+
+1. Perform **Lexical Analysis**
+
+   * Tokenize the input code.
+   * Display tokens as chips or in a token table.
+   * Recognize:
+
+     * Keywords: let, add, apply, coupon, set, checkout, if, else, for, while, class, new, true, false
+     * Identifiers
+     * String literals
+     * Number literals
+     * Operators
+     * Symbols
+     * Commands
+
+2. Perform **Syntax Checking**
+
+   * Check missing semicolons.
+   * Check balanced quotes.
+   * Check valid command format.
+   * Check variable declaration format.
+   * Check add command format:
+
+     * `add "Product Name" quantity @ price;`
+   * Check coupon format:
+
+     * `apply coupon "SAVE10";`
+   * Check shipping format:
+
+     * `set shipping = 40.00;`
+   * Check checkout command:
+
+     * `checkout;`
+
+3. Perform **Semantic Checking**
+
+   * Product must exist in inventory.
+   * Quantity must be greater than 0.
+   * Price must be valid.
+   * Coupon must be valid.
+   * Variables should be stored in the variable table.
+   * Show semantic errors if something is wrong.
+
+4. Execute the program visually:
+
+   * Add products to cart.
+   * Apply coupon.
+   * Set shipping.
+   * Compute subtotal, discount, and final total.
+   * Update the cart, checkout summary, discount status, receipt preview, variable table, and output logs.
+
+Supported ShopScript syntax:
+
+* `let user = "Ava";`
+* `let budget = 1200.00;`
+* `let cart = [];`
+* `add "Smartphone X" 1 @ 599.00;`
+* `apply coupon "SAVE10";`
+* `set shipping = 40.00;`
+* `checkout;`
+
+Supported coupons:
+
+* `SAVE10` = 10% discount
+* `STUDENT10` = 10% discount
+* `NONE` = 0%
+
+Add sample buttons:
+
+* Valid Sample
+* Syntax Error Sample
+* Semantic Error Sample
+
+Design style:
+
+* Main color: orange / Shopee-like orange
+* Background: warm white or very light cream
+* Cards: white
+* Borders: soft orange/gray
+* Text: dark gray/black
+* Muted text: gray
+* Success: green
+* Error: red
+* Warning: amber
+* Use rounded corners everywhere.
+* Use soft shadows.
+* Use clean spacing.
+* Make it friendly, modern, and user-friendly.
+* The result should visually align with Reference Image 1 and Reference Image 2.
+
+Responsive design:
+
+* Desktop: two-column workspace.
+* Tablet: balanced stacked layout.
+* Mobile: stack sections vertically like the mobile preview in Reference Image 2.
+* Make sure cards do not overflow.
+* Make sure buttons and text remain readable.
+
+README.md should include:
+
+* Project title
+* Short description
+* How this project is related to Programming Languages
+* List of supported ShopScript commands
+* Features implemented:
+
+  * Lexical Analysis
+  * Syntax Analysis
+  * Semantic Analysis
+  * Variables / Scope
+  * Data Types
+  * Control Flow demonstration
+  * OOP demonstration section
+* How to run in Replit
+* Limitations:
+
+  * Simulated e-commerce only
+  * No real payments
+  * No database
+  * No login system
+
+Important:
+Please make the frontend look polished and close to the attached designs. Build the layout first, then implement the JavaScript interpreter logic. Keep the code clean, organized, and commented because this is for a school project demonstration.
