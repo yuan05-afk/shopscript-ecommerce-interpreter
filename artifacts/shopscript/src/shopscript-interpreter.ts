@@ -1,7 +1,8 @@
 
 // =============================================================================
-// ShopScript Mini Language Interpreter
+// ShopScript Mini Language Interpreter v0.2.0
 // Lexical Analysis → Syntax Analysis → Semantic Analysis → Execution
+// Now with OOP: class definitions and new instantiation
 // =============================================================================
 
 export interface Token {
@@ -38,6 +39,16 @@ export interface VariableEntry {
   value: string;
 }
 
+export interface ClassDefinition {
+  name: string;
+  fields: Record<string, { type: string; value: string }>;
+}
+
+export interface ObjectInstance {
+  className: string;
+  fields: Record<string, { type: string; value: string }>;
+}
+
 export interface InterpreterResult {
   tokens: Token[];
   lexErrors: LexError[];
@@ -45,6 +56,8 @@ export interface InterpreterResult {
   semanticErrors: SemanticError[];
   cart: CartItem[];
   variables: VariableEntry[];
+  classes: ClassDefinition[];
+  instances: Record<string, ObjectInstance>;
   logs: string[];
   coupon: string | null;
   discount: number;
@@ -79,7 +92,7 @@ const COUPONS: Record<string, number> = {
 // ---------------------------------------------------------------------------
 // TOKEN TYPES
 // ---------------------------------------------------------------------------
-const TOKEN_TYPES = {
+export const TOKEN_TYPES = {
   KEYWORD: "keyword",
   IDENTIFIER: "identifier",
   STRING: "string",
@@ -91,6 +104,9 @@ const TOKEN_TYPES = {
   ASSIGN: "assign",
   LBRACKET: "lbracket",
   RBRACKET: "rbracket",
+  LBRACE: "lbrace",
+  RBRACE: "rbrace",
+  DOT: "dot",
   BOOLEAN: "boolean",
   EOF: "eof",
 };
@@ -98,7 +114,7 @@ const TOKEN_TYPES = {
 const KEYWORDS = new Set([
   "let", "add", "apply", "coupon", "set", "checkout",
   "if", "else", "for", "while", "class", "new", "true", "false",
-  "shipping", "budget", "cart", "user",
+  "shipping", "budget", "cart", "user", "return", "this",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -114,17 +130,13 @@ export function tokenize(source: string): { tokens: Token[]; errors: LexError[] 
   const col = () => pos - lineStart + 1;
 
   while (pos < source.length) {
-    // Skip whitespace
     if (/\s/.test(source[pos])) {
-      if (source[pos] === "\n") {
-        line++;
-        lineStart = pos + 1;
-      }
+      if (source[pos] === "\n") { line++; lineStart = pos + 1; }
       pos++;
       continue;
     }
 
-    // Comments //
+    // Line comments
     if (source[pos] === "/" && source[pos + 1] === "/") {
       while (pos < source.length && source[pos] !== "\n") pos++;
       continue;
@@ -149,11 +161,9 @@ export function tokenize(source: string): { tokens: Token[]; errors: LexError[] 
     }
 
     // Number literal
-    if (/[0-9]/.test(source[pos]) || (source[pos] === "." && /[0-9]/.test(source[pos + 1]))) {
+    if (/[0-9]/.test(source[pos]) || (source[pos] === "." && /[0-9]/.test(source[pos + 1] ?? ""))) {
       let num = "";
-      while (pos < source.length && /[0-9.]/.test(source[pos])) {
-        num += source[pos++];
-      }
+      while (pos < source.length && /[0-9.]/.test(source[pos])) num += source[pos++];
       tokens.push({ type: TOKEN_TYPES.NUMBER, value: num, line, col: startCol });
       continue;
     }
@@ -161,9 +171,7 @@ export function tokenize(source: string): { tokens: Token[]; errors: LexError[] 
     // Identifier or keyword
     if (/[a-zA-Z_]/.test(source[pos])) {
       let ident = "";
-      while (pos < source.length && /[a-zA-Z0-9_]/.test(source[pos])) {
-        ident += source[pos++];
-      }
+      while (pos < source.length && /[a-zA-Z0-9_]/.test(source[pos])) ident += source[pos++];
       if (ident === "true" || ident === "false") {
         tokens.push({ type: TOKEN_TYPES.BOOLEAN, value: ident, line, col: startCol });
       } else if (KEYWORDS.has(ident)) {
@@ -174,29 +182,19 @@ export function tokenize(source: string): { tokens: Token[]; errors: LexError[] 
       continue;
     }
 
-    // Single character tokens
-    if (source[pos] === ";") {
-      tokens.push({ type: TOKEN_TYPES.SEMICOLON, value: ";", line, col: startCol });
-      pos++;
-      continue;
-    }
-    if (source[pos] === "@") {
-      tokens.push({ type: TOKEN_TYPES.AT, value: "@", line, col: startCol });
-      pos++;
-      continue;
-    }
-    if (source[pos] === "=") {
-      tokens.push({ type: TOKEN_TYPES.ASSIGN, value: "=", line, col: startCol });
-      pos++;
-      continue;
-    }
-    if (source[pos] === "[") {
-      tokens.push({ type: TOKEN_TYPES.LBRACKET, value: "[", line, col: startCol });
-      pos++;
-      continue;
-    }
-    if (source[pos] === "]") {
-      tokens.push({ type: TOKEN_TYPES.RBRACKET, value: "]", line, col: startCol });
+    // Single-char tokens
+    const singles: Record<string, string> = {
+      ";": TOKEN_TYPES.SEMICOLON,
+      "@": TOKEN_TYPES.AT,
+      "=": TOKEN_TYPES.ASSIGN,
+      "[": TOKEN_TYPES.LBRACKET,
+      "]": TOKEN_TYPES.RBRACKET,
+      "{": TOKEN_TYPES.LBRACE,
+      "}": TOKEN_TYPES.RBRACE,
+      ".": TOKEN_TYPES.DOT,
+    };
+    if (singles[source[pos]]) {
+      tokens.push({ type: singles[source[pos]], value: source[pos], line, col: startCol });
       pos++;
       continue;
     }
@@ -205,7 +203,7 @@ export function tokenize(source: string): { tokens: Token[]; errors: LexError[] 
       pos++;
       continue;
     }
-    if (["(", ")", "{", "}", ",", "."].includes(source[pos])) {
+    if (["(", ")", ","].includes(source[pos])) {
       tokens.push({ type: TOKEN_TYPES.SYMBOL, value: source[pos], line, col: startCol });
       pos++;
       continue;
@@ -224,37 +222,71 @@ export function tokenize(source: string): { tokens: Token[]; errors: LexError[] 
 // ---------------------------------------------------------------------------
 export function checkSyntax(tokens: Token[]): SyntaxError[] {
   const errors: SyntaxError[] = [];
-
   let i = 0;
   const peek = () => tokens[i];
   const consume = () => tokens[i++];
   const expect = (type: string, value?: string): boolean => {
     const t = peek();
-    if (t.type === type && (value === undefined || t.value === value)) {
-      consume();
-      return true;
-    }
+    if (t.type === type && (value === undefined || t.value === value)) { consume(); return true; }
     return false;
   };
 
   while (i < tokens.length && peek().type !== TOKEN_TYPES.EOF) {
     const t = peek();
 
-    // let <ident> = <value>;
+    // class ClassName { field = value; ... }
+    if (t.type === TOKEN_TYPES.KEYWORD && t.value === "class") {
+      consume();
+      const nameToken = peek();
+      if (nameToken.type !== TOKEN_TYPES.IDENTIFIER) {
+        errors.push({ message: `Expected class name (identifier) after 'class' at line ${nameToken.line}`, line: nameToken.line });
+      } else { consume(); }
+      if (!expect(TOKEN_TYPES.LBRACE)) {
+        errors.push({ message: `Expected '{' to open class body at line ${peek().line}`, line: peek().line });
+      }
+      // Parse fields until }
+      while (i < tokens.length && peek().type !== TOKEN_TYPES.RBRACE && peek().type !== TOKEN_TYPES.EOF) {
+        const fieldName = peek();
+        if (fieldName.type !== TOKEN_TYPES.IDENTIFIER) {
+          errors.push({ message: `Expected field name in class body at line ${fieldName.line}`, line: fieldName.line });
+          consume(); continue;
+        }
+        consume();
+        if (!expect(TOKEN_TYPES.ASSIGN)) {
+          errors.push({ message: `Expected '=' after field name '${fieldName.value}' at line ${peek().line}`, line: peek().line });
+        }
+        const val = peek();
+        if (val.type !== TOKEN_TYPES.STRING && val.type !== TOKEN_TYPES.NUMBER && val.type !== TOKEN_TYPES.BOOLEAN) {
+          errors.push({ message: `Expected default value for field '${fieldName.value}' at line ${val.line}`, line: val.line });
+        } else { consume(); }
+        if (!expect(TOKEN_TYPES.SEMICOLON)) {
+          errors.push({ message: `Missing semicolon after field '${fieldName.value}' at line ${peek().line}`, line: peek().line });
+        }
+      }
+      if (!expect(TOKEN_TYPES.RBRACE)) {
+        errors.push({ message: `Expected '}' to close class body at line ${peek().line}`, line: peek().line });
+      }
+      continue;
+    }
+
+    // let <ident> = <value | new ClassName | []>;
     if (t.type === TOKEN_TYPES.KEYWORD && t.value === "let") {
       consume();
       const ident = peek();
       if (ident.type !== TOKEN_TYPES.IDENTIFIER && ident.type !== TOKEN_TYPES.KEYWORD) {
         errors.push({ message: `Expected identifier after 'let' at line ${ident.line}`, line: ident.line });
-      } else {
-        consume();
-      }
+      } else { consume(); }
       if (!expect(TOKEN_TYPES.ASSIGN)) {
         errors.push({ message: `Expected '=' in let declaration at line ${peek().line}`, line: peek().line });
       }
-      // value: string, number, or []
       const val = peek();
-      if (val.type === TOKEN_TYPES.STRING || val.type === TOKEN_TYPES.NUMBER || val.type === TOKEN_TYPES.BOOLEAN) {
+      if (val.type === TOKEN_TYPES.KEYWORD && val.value === "new") {
+        consume(); // new
+        const cls = peek();
+        if (cls.type !== TOKEN_TYPES.IDENTIFIER) {
+          errors.push({ message: `Expected class name after 'new' at line ${cls.line}`, line: cls.line });
+        } else { consume(); }
+      } else if (val.type === TOKEN_TYPES.STRING || val.type === TOKEN_TYPES.NUMBER || val.type === TOKEN_TYPES.BOOLEAN) {
         consume();
       } else if (val.type === TOKEN_TYPES.LBRACKET) {
         consume();
@@ -270,28 +302,32 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
       continue;
     }
 
-    // add "<product>" <qty> @ <price>;
+    // add "<product>" <qty> @ <price>; OR add <instanceVar> <qty>;
     if (t.type === TOKEN_TYPES.KEYWORD && t.value === "add") {
       consume();
-      const name = peek();
-      if (name.type !== TOKEN_TYPES.STRING) {
-        errors.push({ message: `Expected product name string after 'add' at line ${name.line}`, line: name.line });
-      } else {
+      const nameOrVar = peek();
+      if (nameOrVar.type === TOKEN_TYPES.STRING) {
         consume();
-      }
-      const qty = peek();
-      if (qty.type !== TOKEN_TYPES.NUMBER) {
-        errors.push({ message: `Expected quantity number at line ${qty.line}`, line: qty.line });
-      } else {
+        const qty = peek();
+        if (qty.type !== TOKEN_TYPES.NUMBER) {
+          errors.push({ message: `Expected quantity number at line ${qty.line}`, line: qty.line });
+        } else { consume(); }
+        if (!expect(TOKEN_TYPES.AT)) {
+          errors.push({ message: `Expected '@' in add command at line ${peek().line}`, line: peek().line });
+        }
+        const price = peek();
+        if (price.type !== TOKEN_TYPES.NUMBER) {
+          errors.push({ message: `Expected price number after '@' at line ${price.line}`, line: price.line });
+        } else { consume(); }
+      } else if (nameOrVar.type === TOKEN_TYPES.IDENTIFIER) {
+        // add instanceVar qty;  (uses instance.name and instance.price)
         consume();
-      }
-      if (!expect(TOKEN_TYPES.AT)) {
-        errors.push({ message: `Expected '@' in add command at line ${peek().line}`, line: peek().line });
-      }
-      const price = peek();
-      if (price.type !== TOKEN_TYPES.NUMBER) {
-        errors.push({ message: `Expected price number after '@' at line ${price.line}`, line: price.line });
+        const qty = peek();
+        if (qty.type !== TOKEN_TYPES.NUMBER) {
+          errors.push({ message: `Expected quantity number after instance variable at line ${qty.line}`, line: qty.line });
+        } else { consume(); }
       } else {
+        errors.push({ message: `Expected product name string or instance variable after 'add' at line ${nameOrVar.line}`, line: nameOrVar.line });
         consume();
       }
       if (!expect(TOKEN_TYPES.SEMICOLON)) {
@@ -306,39 +342,39 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
       const coupKw = peek();
       if (coupKw.type !== TOKEN_TYPES.KEYWORD || coupKw.value !== "coupon") {
         errors.push({ message: `Expected 'coupon' after 'apply' at line ${coupKw.line}`, line: coupKw.line });
-      } else {
-        consume();
-      }
+      } else { consume(); }
       const code = peek();
       if (code.type !== TOKEN_TYPES.STRING) {
         errors.push({ message: `Expected coupon code string at line ${code.line}`, line: code.line });
-      } else {
-        consume();
-      }
+      } else { consume(); }
       if (!expect(TOKEN_TYPES.SEMICOLON)) {
         errors.push({ message: `Missing semicolon after apply coupon at line ${peek().line}`, line: peek().line });
       }
       continue;
     }
 
-    // set shipping = <value>;
+    // set <var> = <value>;  OR  set <var>.<field> = <value>;
     if (t.type === TOKEN_TYPES.KEYWORD && t.value === "set") {
       consume();
       const field = peek();
       if (field.type !== TOKEN_TYPES.KEYWORD && field.type !== TOKEN_TYPES.IDENTIFIER) {
         errors.push({ message: `Expected identifier after 'set' at line ${field.line}`, line: field.line });
-      } else {
-        consume();
+      } else { consume(); }
+      // Optional dot-access
+      if (peek().type === TOKEN_TYPES.DOT) {
+        consume(); // .
+        const prop = peek();
+        if (prop.type !== TOKEN_TYPES.IDENTIFIER) {
+          errors.push({ message: `Expected field name after '.' at line ${prop.line}`, line: prop.line });
+        } else { consume(); }
       }
       if (!expect(TOKEN_TYPES.ASSIGN)) {
-        errors.push({ message: `Expected '=' after 'set ${field.value}' at line ${peek().line}`, line: peek().line });
+        errors.push({ message: `Expected '=' in set command at line ${peek().line}`, line: peek().line });
       }
       const val = peek();
-      if (val.type !== TOKEN_TYPES.NUMBER && val.type !== TOKEN_TYPES.STRING) {
+      if (val.type !== TOKEN_TYPES.NUMBER && val.type !== TOKEN_TYPES.STRING && val.type !== TOKEN_TYPES.BOOLEAN) {
         errors.push({ message: `Expected value after '=' in set command at line ${val.line}`, line: val.line });
-      } else {
-        consume();
-      }
+      } else { consume(); }
       if (!expect(TOKEN_TYPES.SEMICOLON)) {
         errors.push({ message: `Missing semicolon after set command at line ${peek().line}`, line: peek().line });
       }
@@ -354,7 +390,6 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
       continue;
     }
 
-    // Unknown statement
     errors.push({ message: `Unknown statement '${t.value}' at line ${t.line}`, line: t.line });
     consume();
   }
@@ -363,7 +398,7 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
 }
 
 // ---------------------------------------------------------------------------
-// SEMANTIC CHECKER & EXECUTOR
+// INTERPRETER / EXECUTOR
 // ---------------------------------------------------------------------------
 export function interpret(source: string): InterpreterResult {
   const { tokens, errors: lexErrors } = tokenize(source);
@@ -372,6 +407,8 @@ export function interpret(source: string): InterpreterResult {
   const semanticErrors: SemanticError[] = [];
   const cart: CartItem[] = [];
   const variables: VariableEntry[] = [];
+  const classes: ClassDefinition[] = [];
+  const instances: Record<string, ObjectInstance> = {};
   const logs: string[] = [];
   let coupon: string | null = null;
   let discount = 0;
@@ -380,11 +417,10 @@ export function interpret(source: string): InterpreterResult {
   let didCheckout = false;
 
   const now = new Date();
-  const timestamp = `[${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}:${now.getSeconds().toString().padStart(2,"0")}]`;
+  const ts = `[${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}]`;
 
-  logs.push(`${timestamp} Program started successfully.`);
+  logs.push(`${ts} Program started.`);
 
-  // Only execute if no errors
   if (syntaxErrors.length === 0 && lexErrors.length === 0) {
     let i = 0;
     const peek = () => tokens[i];
@@ -393,178 +429,227 @@ export function interpret(source: string): InterpreterResult {
     while (i < tokens.length && peek().type !== TOKEN_TYPES.EOF) {
       const t = peek();
 
-      // let declaration
+      // ── class definition ─────────────────────────────────────────────
+      if (t.type === TOKEN_TYPES.KEYWORD && t.value === "class") {
+        consume();
+        const className = consume().value;
+        consume(); // {
+        const fields: Record<string, { type: string; value: string }> = {};
+        while (i < tokens.length && peek().type !== TOKEN_TYPES.RBRACE && peek().type !== TOKEN_TYPES.EOF) {
+          const fieldName = consume().value;
+          consume(); // =
+          const valToken = consume();
+          consume(); // ;
+          const valType = valToken.type === TOKEN_TYPES.STRING ? "string"
+            : valToken.type === TOKEN_TYPES.BOOLEAN ? "boolean"
+            : "number";
+          fields[fieldName] = { type: valType, value: valToken.value };
+        }
+        consume(); // }
+        classes.push({ name: className, fields });
+        logs.push(`${ts} Class '${className}' defined with ${Object.keys(fields).length} field(s): ${Object.keys(fields).join(", ")}`);
+        continue;
+      }
+
+      // ── let declaration ───────────────────────────────────────────────
       if (t.type === TOKEN_TYPES.KEYWORD && t.value === "let") {
         consume();
-        const ident = consume();
+        const identToken = consume();
+        const varName = identToken.value;
         consume(); // =
         const val = peek();
 
-        let varType = "unknown";
-        let varValue = "";
+        if (val.type === TOKEN_TYPES.KEYWORD && val.value === "new") {
+          consume(); // new
+          const classNameToken = consume();
+          const className = classNameToken.value;
+          consume(); // ;
 
-        if (val.type === TOKEN_TYPES.STRING) {
-          varType = "string";
-          varValue = `"${val.value}"`;
-          if (ident.value === "user") user = val.value;
-          consume();
-        } else if (val.type === TOKEN_TYPES.NUMBER) {
-          varType = "number";
-          varValue = val.value;
-          consume();
-        } else if (val.type === TOKEN_TYPES.BOOLEAN) {
-          varType = "boolean";
-          varValue = val.value;
-          consume();
-        } else if (val.type === TOKEN_TYPES.LBRACKET) {
-          consume();
-          consume(); // ]
-          varType = "list";
-          varValue = "[]";
-        }
-
-        consume(); // ;
-
-        const existing = variables.findIndex(v => v.name === ident.value);
-        if (existing >= 0) {
-          variables[existing] = { name: ident.value, type: varType, value: varValue };
+          const classDef = classes.find(c => c.name === className);
+          if (!classDef) {
+            semanticErrors.push({ message: `Class '${className}' is not defined`, line: classNameToken.line });
+          } else {
+            const instance: ObjectInstance = {
+              className,
+              fields: { ...JSON.parse(JSON.stringify(classDef.fields)) },
+            };
+            instances[varName] = instance;
+            const fieldSummary = Object.entries(instance.fields)
+              .map(([k, v]) => `${k}=${v.type === "string" ? `"${v.value}"` : v.value}`)
+              .join(", ");
+            variables.push({ name: varName, type: `${className} instance`, value: `{${fieldSummary}}` });
+            logs.push(`${ts} Instance '${varName}' created from class '${className}'`);
+          }
         } else {
-          variables.push({ name: ident.value, type: varType, value: varValue });
+          let varType = "unknown", varValue = "";
+          if (val.type === TOKEN_TYPES.STRING) {
+            varType = "string"; varValue = `"${val.value}"`;
+            if (varName === "user") user = val.value;
+            consume();
+          } else if (val.type === TOKEN_TYPES.NUMBER) {
+            varType = "number"; varValue = val.value; consume();
+          } else if (val.type === TOKEN_TYPES.BOOLEAN) {
+            varType = "boolean"; varValue = val.value; consume();
+          } else if (val.type === TOKEN_TYPES.LBRACKET) {
+            consume(); consume(); varType = "list"; varValue = "[]";
+          }
+          consume(); // ;
+          const existing = variables.findIndex(v => v.name === varName);
+          if (existing >= 0) variables[existing] = { name: varName, type: varType, value: varValue };
+          else variables.push({ name: varName, type: varType, value: varValue });
+          logs.push(`${ts} Variable '${varName}' = ${varValue}`);
         }
-        logs.push(`${timestamp} Variable '${ident.value}' set to ${varValue}`);
         continue;
       }
 
-      // add command
+      // ── add command (string form or instance form) ─────────────────────
       if (t.type === TOKEN_TYPES.KEYWORD && t.value === "add") {
         consume();
-        const nameToken = consume();
-        const productName = nameToken.value;
-        const qtyToken = consume();
-        const qty = parseFloat(qtyToken.value);
-        consume(); // @
-        const priceToken = consume();
-        const price = parseFloat(priceToken.value);
-        consume(); // ;
+        const nameOrVar = peek();
 
-        // Semantic checks
-        if (!INVENTORY[productName]) {
-          semanticErrors.push({
-            message: `Product "${productName}" not found in inventory at line ${nameToken.line}`,
-            line: nameToken.line,
-          });
-        }
-        if (isNaN(qty) || qty <= 0) {
-          semanticErrors.push({
-            message: `Quantity must be greater than 0 at line ${qtyToken.line}`,
-            line: qtyToken.line,
-          });
-        }
-        if (isNaN(price) || price < 0) {
-          semanticErrors.push({
-            message: `Price must be a valid non-negative number at line ${priceToken.line}`,
-            line: priceToken.line,
-          });
-        }
+        if (nameOrVar.type === TOKEN_TYPES.STRING) {
+          // add "Product Name" qty @ price;
+          consume();
+          const productName = nameOrVar.value;
+          const qtyToken = consume();
+          const qty = parseFloat(qtyToken.value);
+          consume(); // @
+          const priceToken = consume();
+          const price = parseFloat(priceToken.value);
+          consume(); // ;
 
-        if (semanticErrors.length === 0 || !semanticErrors.find(e => e.line === nameToken.line)) {
-          const existing = cart.findIndex(c => c.name === productName);
-          if (existing >= 0) {
-            cart[existing].quantity += qty;
+          if (!INVENTORY[productName] && !isCustomProduct(instances, productName)) {
+            semanticErrors.push({ message: `Product "${productName}" not found in inventory`, line: nameOrVar.line });
+          } else if (isNaN(qty) || qty <= 0) {
+            semanticErrors.push({ message: `Quantity must be > 0`, line: qtyToken.line });
+          } else if (isNaN(price) || price < 0) {
+            semanticErrors.push({ message: `Price must be a valid non-negative number`, line: priceToken.line });
           } else {
-            cart.push({ name: productName, quantity: qty, price });
+            addToCart(cart, productName, qty, price);
+            logs.push(`${ts} Added "${productName}" x${qty} @ $${price.toFixed(2)}`);
+            updateCartVar(variables, cart);
           }
-          logs.push(`${timestamp} Added "${productName}" x${qty} — $${price.toFixed(2)} each`);
+        } else if (nameOrVar.type === TOKEN_TYPES.IDENTIFIER) {
+          // add instanceVar qty;
+          consume();
+          const varName = nameOrVar.value;
+          const qtyToken = consume();
+          const qty = parseFloat(qtyToken.value);
+          consume(); // ;
 
-          // Update cart variable
-          const cartVar = variables.findIndex(v => v.name === "cart");
-          if (cartVar >= 0) {
-            variables[cartVar].value = `(${cart.length} items)`;
+          const instance = instances[varName];
+          if (!instance) {
+            semanticErrors.push({ message: `'${varName}' is not a defined object instance`, line: nameOrVar.line });
+          } else {
+            const nameField = instance.fields["name"];
+            const priceField = instance.fields["price"];
+            if (!nameField || !priceField) {
+              semanticErrors.push({ message: `Instance '${varName}' must have 'name' and 'price' fields to be added to cart`, line: nameOrVar.line });
+            } else if (isNaN(qty) || qty <= 0) {
+              semanticErrors.push({ message: `Quantity must be > 0`, line: qtyToken.line });
+            } else {
+              const price = parseFloat(priceField.value);
+              const productName = nameField.value;
+              addToCart(cart, productName, qty, price);
+              logs.push(`${ts} Added instance '${varName}' ("${productName}") x${qty} @ $${price.toFixed(2)}`);
+              updateCartVar(variables, cart);
+            }
           }
-        }
-        continue;
-      }
-
-      // apply coupon
-      if (t.type === TOKEN_TYPES.KEYWORD && t.value === "apply") {
-        consume();
-        consume(); // coupon
-        const codeToken = consume();
-        const code = codeToken.value;
-        consume(); // ;
-
-        if (COUPONS[code] === undefined) {
-          semanticErrors.push({
-            message: `Invalid coupon code "${code}" at line ${codeToken.line}`,
-            line: codeToken.line,
-          });
         } else {
-          coupon = code;
-          discount = COUPONS[code];
-          logs.push(`${timestamp} Coupon "${code}" applied (${(discount * 100).toFixed(0)}% off)`);
+          consume(); consume(); // skip
         }
         continue;
       }
 
-      // set <field> = <value>
+      // ── apply coupon ──────────────────────────────────────────────────
+      if (t.type === TOKEN_TYPES.KEYWORD && t.value === "apply") {
+        consume(); consume(); // apply coupon
+        const codeToken = consume();
+        consume(); // ;
+        if (COUPONS[codeToken.value] === undefined) {
+          semanticErrors.push({ message: `Invalid coupon code "${codeToken.value}"`, line: codeToken.line });
+        } else {
+          coupon = codeToken.value;
+          discount = COUPONS[codeToken.value];
+          logs.push(`${ts} Coupon "${codeToken.value}" applied (${(discount * 100).toFixed(0)}% off)`);
+        }
+        continue;
+      }
+
+      // ── set (including instance field assignment) ─────────────────────
       if (t.type === TOKEN_TYPES.KEYWORD && t.value === "set") {
         consume();
         const fieldToken = consume();
-        consume(); // =
-        const valToken = consume();
-        consume(); // ;
+        const varName = fieldToken.value;
 
-        const numVal = parseFloat(valToken.value);
-        if (fieldToken.value === "shipping") {
-          if (isNaN(numVal) || numVal < 0) {
-            semanticErrors.push({
-              message: `Shipping must be a valid non-negative number at line ${valToken.line}`,
-              line: valToken.line,
-            });
+        if (peek().type === TOKEN_TYPES.DOT) {
+          consume(); // .
+          const propToken = consume();
+          const propName = propToken.value;
+          consume(); // =
+          const valToken = consume();
+          consume(); // ;
+
+          const instance = instances[varName];
+          if (!instance) {
+            semanticErrors.push({ message: `'${varName}' is not a defined object instance`, line: fieldToken.line });
           } else {
-            shipping = numVal;
-            logs.push(`${timestamp} Shipping set to $${numVal.toFixed(2)}`);
+            const valType = valToken.type === TOKEN_TYPES.STRING ? "string"
+              : valToken.type === TOKEN_TYPES.BOOLEAN ? "boolean"
+              : "number";
+            instance.fields[propName] = { type: valType, value: valToken.value };
+            // Update variable display
+            const fieldSummary = Object.entries(instance.fields)
+              .map(([k, v]) => `${k}=${v.type === "string" ? `"${v.value}"` : v.value}`)
+              .join(", ");
+            const varIdx = variables.findIndex(v => v.name === varName);
+            if (varIdx >= 0) variables[varIdx].value = `{${fieldSummary}}`;
+            logs.push(`${ts} Set '${varName}.${propName}' = ${valToken.type === "string" ? `"${valToken.value}"` : valToken.value}`);
           }
-        }
-
-        const existing = variables.findIndex(v => v.name === fieldToken.value);
-        if (existing >= 0) {
-          variables[existing].value = valToken.value;
         } else {
-          variables.push({ name: fieldToken.value, type: "number", value: valToken.value });
+          consume(); // =
+          const valToken = consume();
+          consume(); // ;
+          const numVal = parseFloat(valToken.value);
+          if (varName === "shipping") {
+            if (isNaN(numVal) || numVal < 0) {
+              semanticErrors.push({ message: `Shipping must be a valid non-negative number`, line: valToken.line });
+            } else {
+              shipping = numVal;
+              logs.push(`${ts} Shipping set to $${numVal.toFixed(2)}`);
+            }
+          }
+          const existing = variables.findIndex(v => v.name === varName);
+          if (existing >= 0) variables[existing].value = valToken.value;
+          else variables.push({ name: varName, type: "number", value: valToken.value });
         }
         continue;
       }
 
-      // checkout
+      // ── checkout ──────────────────────────────────────────────────────
       if (t.type === TOKEN_TYPES.KEYWORD && t.value === "checkout") {
-        consume();
-        consume(); // ;
-
+        consume(); consume(); // checkout ;
         if (cart.length === 0) {
-          semanticErrors.push({
-            message: `Cannot checkout with an empty cart`,
-            line: t.line,
-          });
+          semanticErrors.push({ message: `Cannot checkout with an empty cart`, line: t.line });
         } else {
           didCheckout = true;
-          logs.push(`${timestamp} Checkout completed successfully.`);
+          logs.push(`${ts} Checkout completed.`);
         }
         continue;
       }
 
-      consume(); // skip unknown in case of partial errors
+      consume();
     }
   } else {
-    logs.push(`${timestamp} Execution halted due to errors.`);
+    logs.push(`${ts} Execution halted due to errors.`);
   }
 
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((s, item) => s + item.price * item.quantity, 0);
   const discountAmt = subtotal * discount;
   const total = subtotal - discountAmt + shipping;
 
   if (didCheckout && semanticErrors.length === 0) {
-    logs.push(`${timestamp} Order total: $${total.toFixed(2)}`);
+    logs.push(`${ts} Order total: $${total.toFixed(2)}`);
   }
 
   return {
@@ -574,6 +659,8 @@ export function interpret(source: string): InterpreterResult {
     semanticErrors,
     cart,
     variables,
+    classes,
+    instances,
     logs,
     coupon,
     discount,
@@ -583,4 +670,24 @@ export function interpret(source: string): InterpreterResult {
     user,
     didCheckout,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+function addToCart(cart: CartItem[], name: string, qty: number, price: number) {
+  const existing = cart.findIndex(c => c.name === name);
+  if (existing >= 0) cart[existing].quantity += qty;
+  else cart.push({ name, quantity: qty, price });
+}
+
+function updateCartVar(variables: VariableEntry[], cart: CartItem[]) {
+  const cartVar = variables.findIndex(v => v.name === "cart");
+  if (cartVar >= 0) variables[cartVar].value = `(${cart.length} items)`;
+}
+
+function isCustomProduct(instances: Record<string, ObjectInstance>, name: string): boolean {
+  return Object.values(instances).some(
+    inst => inst.fields["name"]?.value === name
+  );
 }
