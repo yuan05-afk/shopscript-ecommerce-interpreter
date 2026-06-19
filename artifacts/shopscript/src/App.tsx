@@ -352,23 +352,23 @@ export default function App() {
 
           {/* ── LEFT: Editor ─────────────────────────────────────────── */}
           <div className="ss-card editor-card" style={{ overflow:"hidden" }}>
-            {/* Top bar */}
-            <div style={{ background:"#12121c", padding:"10px 12px 0", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
+            {/* Top bar — light theme */}
+            <div style={{ background:"white", padding:"10px 12px 0", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap", borderBottom:"1px solid hsl(30 20% 90%)" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <span style={{ display:"flex", color:"hsl(25 95% 60%)" }}>{Ico.code(15,"hsl(25 95% 60%)")}</span>
-                <span style={{ fontSize:13, fontWeight:700, color:"#cdd6f4" }}>ShopScript Editor</span>
+                <span style={{ display:"flex", color:"hsl(25 95% 53%)" }}>{Ico.code(15,"hsl(25 95% 53%)")}</span>
+                <span style={{ fontSize:13, fontWeight:700, color:"hsl(220 20% 18%)" }}>ShopScript Editor</span>
               </div>
-              <div style={{ display:"flex", gap:7, flexWrap:"wrap" }}>
+              <div style={{ display:"flex", gap:7, flexWrap:"wrap", paddingBottom:10 }}>
                 <button className="btn-orange" style={{ padding:"5px 12px", fontSize:12, gap:5 }} onClick={runProgram}>
                   {Ico.play()} Run Program
                 </button>
-                <button style={{ background:"transparent", border:"1px solid #3a3a4a", color:"#6c7086", borderRadius:8, padding:"5px 10px", fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", gap:5 }} onClick={clearEditor}>
-                  {Ico.x(10,"#6c7086")} Clear
+                <button className="btn-ghost" style={{ padding:"5px 10px", fontSize:12 }} onClick={clearEditor}>
+                  {Ico.x(10,"hsl(220 10% 50%)")} Clear
                 </button>
                 <select
                   onChange={(e) => { loadSample(e.target.value as "valid"|"syntax"|"semantic"|"oop"); e.target.value=""; }}
                   defaultValue=""
-                  style={{ background:"#1e1e2e", border:"1px solid #3a3a4a", color:"#89b4fa", borderRadius:8, padding:"5px 9px", fontSize:12, cursor:"pointer" }}
+                  style={{ background:"white", border:"1px solid hsl(30 20% 88%)", color:"hsl(220 20% 35%)", borderRadius:8, padding:"5px 9px", fontSize:12, cursor:"pointer" }}
                 >
                   <option value="" disabled>Load Sample</option>
                   <option value="valid">Valid Sample</option>
@@ -378,15 +378,15 @@ export default function App() {
                 </select>
               </div>
             </div>
-            {/* File tab */}
-            <div style={{ background:"#12121c", padding:"0 12px" }}>
-              <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#1e1e2e", color:"#89b4fa", fontFamily:"var(--app-font-mono)", fontSize:12, padding:"5px 14px 0", borderRadius:"6px 6px 0 0", border:"1px solid #2a2a3a", borderBottom:"2px solid hsl(25 95% 53%)" }}>
+            {/* File tab — light theme */}
+            <div style={{ background:"hsl(30 20% 97%)", padding:"0 12px", borderBottom:"1px solid hsl(30 20% 90%)" }}>
+              <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"white", color:"hsl(25 95% 53%)", fontFamily:"var(--app-font-mono)", fontSize:12, padding:"6px 14px 0", borderRadius:"6px 6px 0 0", border:"1px solid hsl(30 20% 90%)", borderBottom:"2px solid hsl(25 95% 53%)" }}>
                 main.shop
-                <span style={{ background:"#3a3a4a", borderRadius:"50%", width:15, height:15, display:"flex", alignItems:"center", justifyContent:"center" }}>{Ico.plus(9,"#6c7086")}</span>
+                <span style={{ background:"hsl(30 20% 90%)", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>{Ico.plus(9,"hsl(220 10% 50%)")}</span>
               </div>
             </div>
-            {/* Code area */}
-            <div className="editor-body" style={{ background:"#1e1e2e" }}>
+            {/* Code area — light theme */}
+            <div className="editor-body" style={{ background:"white" }}>
               <div className="line-numbers">
                 {lines.map((_,i) => <div key={i}>{i+1}</div>)}
               </div>
