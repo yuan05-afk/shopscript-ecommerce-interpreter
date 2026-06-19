@@ -319,18 +319,21 @@
    ════════════════════════════════════════════════════════════════════════ */
 
 /* ── Desktop default (≥1200px) ─────────────────────────────────────────── */
-.workspace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
+/* Editor ~45%, Simulation ~55% — matches reference exactly */
+.workspace-grid { display: grid; grid-template-columns: 45fr 55fr; gap: 18px; align-items: stretch; }
 .editor-card { display: flex; flex-direction: column; }
 .editor-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 .editor-body .line-numbers { overflow-y: hidden; align-self: stretch; }
 .editor-body .code-editor { flex: 1; min-height: 0; width: auto; }
-.sim-row1 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* Inventory ~58%, Cart ~42% — gives inventory room for 4-wide products */
+.sim-row1 { display: grid; grid-template-columns: 58fr 42fr; gap: 12px; }
 .sim-row2 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
 .analyzer-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+/* 4 products in one horizontal row */
 .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .product-img-thumb {
   width: 100%;
-  height: 72px;
+  height: 90px;
   object-fit: cover;
   display: block;
   background: hsl(30 20% 96%);
