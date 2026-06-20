@@ -68,12 +68,60 @@ The interpreter processes the source code step by step. If lexical or syntax err
 
 ### Run Locally
 
-```bash
-npm install
-npm run dev
+#### Prerequisites
+
+Install [Node.js](https://nodejs.org/) 22 or newer and pnpm. Confirm that both are available:
+
+```powershell
+node --version
+pnpm --version
 ```
 
-Then open the local development URL shown in the terminal.
+If `pnpm` is not recognized, install it globally and open a new terminal:
+
+```powershell
+npm install --global pnpm
+```
+
+This repository is a pnpm workspace. The root configuration intentionally rejects `npm install` to prevent npm and pnpm lockfiles from being mixed.
+
+#### Windows PowerShell
+
+From the repository root, install dependencies and start the ShopScript website:
+
+```powershell
+pnpm install
+$env:PORT = "5173"
+$env:BASE_PATH = "/"
+pnpm --filter @workspace/shopscript run dev
+```
+
+Open <http://localhost:5173/>. Keep the terminal running while using the website. Press `Ctrl+C` to stop the development server.
+
+#### macOS or Linux
+
+```bash
+pnpm install
+PORT=5173 BASE_PATH=/ pnpm --filter @workspace/shopscript run dev
+```
+
+Then open <http://localhost:5173/>.
+
+#### Verify the project
+
+```powershell
+pnpm --filter @workspace/shopscript run typecheck
+$env:PORT = "5173"
+$env:BASE_PATH = "/"
+pnpm --filter @workspace/shopscript run build
+```
+
+#### Troubleshooting
+
+* **`Use pnpm instead`** — run `pnpm install`, not `npm install`.
+* **`Missing script: dev`** — the root package has no `dev` script; use the filtered command shown above.
+* **`PORT environment variable is required`** — set `PORT` and `BASE_PATH` in the same terminal before starting or building the app.
+* **Install pauses at the esbuild postinstall step** — allow it a short time to download the Windows binary. If it remains stuck, press `Ctrl+C`, check the network connection, and run `pnpm install` again.
 
 ---
 
@@ -241,11 +289,54 @@ README.md                      # Project documentation
 
 ## Tech Stack
 
-- React + TypeScript (UI layer)
-- Vite (build tooling)
-- Pure TypeScript interpreter (no external parsing libraries)
-- Tailwind CSS + custom CSS (styling)
+* **React** — user interface
+* **TypeScript** — typed application logic
+* **Vite** — development and build tool
+* **Tailwind CSS** — utility-based styling
+* **Custom CSS** — theme, layout, and visual polish
+* **Pure TypeScript Interpreter** — lexer, syntax checker, semantic checker, and executor
 
 ---
 
-*ShopScript v0.1.0 — Programming Languages Final Project*
+## Project Scope
+
+ShopScript is designed as an educational programming language interpreter, not a production e-commerce platform.
+
+### Included
+
+* Code editor
+* Token analysis
+* Syntax validation
+* Semantic validation
+* Cart simulation
+* Coupon simulation
+* Checkout summary
+* Receipt preview
+* Output logs
+
+### Not Included
+
+* Real payment processing
+* Real customer accounts
+* Database storage
+* Authentication system
+* Real product orders
+* Production checkout flow
+
+---
+
+## Limitations
+
+* E-commerce actions are simulated only.
+* Page refresh resets all program state.
+* Each statement must be written on its own line.
+* Advanced expressions are not yet supported.
+* Control flow keywords are recognized, but full execution of `if`, `else`, `for`, and `while` is not yet implemented.
+* OOP keywords are recognized, but full class execution is not yet implemented.
+
+---
+
+## Version
+
+**ShopScript v0.2.0**
+Programming Languages Final Project

@@ -164,16 +164,288 @@ const Ico = {
 };
 
 
-function PlannedPage({ page, onNavigate }: { page: Exclude<NavItem, "Home" | "About">; onNavigate: (page: NavItem) => void }) {
+
+function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
+  const [query, setQuery] = useState("");
+  const sections = [
+    { id: "overview", title: "Overview", keywords: "purpose educational ecommerce interpreter scope" },
+    { id: "quick-start", title: "Quick start", keywords: "install pnpm localhost windows run setup" },
+    { id: "pipeline", title: "Interpreter pipeline", keywords: "lexer lexical syntax semantic execution tokens" },
+    { id: "syntax", title: "Language syntax", keywords: "let string number boolean list grammar semicolon comments" },
+    { id: "commands", title: "E-commerce commands", keywords: "add coupon shipping checkout inventory cart price" },
+    { id: "oop", title: "Object-oriented syntax", keywords: "class new instance field set object oop" },
+    { id: "analyzer", title: "Analyzer output", keywords: "tokens errors variables logs receipt panels" },
+    { id: "status", title: "Current status", keywords: "limitations planned control flow scope types methods tests" },
+  ];
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleSections = sections.filter(section =>
+    !normalizedQuery || (section.title + " " + section.keywords).toLowerCase().includes(normalizedQuery)
+  );
+  const visibleIds = new Set(visibleSections.map(section => section.id));
+  const jumpTo = (id: string) => document.getElementById("docs-" + id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  return (
+    <main className="docs-page">
+      <section className="docs-hero">
+        <div>
+          <span className="page-eyebrow">ShopScript v{APP_VERSION}</span>
+          <h1>Documentation</h1>
+          <p>Learn the syntax currently supported by the browser interpreter, understand each analysis stage, and distinguish implemented behavior from planned course requirements.</p>
+        </div>
+        <button className="btn-orange" onClick={() => onNavigate("Home")}>{Ico.play()} Open interpreter</button>
+      </section>
+
+      <div className="docs-search-wrap">
+        <span aria-hidden="true">{Ico.book(17, "hsl(25 95% 53%)")}</span>
+        <input
+          id="docs-search"
+          className="docs-search"
+          type="search"
+          value={query}
+          onChange={event => setQuery(event.target.value)}
+          placeholder="Search documentation..."
+          aria-label="Search ShopScript documentation"
+        />
+        {query && <button className="docs-search-clear" onClick={() => setQuery("")} aria-label="Clear documentation search">{Ico.x(12)}</button>}
+      </div>
+
+      <div className="docs-layout">
+        <aside className="docs-sidebar" aria-label="Documentation sections">
+          <div className="docs-sidebar-title">On this page</div>
+          {sections.map(section => (
+            <button
+              key={section.id}
+              className={visibleIds.has(section.id) ? "" : "filtered"}
+              onClick={() => jumpTo(section.id)}
+              disabled={!visibleIds.has(section.id)}
+            >
+              <span>{section.title}</span>
+              {Ico.chevron(12)}
+            </button>
+          ))}
+          <div className="docs-version-card">
+            <strong>Version {APP_VERSION}</strong>
+            <span>Implementation reference</span>
+          </div>
+        </aside>
+
+        <div className="docs-content">
+          {visibleSections.length === 0 && (
+            <section className="docs-empty ss-card">
+              <div className="page-icon">{Ico.book(22, "hsl(25 95% 53%)")}</div>
+              <h2>No matching documentation</h2>
+              <p>Try searching for syntax, coupon, OOP, errors, setup, or control flow.</p>
+              <button className="btn-ghost" onClick={() => setQuery("")}>Clear search</button>
+            </section>
+          )}
+
+          {visibleIds.has("overview") && (
+            <article id="docs-overview" className="docs-section ss-card">
+              <div className="docs-section-heading">
+                <span className="docs-step">01</span>
+                <div><span className="docs-kicker">Introduction</span><h2>Overview</h2></div>
+                <span className="docs-status implemented">Implemented</span>
+              </div>
+              <p>ShopScript is a mini programming language that turns source code into a visual e-commerce simulation. It is designed to demonstrate programming-language concepts, not to operate as a real online store.</p>
+              <div className="docs-callout">
+                {Ico.alert(17, "hsl(25 95% 45%)")}
+                <div><strong>Educational scope</strong><span>No real accounts, payments, database orders, or production checkout are performed.</span></div>
+              </div>
+              <div className="docs-feature-grid">
+                {[
+                  ["Lexer", "Converts source text into positioned tokens."],
+                  ["Syntax checker", "Validates the structure of supported statements."],
+                  ["Semantic checks", "Validates products, quantities, prices, coupons, objects, and checkout."],
+                  ["Executor", "Updates the cart, totals, receipt, variables, and logs."],
+                ].map(([title, description]) => <div key={title}><strong>{title}</strong><span>{description}</span></div>)}
+              </div>
+            </article>
+          )}
+
+          {visibleIds.has("quick-start") && (
+            <article id="docs-quick-start" className="docs-section ss-card">
+              <div className="docs-section-heading">
+                <span className="docs-step">02</span>
+                <div><span className="docs-kicker">Local development</span><h2>Quick start</h2></div>
+                <span className="docs-status implemented">Verified</span>
+              </div>
+              <p>This is a pnpm workspace. Run commands from the repository root and do not use npm to install project dependencies.</p>
+              <h3>Windows PowerShell</h3>
+              <pre><code>{"pnpm install\n$env:PORT = \"5173\"\n$env:BASE_PATH = \"/\"\npnpm --filter @workspace/shopscript run dev"}</code></pre>
+              <p>Open <strong>http://localhost:5173/</strong>. Keep the terminal running while using the website.</p>
+              <h3>Verify changes</h3>
+              <pre><code>{"pnpm --filter @workspace/shopscript run typecheck\n$env:PORT = \"5173\"\n$env:BASE_PATH = \"/\"\npnpm --filter @workspace/shopscript run build"}</code></pre>
+            </article>
+          )}
+
+          {visibleIds.has("pipeline") && (
+            <article id="docs-pipeline" className="docs-section ss-card">
+              <div className="docs-section-heading">
+                <span className="docs-step">03</span>
+                <div><span className="docs-kicker">Processing model</span><h2>Interpreter pipeline</h2></div>
+                <span className="docs-status implemented">Implemented</span>
+              </div>
+              <div className="docs-pipeline">
+                {[
+                  ["1", "Source", "Code entered in the editor"],
+                  ["2", "Lexical", "Tokens with line and column"],
+                  ["3", "Syntax", "Statement structure checks"],
+                  ["4", "Semantic", "Meaning and business rules"],
+                  ["5", "Execution", "Cart and variable updates"],
+                  ["6", "Simulation", "Receipt, totals, and logs"],
+                ].map(([number, title, detail]) => (
+                  <div key={number}><span>{number}</span><strong>{title}</strong><small>{detail}</small></div>
+                ))}
+              </div>
+              <p>Lexical or syntax errors stop execution. Semantic errors are reported separately so users can identify whether a problem is structural or logical.</p>
+            </article>
+          )}
+
+          {visibleIds.has("syntax") && (
+            <article id="docs-syntax" className="docs-section ss-card">
+              <div className="docs-section-heading">
+                <span className="docs-step">04</span>
+                <div><span className="docs-kicker">Language reference</span><h2>Current language syntax</h2></div>
+                <span className="docs-status implemented">Implemented subset</span>
+              </div>
+              <p>Each statement ends with a semicolon. Single-line comments begin with <code>//</code>.</p>
+              <h3>Variables and literals</h3>
+              <pre><code>{'let user = "Ava";\nlet budget = 1200.00;\nlet inStock = true;\nlet cart = [];'}</code></pre>
+              <div className="docs-table-wrap">
+                <table className="docs-table">
+                  <thead><tr><th>Value</th><th>Example</th><th>Current runtime type</th></tr></thead>
+                  <tbody>
+                    <tr><td>String</td><td><code>"Ava"</code></td><td>string</td></tr>
+                    <tr><td>Number</td><td><code>1200.00</code></td><td>number</td></tr>
+                    <tr><td>Boolean</td><td><code>true</code></td><td>boolean</td></tr>
+                    <tr><td>Empty list</td><td><code>[]</code></td><td>list</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="docs-callout neutral">
+                {Ico.table(17, "hsl(220 60% 50%)")}
+                <div><strong>Type-system status</strong><span>Explicit int, float, bool, and string declarations are required by the project plan but are not implemented yet.</span></div>
+              </div>
+            </article>
+          )}
+
+          {visibleIds.has("commands") && (
+            <article id="docs-commands" className="docs-section ss-card">
+              <div className="docs-section-heading">
+                <span className="docs-step">05</span>
+                <div><span className="docs-kicker">Language reference</span><h2>E-commerce commands</h2></div>
+                <span className="docs-status implemented">Implemented</span>
+              </div>
+              <div className="docs-table-wrap">
+                <table className="docs-table command-table">
+                  <thead><tr><th>Action</th><th>Syntax</th><th>Effect</th></tr></thead>
+                  <tbody>
+                    <tr><td>Add product</td><td><code>{'add "Smartphone X" 1 @ 599.00;'}</code></td><td>Adds a known product and quantity.</td></tr>
+                    <tr><td>Apply coupon</td><td><code>{'apply coupon "SAVE10";'}</code></td><td>Applies a supported discount.</td></tr>
+                    <tr><td>Set shipping</td><td><code>set shipping = 40.00;</code></td><td>Sets a non-negative shipping fee.</td></tr>
+                    <tr><td>Checkout</td><td><code>checkout;</code></td><td>Completes a non-empty simulated cart.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <h3>Supported coupons</h3>
+              <div className="docs-chip-row"><span>SAVE10 · 10%</span><span>STUDENT10 · 10%</span><span>NONE · 0%</span></div>
+              <h3>Inventory</h3>
+              <div className="docs-inventory-list">
+                {[
+                  ["Smartphone X", "$599.00"], ["Wireless Earbuds", "$199.00"], ["Phone Case", "$29.00"],
+                  ["Urban Backpack", "$49.00"], ["Laptop", "$999.00"], ["Smart Watch", "$299.00"],
+                ].map(([name, price]) => <div key={name}><span>{name}</span><strong>{price}</strong></div>)}
+              </div>
+            </article>
+          )}
+
+          {visibleIds.has("oop") && (
+            <article id="docs-oop" className="docs-section ss-card">
+              <div className="docs-section-heading">
+                <span className="docs-step">06</span>
+                <div><span className="docs-kicker">Object orientation</span><h2>Current OOP syntax</h2></div>
+                <span className="docs-status progress">Partial</span>
+              </div>
+              <p>ShopScript currently supports classes with default fields, instance creation, field assignment, and adding an instance to the cart when it has name and price fields.</p>
+              <pre><code>{'class Product {\n  name = "Unknown";\n  price = 0.00;\n  stock = true;\n}\n\nlet phone = new Product;\nset phone.name = "Pixel 9 Pro";\nset phone.price = 849.00;\nadd phone 1;\ncheckout;'}</code></pre>
+              <div className="docs-callout neutral">
+                {Ico.dna(17, "hsl(220 60% 50%)")}
+                <div><strong>Still planned</strong><span>Typed fields, methods, parameters, this binding, public/private access, and encapsulation checks.</span></div>
+              </div>
+            </article>
+          )}
+
+          {visibleIds.has("analyzer") && (
+            <article id="docs-analyzer" className="docs-section ss-card">
+              <div className="docs-section-heading">
+                <span className="docs-step">07</span>
+                <div><span className="docs-kicker">Interface reference</span><h2>Analyzer output</h2></div>
+                <span className="docs-status implemented">Implemented</span>
+              </div>
+              <div className="docs-analyzer-grid">
+                {[
+                  [Ico.code(17), "Tokens", "Token type, value, line, and column."],
+                  [Ico.alert(17), "Lexical errors", "Unknown characters and malformed strings."],
+                  [Ico.clipboard(17), "Syntax errors", "Unsupported or malformed statements."],
+                  [Ico.check(17), "Semantic errors", "Invalid products, values, objects, coupons, and checkout."],
+                  [Ico.table(17), "Variables", "Current names, inferred types, and display values."],
+                  [Ico.receipt(17), "Output logs", "Execution events, checkout state, and totals."],
+                ].map(([icon, title, detail]) => (
+                  <div key={String(title)}><span>{icon}</span><strong>{title}</strong><small>{detail}</small></div>
+                ))}
+              </div>
+            </article>
+          )}
+
+          {visibleIds.has("status") && (
+            <article id="docs-status" className="docs-section ss-card">
+              <div className="docs-section-heading">
+                <span className="docs-step">08</span>
+                <div><span className="docs-kicker">Roadmap alignment</span><h2>Current implementation status</h2></div>
+                <span className="docs-status progress">In progress</span>
+              </div>
+              <p>The website is usable, but the complete academic specification is still under development.</p>
+              <div className="docs-status-columns">
+                <div>
+                  <h3>{Ico.check(15)} Available now</h3>
+                  <ul>
+                    <li>Lexer and token display</li>
+                    <li>Current-statement syntax checks</li>
+                    <li>E-commerce semantic validation</li>
+                    <li>Cart, discount, checkout, and receipt</li>
+                    <li>Variables and basic classes/instances</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3>{Ico.alert(15, "hsl(25 95% 48%)")} Required next</h3>
+                  <ul>
+                    <li>Canonical expression grammar and AST</li>
+                    <li>Nested scope and declaration rules</li>
+                    <li>if/else, for, and while execution</li>
+                    <li>Explicit required data types</li>
+                    <li>Methods and encapsulation</li>
+                    <li>Automated interpreter tests</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="docs-next-card">
+                <div><span className="page-eyebrow">Next website section</span><strong>Examples</strong><p>Runnable examples will follow this documentation section.</p></div>
+                <button className="btn-orange" onClick={() => onNavigate("Examples")}>View Examples status {Ico.chevron(13, "white")}</button>
+              </div>
+            </article>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function PlannedPage({ page, onNavigate }: { page: Exclude<NavItem, "Home" | "About" | "Docs">; onNavigate: (page: NavItem) => void }) {
   const details = {
-    Docs: {
-      icon: Ico.book(24, "hsl(25 95% 53%)"),
-      title: "Documentation is the next implementation step",
-      description: "This section will document the canonical grammar, commands, analyzer stages, type rules, scope, control flow, and OOP behavior.",
-    },
+
     Examples: {
       icon: Ico.code(24, "hsl(25 95% 53%)"),
-      title: "Examples follow the documentation",
+      title: "Examples are the next implementation step",
       description: "This section will provide runnable valid programs and focused lexical, syntax, semantic, control-flow, data-type, and OOP demonstrations.",
     },
     Playground: {
@@ -220,7 +492,7 @@ function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
           </p>
           <div className="page-actions">
             <button className="btn-orange" onClick={() => onNavigate("Home")}>{Ico.play()} Try the interpreter</button>
-            <button className="btn-ghost" onClick={() => onNavigate("Docs")}>{Ico.book(14)} View documentation status</button>
+            <button className="btn-ghost" onClick={() => onNavigate("Docs")}>{Ico.book(14)} Read documentation</button>
           </div>
         </div>
         <div className="about-mark" aria-hidden="true">{Ico.code(44, "white")}<span>v{APP_VERSION}</span></div>
@@ -327,6 +599,10 @@ export default function App() {
     setMobileMenu(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+  const openDocsSearch = useCallback(() => {
+    navigate("Docs");
+    window.setTimeout(() => document.getElementById("docs-search")?.focus(), 0);
+  }, [navigate]);
   const startNewProgram = () => {
     setCode("");
     setResult(null);
@@ -343,12 +619,12 @@ export default function App() {
     const openDocs = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        navigate("Docs");
+        openDocsSearch();
       }
     };
     window.addEventListener("keydown", openDocs);
     return () => window.removeEventListener("keydown", openDocs);
-  }, [navigate]);
+  }, [openDocsSearch]);
 
   const cart        = result?.cart ?? [];
   const subtotal    = result?.subtotal ?? 0;
@@ -385,7 +661,7 @@ export default function App() {
           </button>
 
           {/* Search — hidden on mobile */}
-          <button type="button" className="header-search nav-search" onClick={() => navigate("Docs")} aria-label="Open documentation">
+          <button type="button" className="header-search nav-search" onClick={openDocsSearch} aria-label="Open documentation">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="hsl(220 10% 55%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
@@ -910,7 +1186,9 @@ export default function App() {
           </div>
         )}
       </div>
-      </>) : activeNav === "About" ? (
+      </>) : activeNav === "Docs" ? (
+        <DocsPage onNavigate={navigate} />
+      ) : activeNav === "About" ? (
         <AboutPage onNavigate={navigate} />
       ) : (
         <PlannedPage page={activeNav} onNavigate={navigate} />
