@@ -68,12 +68,60 @@ The interpreter processes the source code step by step. If lexical or syntax err
 
 ### Run Locally
 
-```bash
-npm install
-npm run dev
+#### Prerequisites
+
+Install [Node.js](https://nodejs.org/) 22 or newer and pnpm. Confirm that both are available:
+
+```powershell
+node --version
+pnpm --version
 ```
 
-Then open the local development URL shown in the terminal.
+If `pnpm` is not recognized, install it globally and open a new terminal:
+
+```powershell
+npm install --global pnpm
+```
+
+This repository is a pnpm workspace. The root configuration intentionally rejects `npm install` to prevent npm and pnpm lockfiles from being mixed.
+
+#### Windows PowerShell
+
+From the repository root, install dependencies and start the ShopScript website:
+
+```powershell
+pnpm install
+$env:PORT = "5173"
+$env:BASE_PATH = "/"
+pnpm --filter @workspace/shopscript run dev
+```
+
+Open <http://localhost:5173/>. Keep the terminal running while using the website. Press `Ctrl+C` to stop the development server.
+
+#### macOS or Linux
+
+```bash
+pnpm install
+PORT=5173 BASE_PATH=/ pnpm --filter @workspace/shopscript run dev
+```
+
+Then open <http://localhost:5173/>.
+
+#### Verify the project
+
+```powershell
+pnpm --filter @workspace/shopscript run typecheck
+$env:PORT = "5173"
+$env:BASE_PATH = "/"
+pnpm --filter @workspace/shopscript run build
+```
+
+#### Troubleshooting
+
+* **`Use pnpm instead`** — run `pnpm install`, not `npm install`.
+* **`Missing script: dev`** — the root package has no `dev` script; use the filtered command shown above.
+* **`PORT environment variable is required`** — set `PORT` and `BASE_PATH` in the same terminal before starting or building the app.
+* **Install pauses at the esbuild postinstall step** — allow it a short time to download the Windows binary. If it remains stuck, press `Ctrl+C`, check the network connection, and run `pnpm install` again.
 
 ---
 
@@ -290,5 +338,5 @@ ShopScript is designed as an educational programming language interpreter, not a
 
 ## Version
 
-**ShopScript v0.1.0**
+**ShopScript v0.2.0**
 Programming Languages Final Project

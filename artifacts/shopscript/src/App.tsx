@@ -132,6 +132,11 @@ function tokenClass(type: string) {
   return m[type] ?? "identifier";
 }
 
+// ─── App metadata and navigation ───────────────────────────────────────────────
+const APP_VERSION = "0.2.0";
+const NAV_ITEMS = ["Home", "Docs", "Examples", "Playground", "About"] as const;
+type NavItem = typeof NAV_ITEMS[number];
+
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 const Ico = {
   code: (s=16,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
@@ -152,9 +157,117 @@ const Ico = {
   chevron: (s=14,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
   play: () => <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
   bag: (s=16,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
+  heart: (s=16,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+  book: (s=16,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>,
+  users: (s=16,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
   menu: (s=20,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
 };
 
+
+function PlannedPage({ page, onNavigate }: { page: Exclude<NavItem, "Home" | "About">; onNavigate: (page: NavItem) => void }) {
+  const details = {
+    Docs: {
+      icon: Ico.book(24, "hsl(25 95% 53%)"),
+      title: "Documentation is the next implementation step",
+      description: "This section will document the canonical grammar, commands, analyzer stages, type rules, scope, control flow, and OOP behavior.",
+    },
+    Examples: {
+      icon: Ico.code(24, "hsl(25 95% 53%)"),
+      title: "Examples follow the documentation",
+      description: "This section will provide runnable valid programs and focused lexical, syntax, semantic, control-flow, data-type, and OOP demonstrations.",
+    },
+    Playground: {
+      icon: Ico.code(24, "hsl(25 95% 53%)"),
+      title: "The dedicated playground follows examples",
+      description: "The current interpreter remains available on Home. This section will later provide a focused editor and simulation workspace.",
+    },
+  }[page];
+
+  return (
+    <main className="content-page">
+      <section className="placeholder-card ss-card" aria-labelledby="planned-page-title">
+        <div className="page-icon">{details.icon}</div>
+        <span className="page-eyebrow">Planned section</span>
+        <h1 id="planned-page-title">{page}</h1>
+        <h2>{details.title}</h2>
+        <p>{details.description}</p>
+        <div className="page-actions">
+          <button className="btn-orange" onClick={() => onNavigate("Home")}>{Ico.code(14, "white")} Open current interpreter</button>
+          <button className="btn-ghost" onClick={() => onNavigate("About")}>{Ico.users(14)} About the project</button>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
+  const team = [
+    { role: "Project Lead", name: "Fitz Tobias" },
+    { role: "Lead Developer", name: "Yuan Mariano" },
+    { role: "Documentation Lead", name: "Dwayne Mongaya" },
+  ];
+
+  return (
+    <main className="content-page about-page">
+      <section className="about-hero">
+        <div>
+          <span className="page-eyebrow">About ShopScript</span>
+          <h1>A mini programming language with an e-commerce simulation</h1>
+          <p>
+            ShopScript is a browser-based educational interpreter built for a Programming Languages final project.
+            Users write small programs that are tokenized, checked, validated, and executed as visible cart,
+            discount, checkout, receipt, variable, and output-log updates.
+          </p>
+          <div className="page-actions">
+            <button className="btn-orange" onClick={() => onNavigate("Home")}>{Ico.play()} Try the interpreter</button>
+            <button className="btn-ghost" onClick={() => onNavigate("Docs")}>{Ico.book(14)} View documentation status</button>
+          </div>
+        </div>
+        <div className="about-mark" aria-hidden="true">{Ico.code(44, "white")}<span>v{APP_VERSION}</span></div>
+      </section>
+
+      <section className="about-grid">
+        <article className="ss-card about-card">
+          <div className="about-card-title">{Ico.zap(18, "hsl(25 95% 53%)")} Project purpose</div>
+          <p>
+            The project demonstrates lexical analysis, syntax analysis, semantic analysis, names and scope,
+            data types, control flow, and object-oriented programming through an approachable online-store scenario.
+          </p>
+        </article>
+        <article className="ss-card about-card">
+          <div className="about-card-title">{Ico.cart(18, "hsl(25 95% 53%)")} Educational scope</div>
+          <p>
+            ShopScript simulates store behavior only. It does not process real payments, create customer accounts,
+            store production orders, or operate as a commercial e-commerce platform.
+          </p>
+        </article>
+        <article className="ss-card about-card">
+          <div className="about-card-title">{Ico.table(18, "hsl(25 95% 53%)")} Interpreter pipeline</div>
+          <div className="pipeline-list">
+            {["Source code", "Lexical analysis", "Syntax analysis", "Semantic analysis", "Execution", "Visual simulation"].map((step, index) => (
+              <div key={step}><span>{index + 1}</span>{step}</div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="team-section ss-card">
+        <div className="section-heading">
+          <div className="page-icon small">{Ico.users(20, "hsl(25 95% 53%)")}</div>
+          <div><span className="page-eyebrow">Project team</span><h2>Creators</h2></div>
+        </div>
+        <div className="team-grid">
+          {team.map((member) => (
+            <article key={member.role} className="team-card">
+              <div className="team-avatar">{member.name.split(" ").map(part => part[0]).join("")}</div>
+              <div><strong>{member.name}</strong><span>{member.role}</span></div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
 // ─── OOP sub-cards ────────────────────────────────────────────────────────────
 function ClassCard({ def }: { def: ClassDefinition }) {
   return (
@@ -198,7 +311,7 @@ export default function App() {
   const [code, setCode]       = useState(SAMPLE_VALID);
   const [result, setResult]   = useState<InterpreterResult | null>(null);
   const [hasRun, setHasRun]   = useState(false);
-  const [activeNav, setNav]   = useState("Home");
+  const [activeNav, setNav]   = useState<NavItem>("Home");
   const [mobileMenu, setMobileMenu] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lines = code.split("\n");
@@ -209,8 +322,33 @@ export default function App() {
     const m = { valid:SAMPLE_VALID, syntax:SAMPLE_SYNTAX_ERROR, semantic:SAMPLE_SEMANTIC_ERROR, oop:SAMPLE_OOP };
     setCode(m[t]); setResult(null); setHasRun(false);
   };
+  const navigate = useCallback((destination: NavItem) => {
+    setNav(destination);
+    setMobileMenu(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+  const startNewProgram = () => {
+    setCode("");
+    setResult(null);
+    setHasRun(false);
+    navigate("Home");
+    window.setTimeout(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 0);
+  };
 
   useEffect(() => { runProgram(); }, []); // eslint-disable-line
+  useEffect(() => {
+    const openDocs = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        navigate("Docs");
+      }
+    };
+    window.addEventListener("keydown", openDocs);
+    return () => window.removeEventListener("keydown", openDocs);
+  }, [navigate]);
 
   const cart        = result?.cart ?? [];
   const subtotal    = result?.subtotal ?? 0;
@@ -236,7 +374,7 @@ export default function App() {
       <header style={{ background:"white", borderBottom:"1px solid hsl(30 20% 90%)", position:"sticky", top:0, zIndex:200, boxShadow:"0 1px 6px hsl(0 0% 0% / 0.05)" }}>
         <div className="header-inner" style={{ maxWidth:1280, margin:"0 auto", padding:"0 24px", height:56, display:"flex", alignItems:"center", gap:16 }}>
           {/* Logo — always visible */}
-          <div style={{ display:"flex", alignItems:"center", gap:9, flexShrink:0, textDecoration:"none" }}>
+          <button type="button" className="brand-button" onClick={() => navigate("Home")} aria-label="Open ShopScript home">
             <div style={{ background:"hsl(25 95% 53%)", borderRadius:8, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", color:"white", flexShrink:0 }}>
               {Ico.code(16,"white")}
             </div>
@@ -244,41 +382,37 @@ export default function App() {
               <div style={{ fontWeight:800, fontSize:15, color:"hsl(25 95% 48%)", lineHeight:1.1 }}>ShopScript</div>
               <div style={{ fontSize:9.5, color:"hsl(220 10% 55%)", lineHeight:1 }}>Code. Simulate. Sell.</div>
             </div>
-          </div>
+          </button>
 
           {/* Search — hidden on mobile */}
-          <div className="header-search" style={{ alignItems:"center", gap:8, background:"hsl(30 20% 97%)", border:"1px solid hsl(30 20% 88%)", borderRadius:8, padding:"6px 11px", flexShrink:0 }}>
+          <button type="button" className="header-search nav-search" onClick={() => navigate("Docs")} aria-label="Open documentation">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="hsl(220 10% 55%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
             <span style={{ fontSize:12.5, color:"hsl(220 10% 60%)", flex:1, whiteSpace:"nowrap", overflow:"hidden" }}>Search docs, examples...</span>
-            <span style={{ fontSize:10.5, background:"hsl(30 20% 90%)", padding:"1px 5px", borderRadius:3, color:"hsl(220 10% 55%)", flexShrink:0 }}>⌘K</span>
-          </div>
+            <span style={{ fontSize:10.5, background:"hsl(30 20% 90%)", padding:"1px 5px", borderRadius:3, color:"hsl(220 10% 55%)", flexShrink:0 }}>Ctrl K</span>
+          </button>
 
           {/* Nav — hidden on mobile */}
           <nav className="header-nav" style={{ flex:1 }}>
-            {["Home","Docs","Examples","Playground","About"].map(n => (
-              <span key={n} className={`nav-link${activeNav===n?" active":""}`} onClick={() => setNav(n)}>{n}</span>
+            {NAV_ITEMS.map((item) => (
+              <button type="button" key={item} className={`nav-link${activeNav===item?" active":""}`} onClick={() => navigate(item)} aria-current={activeNav===item ? "page" : undefined}>{item}</button>
             ))}
           </nav>
 
           {/* Right actions */}
           <div style={{ display:"flex", alignItems:"center", gap:10, marginLeft:"auto", flexShrink:0 }}>
-            {/* Theme — hidden on small mobile */}
-            <button style={{ background:"none", border:"none", cursor:"pointer", color:"hsl(220 10% 50%)", display:"flex", alignItems:"center", padding:4 }}>
-              {Ico.sun(17,"hsl(220 10% 55%)")}
-            </button>
-
-            <button className="btn-orange" style={{ fontSize:12.5, padding:"7px 13px" }} onClick={runProgram}>
+            <button type="button" className="btn-orange" style={{ fontSize:12.5, padding:"7px 13px" }} onClick={startNewProgram}>
               New Program {Ico.plus(13,"white")}
             </button>
 
-            {/* Avatar */}
-            <div style={{ width:33, height:33, borderRadius:"50%", background:"hsl(25 95% 53%)", color:"white", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, fontSize:12, position:"relative", cursor:"pointer", flexShrink:0 }}>
-              SS
-              <span style={{ position:"absolute", bottom:1, right:1, width:8, height:8, background:"#22c55e", borderRadius:"50%", border:"2px solid white" }} />
-            </div>
-            {Ico.chevron(13,"hsl(220 10% 50%)")}
+            <button type="button" className="account-button" onClick={() => navigate("About")} aria-label="Open About ShopScript">
+              <span className="account-avatar">
+                SS
+                <span className="online-dot" />
+              </span>
+              {Ico.chevron(13,"hsl(220 10% 50%)")}
+            </button>
 
             {/* Hamburger — visible on mobile only */}
             <button
@@ -294,13 +428,14 @@ export default function App() {
         {/* Mobile nav dropdown */}
         {mobileMenu && (
           <div style={{ background:"white", borderTop:"1px solid hsl(30 20% 90%)", padding:"12px 20px", display:"flex", flexDirection:"column", gap:16 }}>
-            {["Home","Docs","Examples","Playground","About"].map(n => (
-              <span key={n} className={`nav-link${activeNav===n?" active":""}`} onClick={() => { setNav(n); setMobileMenu(false); }}>{n}</span>
+            {NAV_ITEMS.map((item) => (
+              <button type="button" key={item} className={`nav-link${activeNav===item?" active":""}`} onClick={() => navigate(item)} aria-current={activeNav===item ? "page" : undefined}>{item}</button>
             ))}
           </div>
         )}
       </header>
 
+      {activeNav === "Home" ? (<>
       {/* ━━━━ HERO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div className="hero-gradient" style={{ padding:"34px 28px 26px" }}>
         <div style={{ maxWidth:1280, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:20 }}>
@@ -415,7 +550,7 @@ export default function App() {
                 <span style={{ color: hasErrors&&hasRun?"#f38ba8":"#a6e3a1" }}>{hasErrors&&hasRun ? "Error" : "Ready"}</span>
               </div>
               <span>Lines {lines.length}, Col 1</span>
-              <span>ShopScript v0.2.0</span>
+              <span>ShopScript v{APP_VERSION}</span>
             </div>
           </div>
 
@@ -775,6 +910,11 @@ export default function App() {
           </div>
         )}
       </div>
+      </>) : activeNav === "About" ? (
+        <AboutPage onNavigate={navigate} />
+      ) : (
+        <PlannedPage page={activeNav} onNavigate={navigate} />
+      )}
 
       {/* ━━━━ FOOTER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <footer style={{ background:"white", borderTop:"1px solid hsl(30 20% 90%)" }}>
@@ -782,12 +922,12 @@ export default function App() {
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <span style={{ color:"hsl(25 95% 53%)", fontWeight:700 }}>ShopScript</span>
             <span>—</span>
-            <span>Programming Languages Final Project · v0.2.0</span>
+            <span>Programming Languages Final Project · v{APP_VERSION}</span>
           </div>
           <div className="footer-right" style={{ display:"flex", gap:20 }}>
             {[
               { icon:Ico.sun(13,"hsl(45 90% 50%)"), label:"Light & Clean" },
-              { icon:"😊", label:"Friendly" },
+              { icon:Ico.heart(13,"hsl(340 75% 55%)"), label:"Friendly" },
               { icon:Ico.zap(13,"hsl(25 95% 53%)"), label:"Fast & Intuitive" },
               { icon:Ico.code(13,"hsl(220 60% 55%)"), label:"Built for Developers" },
             ].map(f => (

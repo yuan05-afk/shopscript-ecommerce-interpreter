@@ -150,4 +150,4 @@ public/
 
 ---
 
-*ShopScript v0.1.0 — Programming Languages Final Project*
+*ShopScript v0.2.0 — Programming Languages Final Project*
