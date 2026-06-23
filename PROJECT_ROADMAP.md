@@ -328,7 +328,14 @@ Acceptance criteria:
 Already implemented:
 
 - Responsive React/Vite interface with orange-and-white store styling.
-- Functional shared navigation with Home, staged section views, and an About page.
+- Functional shared navigation with Home, Docs, Examples, Playground, and About views.
+- Searchable, responsive in-app Docs section based on current interpreter behavior.
+- Filterable Examples section with six supported programs and direct open/run integration.
+- Dedicated Playground with shared code state, example loading, keyboard execution, and tabbed interpreter results.
+- Shared syntax-highlighted Home/Playground editor with a default Light theme and Dark toggle.
+- Interactive inventory expansion, product-add, cart quantity, and removal controls that update and re-run ShopScript source.
+- Persistent Inventory page with product create, read, update, delete, search, stock/status filters, and a catalog shared with Home and semantic validation.
+- Popup notifications, editor line markers, and inline diagnostics for interpreter, stock, cart, checkout, and inventory CRUD outcomes.
 - Source editor area and sample selection.
 - Run/reset behavior.
 - Product catalog, cart, coupon, shipping, totals, checkout, and receipt.
@@ -342,7 +349,7 @@ Still required:
 - Add control-flow, type-system, and complete OOP samples.
 - Show inventory stock before and after execution if stock semantics are implemented.
 - Ensure all three error categories remain visually distinct.
-- Consider replacing the plain editor with CodeMirror only after mandatory language phases work.
+- Consider CodeMirror only if later language phases require editor features beyond the current shared syntax-highlighted editor.
 - Verify responsive behavior and keyboard accessibility.
 
 Acceptance criteria:

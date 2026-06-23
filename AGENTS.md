@@ -39,13 +39,17 @@ Do not claim a planned feature is implemented without checking the interpreter. 
 
 `App.tsx` renders one responsive page with:
 
-1. Sticky ShopScript header and navigation.
-2. Intro/hero content and status summary.
-3. Main workspace containing the ShopScript editor/sample selector and the store simulation.
-4. Product catalog, cart, coupon/shipping totals, checkout CTA, and receipt preview.
-5. Analyzer output for tokens, lexical/syntax/semantic errors, variables, and execution logs.
-6. OOP class and object-instance visualization when the OOP sample is used.
-7. Footer and language quick-reference content.
+1. Sticky ShopScript header and navigation with functional Home, Docs, Examples, Playground, and About views.
+2. Searchable Docs view covering setup, syntax, mini IDE controls, commands, OOP, analyzer output, and honest implementation status.
+3. Filterable Examples view with six supported programs, expected outcomes, and direct open/run behavior.
+4. Dedicated Playground sharing Home interpreter state, with syntax highlighting, Light/Dark editor themes, example loading, Ctrl/Cmd+Enter execution, and Output/Tokens/Errors/Variables tabs.
+5. About view with project overview, educational scope, pipeline, version, and creators.
+6. Intro/hero content and status summary.
+7. Main workspace containing the ShopScript editor/sample selector and the store simulation.
+8. Shared product catalog with a persistent Inventory CRUD view, Home product controls, stock-aware semantic validation, cart quantity/removal controls, coupon/shipping totals, checkout CTA, and receipt preview.
+9. Immediate popup notifications and inline IDE diagnostics, plus analyzer output for tokens, lexical/syntax/semantic errors, variables, and execution logs.
+10. OOP class and object-instance visualization when the OOP sample is used.
+11. Footer and language quick-reference content.
 
 The current visual theme is orange-and-white and Shopee-inspired. Preserve the educational analyzer and simulator relationship when changing the layout.
 

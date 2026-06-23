@@ -80,6 +80,13 @@ export const INVENTORY: Record<string, { price: number; emoji: string }> = {
   "Smart Watch": { price: 299.0, emoji: "⌚" },
 };
 
+export interface RuntimeInventoryProduct {
+  name: string;
+  price: number;
+  stock: number;
+  inStock: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // COUPONS
 // ---------------------------------------------------------------------------
@@ -400,9 +407,12 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
 // ---------------------------------------------------------------------------
 // INTERPRETER / EXECUTOR
 // ---------------------------------------------------------------------------
-export function interpret(source: string): InterpreterResult {
+export function interpret(source: string, catalog?: RuntimeInventoryProduct[]): InterpreterResult {
   const { tokens, errors: lexErrors } = tokenize(source);
   const syntaxErrors = checkSyntax(tokens);
+  const runtimeInventory = catalog
+    ? new Map(catalog.map(product => [product.name, product]))
+    : new Map(Object.entries(INVENTORY).map(([name, product]) => [name, { name, price: product.price, stock: Number.POSITIVE_INFINITY, inStock: true }]));
 
   const semanticErrors: SemanticError[] = [];
   const cart: CartItem[] = [];
@@ -518,10 +528,20 @@ export function interpret(source: string): InterpreterResult {
           const price = parseFloat(priceToken.value);
           consume(); // ;
 
-          if (!INVENTORY[productName] && !isCustomProduct(instances, productName)) {
+          const inventoryProduct = runtimeInventory.get(productName);
+          const existingCartQuantity = cart.find(item => item.name === productName)?.quantity ?? 0;
+          if (!inventoryProduct && !isCustomProduct(instances, productName)) {
             semanticErrors.push({ message: `Product "${productName}" not found in inventory`, line: nameOrVar.line });
+          } else if (inventoryProduct && (!inventoryProduct.inStock || inventoryProduct.stock === 0)) {
+            semanticErrors.push({ message: 'Product "' + productName + '" is unavailable', line: nameOrVar.line });
           } else if (isNaN(qty) || qty <= 0) {
             semanticErrors.push({ message: `Quantity must be > 0`, line: qtyToken.line });
+          } else if (!Number.isInteger(qty)) {
+            semanticErrors.push({ message: 'Quantity must be a whole number', line: qtyToken.line });
+          } else if (inventoryProduct && existingCartQuantity + qty > inventoryProduct.stock) {
+            semanticErrors.push({ message: 'Only ' + Math.max(0, inventoryProduct.stock - existingCartQuantity) + ' additional unit(s) of "' + productName + '" are available', line: qtyToken.line });
+          } else if (inventoryProduct && Number.isFinite(price) && price >= 0 && Math.abs(price - inventoryProduct.price) > 0.005) {
+            semanticErrors.push({ message: 'Price mismatch for "' + productName + '". Expected $' + inventoryProduct.price.toFixed(2) + ', received $' + price.toFixed(2), line: priceToken.line });
           } else if (isNaN(price) || price < 0) {
             semanticErrors.push({ message: `Price must be a valid non-negative number`, line: priceToken.line });
           } else {

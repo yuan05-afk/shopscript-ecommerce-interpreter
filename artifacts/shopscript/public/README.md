@@ -24,15 +24,21 @@ The project combines programming language concepts with a visual and user-friend
 
 ## Key Features
 
-* Browser-based ShopScript code editor
+* Shared syntax-highlighted ShopScript editor on Home and Playground
+* Light and dark editor themes (Light by default), synchronized line numbers, Tab indentation, and Ctrl/Cmd+Enter execution
 * Lexical analyzer with token display
 * Syntax checker with line-based error reporting
 * Semantic checker for product, coupon, quantity, and checkout validation
 * Variable table for declared values
-* Interactive cart and checkout simulation
-* Receipt preview and output logs
+* Script-backed inventory, cart quantity/removal, and checkout controls
+* Persistent Inventory page with product CRUD, stock levels, search, and status filters
+* Popup notifications and inline IDE diagnostics for execution, stock, catalog, cart, checkout, and CRUD outcomes
+* Responsive receipt preview, PDF receipt downloads, and output logs
 * Shopee-inspired orange-and-white user interface
 * Responsive layout for desktop, tablet, and mobile viewing
+* Searchable in-app documentation and project About page
+* Filterable runnable examples that open directly in the interpreter
+* Dedicated Playground with shared code, result tabs, and keyboard execution
 
 ---
 
