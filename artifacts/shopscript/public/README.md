@@ -117,6 +117,7 @@ Then open <http://localhost:5173/>.
 
 ```powershell
 pnpm --filter @workspace/shopscript run typecheck
+pnpm --filter @workspace/shopscript run test:interpreter
 $env:PORT = "5173"
 $env:BASE_PATH = "/"
 pnpm --filter @workspace/shopscript run build
@@ -139,6 +140,7 @@ pnpm --filter @workspace/shopscript run build
 | Declare number     | `let <name> = <number>;`           | `let budget = 1200.00;`          |
 | Declare empty list | `let <name> = [];`                 | `let cart = [];`                 |
 | Add to cart        | `add "<Product>" <qty> @ <price>;` | `add "Smartphone X" 1 @ 599.00;` |
+| Override price     | `add "<Product>" <qty> @ <price> override;` | `add "Smartphone X" 1 @ 200.00 override;` |
 | Apply coupon       | `apply coupon "<CODE>";`           | `apply coupon "SAVE10";`         |
 | Set shipping       | `set shipping = <amount>;`         | `set shipping = 40.00;`          |
 | Checkout           | `checkout;`                        | `checkout;`                      |
@@ -164,6 +166,17 @@ checkout;
 
 ---
 
+## Manual Price Override
+
+ShopScript validates catalog prices by default. If a script intentionally uses a sale/manual price, add the `override` keyword after the price:
+
+```shopscript
+add "Smartphone X" 1 @ 200.00 override;
+```
+
+Without `override`, a price different from the current Inventory page catalog price is reported as a semantic error.
+
+---
 ## Supported Coupons
 
 | Coupon Code | Discount    |
@@ -228,52 +241,55 @@ The semantic checker verifies whether the code is logically valid. It checks if:
 * Product names exist in the inventory
 * Quantity values are greater than zero
 * Prices are valid numbers
+* Catalog price mismatches use `override` only when intentional
 * Coupon codes are supported
 * Checkout is not performed with an empty cart
 * Declared variables are stored correctly in the symbol table
 
 ### 4. Variables and Scope
 
-ShopScript supports `let` declarations. Declared values are stored in a symbol table and displayed in the variable table.
-
-Current supported value types include:
-
-* String
-* Number
-* List
-* Boolean keywords
-
-Variables are scoped to the current program execution.
+ShopScript supports inferred `let` declarations and explicit `int`, `float`, `string`, and `bool` declarations. Blocks create nested scopes, duplicate declarations in the same scope are rejected, and assignments resolve through enclosing scopes.
 
 ### 5. Data Types
 
-| Type    | Example         | Use                                   |
-| ------- | --------------- | ------------------------------------- |
-| String  | `"Ava"`         | Names, products, coupon codes         |
-| Number  | `599.00`        | Prices, quantities, shipping fees     |
-| List    | `[]`            | Cart initialization                   |
-| Boolean | `true`, `false` | Reserved values for future conditions |
+| Type     | Example                 | Use                               |
+| -------- | ----------------------- | --------------------------------- |
+| `int`    | `int qty = 2;`          | Whole-number quantities and loops |
+| `float`  | `float price = 29.00;`  | Prices, totals, shipping fees     |
+| `string` | `string user = "Ava";` | Names and labels                  |
+| `bool`   | `bool ready = true;`    | Conditions and boolean logic      |
+| `let`    | `let cart = [];`        | Inferred values and object refs   |
 
-### 6. Control Flow Demonstration
+### 6. Control Flow
 
-ShopScript recognizes control flow keywords such as:
+Executable `if`/`else`, `while`, and `for` blocks are supported by the structured runtime. Loops have a 100-iteration safety limit.
 
-* `if`
-* `else`
-* `for`
-* `while`
+```shopscript
+int qty = 0;
+while (qty < 2) {
+  qty = qty + 1;
+}
 
-These keywords demonstrate the language’s reserved keyword set and future extensibility for executable conditional and loop behavior.
+if (qty == 2) {
+  add "Phone Case" qty @ 29.00;
+}
+```
 
-### 7. Object-Oriented Programming Demonstration
+### 7. Object-Oriented Programming
 
-ShopScript recognizes object-oriented keywords such as:
+ShopScript supports classes, object creation, public/private fields, public methods, method parameters, and `this` field assignment inside methods.
 
-* `class`
-* `new`
+```shopscript
+class Product {
+  public string name = "Phone Case";
+  public float price = 29.00;
+  private float cost = 10.00;
 
-These reserved keywords demonstrate how the language can be extended to support object-oriented structures such as `Product`, `Cart`, and `Order` classes.
-
+  public method discount(float rate) {
+    set this.price = this.price * rate;
+  }
+}
+```
 ---
 
 ## File Structure
@@ -344,5 +360,5 @@ ShopScript is designed as an educational programming language interpreter, not a
 
 ## Version
 
-**ShopScript v0.2.0**
+**ShopScript v0.3.0**
 Programming Languages Final Project

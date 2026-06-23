@@ -54,13 +54,13 @@ To avoid two competing dialects:
 | 1 | Language purpose, syntax, and formal grammar | **IN PROGRESS** |
 | 2 | Lexical analysis | **IN PROGRESS** |
 | 3 | Syntax analysis | **IN PROGRESS** |
-| 4 | Names, scope, and binding | **IN PROGRESS** |
+| 4 | Names, scope, and binding | **DONE** |
 | 5 | Semantic analysis | **IN PROGRESS** |
-| 6 | Control flow | **NOT STARTED** |
-| 7 | Required data types and conversions | **IN PROGRESS** |
-| 8 | Object-oriented features and encapsulation | **IN PROGRESS** |
+| 6 | Control flow | **DONE** |
+| 7 | Required data types and conversions | **DONE** |
+| 8 | Object-oriented features and encapsulation | **DONE** |
 | 9 | Website and interpreter-output integration | **IN PROGRESS** |
-| 10 | Automated testing and required demonstrations | **NOT STARTED** |
+| 10 | Automated testing and required demonstrations | **IN PROGRESS** |
 | 11 | Final documentation and submission validation | **IN PROGRESS** |
 
 ## Phase 0 — Repository and local development setup
@@ -237,89 +237,48 @@ Acceptance criteria:
 
 ## Phase 6 — Control flow
 
-**Status: NOT STARTED**
+**Status: DONE**
 
-Current reality:
+Implemented:
 
-- `if`, `else`, `for`, and `while` are reserved keywords only.
-- They are not accepted by the current syntax checker and have no execution semantics.
-- Do not mark this phase complete because these words appear in the lexer or README.
+- Executable `if`/`else`, `while`, and `for` blocks in the structured runtime.
+- Expression-based conditions with comparisons and boolean operators.
+- Nested block scopes and a 100-iteration loop safety limit.
+- Runnable control-flow example and automated interpreter coverage.
 
-Required implementation order:
+Still useful later:
 
-1. Complete expression parsing and boolean comparisons.
-2. Add block nodes and nested environments.
-3. Implement `if` and optional `else`.
-4. Implement `while`.
-5. Implement `for`.
-6. Add a configurable loop-iteration safety limit.
-7. Add execution logs showing branch and loop behavior.
-8. Add valid, syntax-error, semantic-error, and loop-limit samples.
-
-Acceptance criteria:
-
-- Conditions require boolean-compatible expressions.
-- Branches execute only the selected block.
-- Loops update variables and terminate correctly.
-- Infinite or excessive loops stop with a clear runtime/semantic error.
-- Scope behavior inside blocks matches Phase 4.
-- The website contains a working control-flow demonstration.
+- Add more invalid-loop and malformed-condition regression tests.
 
 ## Phase 7 — Data types and type system
 
-**Status: IN PROGRESS**
+**Status: DONE**
 
-Already implemented:
+Implemented:
 
-- Runtime values can currently be inferred as string, number, boolean, list, or object instance.
-- Literal strings, decimal numbers, booleans, and empty lists are tokenized and displayed.
+- Explicit `int`, `float`, `string`, and `bool` declarations.
+- Inferred `let` declarations remain supported for cart lists and object references.
+- Assignment compatibility checks and expression result typing.
+- Type-system examples and automated interpreter coverage.
 
-Still required:
+Still useful later:
 
-- Support the four mandatory declared types: `int`, `float`, `bool`, and `string`.
-- Distinguish integer from floating-point values.
-- Implement arithmetic, comparison, equality, and logical operations.
-- Allow documented `int` to `float` conversion.
-- Reject unsafe implicit string/number and boolean/number conversions.
-- Define assignment compatibility and expression result types.
-- Display declared and runtime types clearly in the variable table.
+- Add more conversion/error tests for invalid assignments.
 
-Acceptance criteria:
+## Phase 8 — Object-oriented features and encapsulation
 
-- Each required type has declaration, assignment, operation, and error tests.
-- Type conversion rules are documented and deterministic.
-- Invalid arithmetic and assignments fail before execution.
-- Numeric cart calculations use the defined conversion rules.
+**Status: DONE**
 
-## Phase 8 — Object-oriented features
+Implemented:
 
-**Status: IN PROGRESS**
+- Class declarations, object creation, public/private fields, public methods, parameters, and `this` field assignment.
+- Private field/method access checks.
+- Object-cart integration through public `name` and `price` fields.
+- Runnable OOP method/encapsulation example and automated interpreter coverage.
 
-Already implemented:
+Still useful later:
 
-- Basic class definitions with default fields.
-- Object creation using `new`.
-- Per-instance field storage and field assignment.
-- Object instances can provide product name and price to the cart.
-- The website displays class and instance cards.
-
-Still required:
-
-- Typed fields.
-- `private` and `public` access modifiers.
-- Method definitions, parameters, method-local scope, and method calls.
-- `this` binding.
-- Basic encapsulation enforcement.
-- Undefined-field, undefined-method, access, and argument-type errors.
-- A complete OOP demonstration aligned with the course specification.
-
-Acceptance criteria:
-
-- A `Product` class can encapsulate fields and expose a public initialization or update method.
-- An object must exist before field or method access.
-- Private members cannot be accessed from outside the class.
-- Method execution uses its own scope and correct `this`.
-- OOP tests and the website sample demonstrate class definition, object creation, method use, and encapsulation.
+- Add constructor syntax only if required by the instructor.
 
 ## Phase 9 — Website and interpreter-output integration
 
@@ -330,10 +289,10 @@ Already implemented:
 - Responsive React/Vite interface with orange-and-white store styling.
 - Functional shared navigation with Home, Docs, Examples, Playground, and About views.
 - Searchable, responsive in-app Docs section based on current interpreter behavior.
-- Filterable Examples section with six supported programs and direct open/run integration.
+- Filterable Examples section with seven supported programs and direct open/run integration, including manual price override.
 - Dedicated Playground with shared code state, example loading, keyboard execution, and tabbed interpreter results.
 - Shared syntax-highlighted Home/Playground editor with a default Light theme and Dark toggle.
-- Interactive inventory expansion, product-add, cart quantity, and removal controls that update and re-run ShopScript source.
+- Interactive inventory expansion, product-add, cart quantity, and removal controls that update and re-run ShopScript source while preserving intentional price overrides.
 - Persistent Inventory page with product create, read, update, delete, search, stock/status filters, and a catalog shared with Home and semantic validation.
 - Popup notifications, editor line markers, and inline diagnostics for interpreter, stock, cart, checkout, and inventory CRUD outcomes.
 - Source editor area and sample selection.
@@ -341,15 +300,13 @@ Already implemented:
 - Product catalog, cart, coupon, shipping, totals, checkout, and receipt.
 - Token, error, variable, and execution-log panels.
 - Class and instance visualization.
-- Valid, syntax-error, semantic-error, and OOP samples.
+- Valid, syntax-error, semantic-error, price-override, type/scope/control-flow, and OOP method/encapsulation samples.
 
 Still required:
 
-- Add a scope table after Phase 4.
-- Add control-flow, type-system, and complete OOP samples.
-- Show inventory stock before and after execution if stock semantics are implemented.
-- Ensure all three error categories remain visually distinct.
-- Consider CodeMirror only if later language phases require editor features beyond the current shared syntax-highlighted editor.
+- Add optional AST/scope visualization to the analyzer.
+- Expand edge-case tests for malformed expressions, loops, and OOP misuse.
+- Decide whether checkout should persistently decrement Inventory stock, or keep current behavior as validation-only simulation.
 - Verify responsive behavior and keyboard accessibility.
 
 Acceptance criteria:
@@ -361,32 +318,16 @@ Acceptance criteria:
 
 ## Phase 10 — Automated tests and demonstrations
 
-**Status: NOT STARTED**
+**Status: IN PROGRESS**
 
-Current reality:
+Implemented:
 
-- Sample programs exist, but no project test files or test runner were found.
-- Typechecking and production building are not substitutes for interpreter behavior tests.
+- `pnpm --filter @workspace/shopscript run test:interpreter` validates typed declarations, control flow, OOP methods, encapsulation, and price override behavior.
 
-Required work:
+Still required:
 
-1. Select a lightweight TypeScript test runner.
-2. Add lexer unit tests.
-3. Add parser unit tests.
-4. Add scope and semantic-analysis tests.
-5. Add execution tests for commands and calculations.
-6. Add control-flow safety tests.
-7. Add type-system tests.
-8. Add OOP and encapsulation tests.
-9. Add regression tests for every fixed interpreter bug.
-10. Add a final end-to-end demonstration program covering all mandatory modules.
-
-Acceptance criteria:
-
-- Tests run through one documented pnpm command.
-- Valid programs assert resulting variables, cart, totals, logs, classes, and instances.
-- Invalid programs assert the correct error phase and line.
-- All tests, typecheck, and production build pass before submission.
+- Add more regression tests for invalid syntax, invalid expressions, loop safety, and inventory edge cases.
+- Add final end-to-end demonstration program covering all mandatory modules.
 
 ## Phase 11 — Final documentation and submission validation
 

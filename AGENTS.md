@@ -41,7 +41,7 @@ Do not claim a planned feature is implemented without checking the interpreter. 
 
 1. Sticky ShopScript header and navigation with functional Home, Docs, Examples, Playground, and About views.
 2. Searchable Docs view covering setup, syntax, mini IDE controls, commands, OOP, analyzer output, and honest implementation status.
-3. Filterable Examples view with six supported programs, expected outcomes, and direct open/run behavior.
+3. Filterable Examples view with seven supported programs, expected outcomes, and direct open/run behavior, including the manual price override sample.
 4. Dedicated Playground sharing Home interpreter state, with syntax highlighting, Light/Dark editor themes, example loading, Ctrl/Cmd+Enter execution, and Output/Tokens/Errors/Variables tabs.
 5. About view with project overview, educational scope, pipeline, version, and creators.
 6. Intro/hero content and status summary.
@@ -65,23 +65,22 @@ Currently demonstrated syntax includes:
 
 - `let user = "Ava";`, numeric variables, booleans, and `let cart = [];`
 - `add "Smartphone X" 1 @ 599.00;`
+- `add "Smartphone X" 1 @ 200.00 override;` for an intentional manual/sale price
 - `apply coupon "SAVE10";`
 - `set shipping = 40.00;`
 - `checkout;`
 - Basic classes with fields, `let item = new Product;`, field assignment, and `add item 1;`
 
-Inventory and coupons are defined in `shopscript-interpreter.ts`. UI product metadata and image URLs are separately defined in `App.tsx`; keep matching product names synchronized.
+Inventory and coupons are defined in `shopscript-interpreter.ts`. UI product metadata and image URLs are separately defined in `App.tsx`; keep matching product names synchronized. Catalog price mismatches are semantic errors unless the string-form `add` command ends with `override`.
 
 ## Known requirement gaps
 
-The website and README use ShopScript v0.2.0. Basic OOP support exists, but the project does not yet fulfill every mandatory specification item. Before final submission, verify and implement as needed:
+The website and README use ShopScript v0.3.0. The structured runtime now covers the main mandatory specification items. Before final submission, verify and polish:
 
-- Executable `if`/`else`, `for`, and `while`, including a loop safety limit.
-- Real nested/global scope and binding behavior.
-- Explicit `int`, `float`, `bool`, and `string` declarations, operations, and allowed conversion.
-- OOP methods and access/encapsulation (`private`/`public`), not only class fields and instances.
-- Grammar coverage and semantic tests for all required features.
-- Inventory stock checks/updates if presented as implemented.
+- Broader edge-case tests for malformed expressions, loops, and object misuse.
+- Final language-spec documentation for the accepted grammar.
+- Optional AST/scope visualization in the analyzer UI.
+- Stock-aware inventory validation is implemented; stock depletion after checkout is still not persisted.
 
 ## Package manager and local commands
 
@@ -103,6 +102,6 @@ Then open `http://localhost:5173/`. Use `corepack pnpm run typecheck` for the wo
 - Keep interpreter behavior in `shopscript-interpreter.ts`; avoid duplicating language rules in UI code.
 - Add or update valid, syntax-error, and semantic-error samples when grammar changes.
 - Preserve line and column information in lexer/parser errors.
-- Run the primary app typecheck after code changes and the full workspace checks before submission.
+- Run the primary app typecheck and `corepack pnpm --filter @workspace/shopscript run test:interpreter` after interpreter changes; run full workspace checks before submission.
 - Treat generated files under API client/schema packages as generated; change the OpenAPI source and regenerate instead of hand-editing them.
 - Update this file when entry points, commands, architecture, or implemented language features materially change.

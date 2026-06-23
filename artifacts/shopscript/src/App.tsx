@@ -13,7 +13,7 @@ import { NotificationCenter, type AppNotification, type NotificationType } from 
 import { DEFAULT_PRODUCTS, INVENTORY_STORAGE_KEY, loadInventory, type InventoryProduct } from "./inventory-data";
 import { downloadReceiptPdf } from "./receipt-pdf";
 
-// ─── Sample programs ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Sample programs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SAMPLE_VALID = `// ShopScript Sample Program
 let user = "Ava";
 let budget = 1200.00;
@@ -50,6 +50,56 @@ set shipping = 40.00;
 
 checkout;`;
 
+const SAMPLE_PRICE_OVERRIDE = `// Manual Price Override Sample
+let user = "Ava";
+let cart = [];
+
+// Use override only when the sale price is intentional.
+add "Smartphone X" 1 @ 200.00 override;
+add "Wireless Earbuds" 1 @ 199.00;
+
+apply coupon "SAVE10";
+set shipping = 40.00;
+
+checkout;`;
+const SAMPLE_LANGUAGE_FEATURES = `// Types, Scope, and Control Flow
+string user = "Ava";
+let cart = [];
+int qty = 0;
+float unitPrice = 29.00;
+bool ready = true;
+
+while (qty < 2) {
+  qty = qty + 1;
+}
+
+if (ready && qty == 2) {
+  add "Phone Case" qty @ unitPrice;
+}
+
+checkout;`;
+
+const SAMPLE_OOP_METHODS = `// Methods and Encapsulation
+let cart = [];
+
+class Product {
+  public string name = "Phone Case";
+  public float price = 29.00;
+  private float cost = 10.00;
+
+  public method discount(float rate) {
+    set this.price = this.price * rate;
+  }
+}
+
+let item = new Product;
+item.discount(0.5);
+
+for (int i = 0; i < 2; i = i + 1) {
+  add item 1;
+}
+
+checkout;`;
 const SAMPLE_OOP = `// ShopScript OOP Demo — class & new
 let user = "Dev";
 let cart = [];
@@ -84,7 +134,7 @@ set shipping = 20.00;
 
 checkout;`;
 
-type ExampleCategory = "Starter" | "E-commerce" | "Errors" | "OOP";
+type ExampleCategory = "Starter" | "E-commerce" | "Language" | "Errors" | "OOP";
 
 interface ShopScriptExample {
   id: string;
@@ -141,6 +191,33 @@ const EXAMPLE_LIBRARY: ShopScriptExample[] = [
     expected: "SAVE10 applies 10% off before shipping and produces a completed receipt.",
   },
   {
+    id: "price-override",
+    title: "Manual sale price override",
+    category: "E-commerce",
+    summary: "Use the override keyword when a script intentionally uses a sale/manual price instead of the catalog price.",
+    code: SAMPLE_PRICE_OVERRIDE,
+    concepts: ["inventory", "price", "override", "semantic"],
+    expected: "The Smartphone X is accepted at $200.00 because the add command explicitly ends with override.",
+  },
+  {
+    id: "typed-control-flow",
+    title: "Types, scope, and control flow",
+    category: "Language",
+    summary: "Use explicit types, a while loop, an if block, boolean logic, and expression-based add commands.",
+    code: SAMPLE_LANGUAGE_FEATURES,
+    concepts: ["int", "float", "bool", "scope", "while", "if"],
+    expected: "qty is updated by the loop, the if block adds two Phone Case units, and checkout totals $58.00.",
+  },
+  {
+    id: "methods-encapsulation",
+    title: "Methods and encapsulation",
+    category: "OOP",
+    summary: "Define public/private fields, execute a public method, and add the object inside a for loop.",
+    code: SAMPLE_OOP_METHODS,
+    concepts: ["public", "private", "method", "this", "for"],
+    expected: "The method discounts the public price to $14.50, then the for loop adds two units.",
+  },
+  {
     id: "syntax-debugging",
     title: "Syntax-error debugging",
     category: "Errors",
@@ -170,7 +247,7 @@ const EXAMPLE_LIBRARY: ShopScriptExample[] = [
     expected: "Class and instance cards appear, then both custom products are added and checked out.",
   },
 ];
-// ─── Fallback images for OOP / custom products ────────────────────────────────
+// â”€â”€â”€ Fallback images for OOP / custom products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const OOP_IMG = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop&auto=format";
 const OOP_IMG_SM = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=60&h=60&fit=crop&auto=format";
 
@@ -180,7 +257,7 @@ function getProductImg(name: string, products: InventoryProduct[], small = false
   return small ? OOP_IMG_SM : OOP_IMG;
 }
 
-// ─── Token chip class map ─────────────────────────────────────────────────────
+// â”€â”€â”€ Token chip class map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function tokenClass(type: string) {
   const m: Record<string, string> = {
     keyword:"keyword", string:"string", number:"number", operator:"operator",
@@ -191,12 +268,12 @@ function tokenClass(type: string) {
   return m[type] ?? "identifier";
 }
 
-// ─── App metadata and navigation ───────────────────────────────────────────────
-const APP_VERSION = "0.2.0";
+// â”€â”€â”€ App metadata and navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const APP_VERSION = "0.3.0";
 const NAV_ITEMS = ["Home", "Docs", "Examples", "Playground", "Inventory", "About"] as const;
 type NavItem = typeof NAV_ITEMS[number];
 
-// ─── SVG Icons ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ SVG Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const Ico = {
   code: (s=16,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
   cart: (s=16,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>,
@@ -232,7 +309,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
     { id: "pipeline", title: "Interpreter pipeline", keywords: "lexer lexical syntax semantic execution tokens" },
     { id: "syntax", title: "Language syntax", keywords: "let string number boolean list grammar semicolon comments" },
     { id: "editor", title: "Mini IDE", keywords: "editor syntax highlighting light dark theme tab keyboard ctrl enter" },
-    { id: "commands", title: "E-commerce commands", keywords: "add coupon shipping checkout inventory cart price" },
+    { id: "commands", title: "E-commerce commands", keywords: "add coupon shipping checkout inventory cart price override sale" },
     { id: "oop", title: "Object-oriented syntax", keywords: "class new instance field set object oop" },
     { id: "analyzer", title: "Analyzer output", keywords: "tokens errors variables logs receipt panels" },
     { id: "status", title: "Current status", keywords: "limitations planned control flow scope types methods tests" },
@@ -384,7 +461,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
               </div>
               <div className="docs-callout neutral">
                 {Ico.table(17, "hsl(220 60% 50%)")}
-                <div><strong>Type-system status</strong><span>Explicit int, float, bool, and string declarations are required by the project plan but are not implemented yet.</span></div>
+                <div><strong>Type-system status</strong><span>Explicit int, float, bool, and string declarations are implemented in the structured runtime and shown in the variable table.</span></div>
               </div>
             </article>
           )}
@@ -422,6 +499,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
                   <thead><tr><th>Action</th><th>Syntax</th><th>Effect</th></tr></thead>
                   <tbody>
                     <tr><td>Add product</td><td><code>{'add "Smartphone X" 1 @ 599.00;'}</code></td><td>Adds a known product and quantity.</td></tr>
+                    <tr><td>Override price</td><td><code>{'add "Smartphone X" 1 @ 200.00 override;'}</code></td><td>Uses an intentional manual or sale price.</td></tr>
                     <tr><td>Apply coupon</td><td><code>{'apply coupon "SAVE10";'}</code></td><td>Applies a supported discount.</td></tr>
                     <tr><td>Set shipping</td><td><code>set shipping = 40.00;</code></td><td>Sets a non-negative shipping fee.</td></tr>
                     <tr><td>Checkout</td><td><code>checkout;</code></td><td>Completes a non-empty simulated cart.</td></tr>
@@ -439,7 +517,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
               </div>
               <div className="docs-callout neutral">
                 {Ico.cart(17, "hsl(220 60% 50%)")}
-                <div><strong>Interactive Home controls</strong><span>Clicking a product, changing its quantity, or removing it updates the matching add statement in the editor and runs the source again. Actual stock counts and stock depletion are still planned.</span></div>
+                <div><strong>Interactive Home controls</strong><span>Clicking a product, changing its quantity, or removing it updates the matching add statement in the editor and runs the source again. Stock limits and manual price overrides are validated by the interpreter.</span></div>
               </div>
             </article>
           )}
@@ -489,7 +567,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
                 <div><span className="docs-kicker">Roadmap alignment</span><h2>Current implementation status</h2></div>
                 <span className="docs-status progress">In progress</span>
               </div>
-              <p>The website is usable, but the complete academic specification is still under development.</p>
+              <p>The website now demonstrates the main academic language requirements. Remaining work is mostly polish, final documentation, and broader test coverage.</p>
               <div className="docs-status-columns">
                 <div>
                   <h3>{Ico.check(15)} Available now</h3>
@@ -501,22 +579,23 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
                     <li>Variables and basic classes/instances</li>
                     <li>Shared syntax-highlighted Light/Dark editor</li>
                     <li>Script-backed inventory and cart controls</li>
+                    <li>Expression grammar, nested scopes, if/else, while, and for</li>
+                    <li>Explicit int, float, bool, and string declarations</li>
+                    <li>Public/private fields and public method execution</li>
+                    <li>Automated interpreter tests</li>
                   </ul>
                 </div>
                 <div>
-                  <h3>{Ico.alert(15, "hsl(25 95% 48%)")} Required next</h3>
+                  <h3>{Ico.alert(15, "hsl(25 95% 48%)")} Remaining polish</h3>
                   <ul>
-                    <li>Canonical expression grammar and AST</li>
-                    <li>Nested scope and declaration rules</li>
-                    <li>if/else, for, and while execution</li>
-                    <li>Explicit required data types</li>
-                    <li>Methods and encapsulation</li>
-                    <li>Automated interpreter tests</li>
+                    <li>Formal AST and scope visualization in the analyzer</li>
+                    <li>More edge-case tests for invalid expressions and loops</li>
+                    <li>Final language-spec documentation before submission</li>
                   </ul>
                 </div>
               </div>
               <div className="docs-next-card">
-                <div><span className="page-eyebrow">Next project milestone</span><strong>Canonical grammar and AST</strong><p>The website views are operational. The next roadmap work formalizes expressions and statements before control-flow execution.</p></div>
+                <div><span className="page-eyebrow">Next project milestone</span><strong>Final language documentation</strong><p>The main required runtime features are implemented. The next roadmap work is documenting the final grammar and expanding edge-case tests.</p></div>
                 <button className="btn-orange" onClick={() => onNavigate("Playground")}>Open Playground {Ico.chevron(13, "white")}</button>
               </div>
             </article>
@@ -531,7 +610,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
 function ExamplesPage({ onOpenExample, onNavigate }: { onOpenExample: (code: string) => void; onNavigate: (page: NavItem) => void }) {
   const [filter, setFilter] = useState<"All" | ExampleCategory>("All");
   const [query, setQuery] = useState("");
-  const filters: Array<"All" | ExampleCategory> = ["All", "Starter", "E-commerce", "Errors", "OOP"];
+  const filters: Array<"All" | ExampleCategory> = ["All", "Starter", "E-commerce", "Language", "Errors", "OOP"];
   const normalizedQuery = query.trim().toLowerCase();
   const visibleExamples = EXAMPLE_LIBRARY.filter(example => {
     const matchesFilter = filter === "All" || example.category === filter;
@@ -644,6 +723,9 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
     { label: "Syntax", items: result?.syntaxErrors ?? [] },
     { label: "Semantic", items: result?.semanticErrors ?? [] },
   ];
+  const playgroundErrors = errorGroups.flatMap(group => group.items.map(error => ({ ...error, category: group.label })));
+  const playgroundErrorLines = [...new Set(playgroundErrors.map(error => error.line))];
+  const primaryPlaygroundError = playgroundErrors[0];
   const tabs: Array<{ name: PlaygroundTab; count?: number }> = [
     { name: "Output", count: result?.logs.length },
     { name: "Tokens", count: result?.tokens.length },
@@ -702,12 +784,18 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
             theme={theme}
             className="playground-ide"
             ariaLabel="ShopScript playground editor"
-            errorLines={[...new Set(errorGroups.flatMap(group => group.items.map(error => error.line)))]}
+            errorLines={hasRun ? playgroundErrorLines : []}
           />
+          {hasRun && primaryPlaygroundError && (
+            <div className="editor-diagnostic playground-diagnostic" role="alert">
+              <strong>{primaryPlaygroundError.category} error · Line {primaryPlaygroundError.line}</strong>
+              <span>{primaryPlaygroundError.message}{playgroundErrors.length > 1 ? " · " + (playgroundErrors.length - 1) + " more error(s) below" : ""}</span>
+            </div>
+          )}
           <div className="playground-editor-footer">
+            <span className={!hasRun ? "idle" : totalErrors > 0 ? "error" : "success"}>{!hasRun ? "Ready" : totalErrors > 0 ? "Error" : "Ready"}</span>
+            <span>Lines {lines.length}, Col 1</span>
             <span>ShopScript v{APP_VERSION}</span>
-            <span>Tab inserts spaces</span>
-            <span><kbd>Ctrl</kbd> + <kbd>Enter</kbd> to run</span>
           </div>
         </section>
 
@@ -887,7 +975,7 @@ function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
     </main>
   );
 }
-// ─── OOP sub-cards ────────────────────────────────────────────────────────────
+// â”€â”€â”€ OOP sub-cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ClassCard({ def }: { def: ClassDefinition }) {
   return (
     <div style={{ background:"hsl(220 30% 98%)", border:"1px solid hsl(220 20% 88%)", borderRadius:10, padding:12, fontFamily:"var(--app-font-mono)", fontSize:12 }}>
@@ -925,7 +1013,7 @@ function InstanceCard({ name, inst }: { name:string; inst:ObjectInstance }) {
   );
 }
 
-// ─── Main App ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main App â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function App() {
   const [code, setCode]       = useState(SAMPLE_VALID);
   const [result, setResult]   = useState<InterpreterResult | null>(null);
@@ -1127,7 +1215,7 @@ export default function App() {
 
     if (nextQuantity > 0) {
       const statement = inventoryProduct
-        ? 'add "' + productName + '" ' + nextQuantity + " @ " + price.toFixed(2) + ";"
+        ? 'add "' + productName + '" ' + nextQuantity + " @ " + price.toFixed(2) + (inventoryProduct && Math.abs(price - inventoryProduct.price) > 0.005 ? " override" : "") + ";"
         : "add " + instanceName + " " + nextQuantity + ";";
       let insertionIndex = firstTargetIndex >= 0 ? Math.min(firstTargetIndex, nextLines.length) : nextLines.findIndex(line => line.trim() === "checkout;");
       if (insertionIndex < 0) insertionIndex = nextLines.length;
@@ -1162,7 +1250,7 @@ export default function App() {
     <div className="app-shell" style={{ background:"hsl(36 33% 97%)" }}>
       <NotificationCenter notices={notifications} onDismiss={dismissNotification} />
 
-      {/* ━━━━ HEADER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/* â”â”â”â” HEADER â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
       <header className="app-header">
         <div className="header-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"0 24px", height:56, display:"flex", alignItems:"center", gap:16 }}>
           {/* Logo — always visible */}
@@ -1228,12 +1316,12 @@ export default function App() {
       </header>
 
       {activeNav === "Home" ? (<>
-      {/* ━━━━ HERO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/* â”â”â”â” HERO â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
       <div className="hero-gradient" style={{ padding:"34px 28px 26px" }}>
         <div className="hero-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:20 }}>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"white", border:"1px solid hsl(25 95% 53% / 0.22)", borderRadius:999, padding:"4px 12px", fontSize:12, color:"hsl(25 95% 53%)", fontWeight:600, marginBottom:14 }}>
-              Welcome to ShopScript 👋
+              Welcome to ShopScript ðŸ‘‹
             </div>
             <h1 style={{ fontSize:"clamp(22px, 3vw, 34px)", fontWeight:900, color:"hsl(220 20% 12%)", lineHeight:1.2, margin:"0 0 10px" }}>
               Mini Programming Language<br />
@@ -1259,13 +1347,13 @@ export default function App() {
           {/* Decorative illustration — hidden on tablets */}
           <div className="hero-illus" style={{ alignItems:"center", gap:12, flexShrink:0 }}>
             <div style={{ background:"white", borderRadius:18, padding:"16px 20px", boxShadow:"0 8px 32px hsl(25 95% 53% / 0.16)", border:"1px solid hsl(25 95% 53% / 0.1)", display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:54 }}>🛒</span>
+              <span style={{ fontSize:54 }}>ðŸ›’</span>
               <div style={{ background:"hsl(25 95% 53%)", color:"white", fontSize:11, fontWeight:700, padding:"2px 12px", borderRadius:999 }}>
                 {cart.length > 0 ? `${cart.reduce((s,i) => s+i.quantity,0)} items` : "Ready"}
               </div>
             </div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {[{ e:"📱", bg:"#dbeafe" }, { e:"🎧", bg:"#dcfce7" }, { e: hasOOP ? "🧬" : "🤖", bg:"#fef9c3" }].map((d,i) => (
+              {[{ e:"ðŸ“±", bg:"#dbeafe" }, { e:"ðŸŽ§", bg:"#dcfce7" }, { e: hasOOP ? "ðŸ§¬" : "ðŸ¤–", bg:"#fef9c3" }].map((d,i) => (
                 <div key={i} style={{ background:d.bg, borderRadius:10, padding:"10px 14px", fontSize:24, border:"1px solid white", boxShadow:"0 2px 8px hsl(0 0% 0% / 0.07)" }}>{d.e}</div>
               ))}
             </div>
@@ -1273,11 +1361,11 @@ export default function App() {
         </div>
       </div>
 
-      {/* ━━━━ WORKSPACE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/* â”â”â”â” WORKSPACE â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
       <div className="workspace-outer" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"20px 20px 0" }}>
         <div className="workspace-grid">
 
-          {/* ── LEFT: Editor ─────────────────────────────────────────── */}
+          {/* â”€â”€ LEFT: Editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="ss-card editor-card" style={{ overflow:"hidden" }}>
             {/* Top bar — light theme */}
             <div style={{ background:"white", padding:"10px 12px 0", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap", borderBottom:"1px solid hsl(30 20% 90%)" }}>
@@ -1338,7 +1426,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* ── RIGHT: Simulation Panel ───────────────────────────────── */}
+          {/* â”€â”€ RIGHT: Simulation Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <span style={{ color:"hsl(25 95% 53%)", display:"flex" }}>{Ico.bag(16,"hsl(25 95% 53%)")}</span>
@@ -1440,7 +1528,7 @@ export default function App() {
                           <div style={{ fontSize:11, color:"hsl(25 95% 53%)", fontWeight:600 }}>${item.price.toFixed(2)}</div>
                         </div>
                         <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-                          <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity - 1, item.price)} aria-label={"Decrease " + item.name + " quantity"}>−</button>
+                          <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity - 1, item.price)} aria-label={"Decrease " + item.name + " quantity"}>âˆ’</button>
                           <span style={{ fontSize:12, fontWeight:700, minWidth:18, textAlign:"center" }}>{item.quantity}</span>
                           <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity + 1, item.price)} aria-label={"Increase " + item.name + " quantity"}>+</button>
                         </div>
@@ -1527,7 +1615,7 @@ export default function App() {
                   <div className="receipt" style={{ fontSize:10.5, padding:10 }}>
                     <div style={{ textAlign:"center", marginBottom:8 }}>
                       <div style={{ fontWeight:800, color:"hsl(25 95% 48%)", fontSize:12 }}>ShopScript</div>
-                      <div style={{ fontSize:12.5, fontWeight:700, color:"hsl(220 20% 15%)", marginTop:2 }}>Thank you, {user}! 🎉</div>
+                      <div style={{ fontSize:12.5, fontWeight:700, color:"hsl(220 20% 15%)", marginTop:2 }}>Thank you, {user}! ðŸŽ‰</div>
                       <div style={{ fontSize:10, color:"#22c55e" }}>Order placed successfully.</div>
                     </div>
                     <div className="receipt-detail-row">
@@ -1567,7 +1655,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* ━━━━ ANALYZER ROW (full-width 5 columns) ━━━━━━━━━━━━━━━━━━━━━ */}
+        {/* â”â”â”â” ANALYZER ROW (full-width 5 columns) â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
         <div className="analyzer-outer" style={{ padding:"16px 0 28px" }}>
           <div className="analyzer-grid">
 
@@ -1719,7 +1807,7 @@ export default function App() {
         <AboutPage onNavigate={navigate} />
       )}
 
-      {/* ━━━━ FOOTER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/* â”â”â”â” FOOTER â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
       <footer className="app-footer" style={{ background:"white", borderTop:"1px solid hsl(30 20% 90%)" }}>
         <div className="footer-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"14px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:12, color:"hsl(220 10% 55%)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>

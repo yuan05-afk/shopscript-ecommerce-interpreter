@@ -14,12 +14,12 @@ interface ShopScriptCodeEditorProps {
 }
 
 const KEYWORDS = new Set([
-  "let", "add", "apply", "coupon", "set", "checkout",
-  "if", "else", "for", "while", "class", "new", "return", "this",
+  "let", "int", "float", "string", "bool", "void", "add", "apply", "coupon", "set", "checkout", "override",
+  "if", "else", "for", "while", "class", "new", "public", "private", "method", "return", "this",
   "shipping", "budget", "cart", "user",
 ]);
 
-const TOKEN_PATTERN = /("(?:\\.|[^"\\])*"|\/\/.*|\b(?:let|add|apply|coupon|set|checkout|if|else|for|while|class|new|return|this|shipping|budget|cart|user)\b|\b(?:true|false)\b|\b\d+(?:\.\d+)?\b|[@=+\-*/%<>!&|]+|[{}\[\]();,.]|\s+|[A-Za-z_][A-Za-z0-9_]*|.)/g;
+const TOKEN_PATTERN = /("(?:\\.|[^"\\])*"|\/\/.*|\b(?:let|int|float|string|bool|void|add|apply|coupon|set|checkout|override|if|else|for|while|class|new|public|private|method|return|this|shipping|budget|cart|user)\b|\b(?:true|false)\b|\b\d+(?:\.\d+)?\b|[@=+\-*/%<>!&|]+|[{}\[\]();,.]|\s+|[A-Za-z_][A-Za-z0-9_]*|.)/g;
 
 function tokenStyle(token: string): string {
   if (token.startsWith("//")) return "comment";
