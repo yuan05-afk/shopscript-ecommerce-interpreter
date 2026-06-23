@@ -66,12 +66,12 @@
 }
 .app-footer { margin-top: auto; }
 
-/* â”€â”€ Scrollbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Scrollbar ----------------------------------------------------------- */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: hsl(25 95% 53% / 0.25); border-radius: 3px; }
 
-/* â”€â”€ Code Editor (light theme) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Code Editor (light theme) ------------------------------------------- */
 .code-editor {
   font-family: var(--app-font-mono);
   font-size: 13px;
@@ -88,7 +88,7 @@
 }
 .code-editor::selection { background: hsl(25 95% 53% / 0.18); }
 
-/* â”€â”€ Shared syntax-highlighted mini IDE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Shared syntax-highlighted mini IDE ----------------------------------- */
 .shopscript-ide {
   --ide-bg: #ffffff;
   --ide-gutter: hsl(30 20% 97%);
@@ -209,7 +209,7 @@
 .home-ide { min-height: 360px; }
 .playground-ide { min-height: 530px; }
 
-/* â”€â”€ Interactive inventory controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Interactive inventory controls --------------------------------------- */
 .inventory-toggle {
   appearance: none;
   border: 0;
@@ -253,7 +253,7 @@
   cursor: pointer;
 }
 .cart-remove:hover { background: hsl(0 84% 60% / 0.08); }
-/* â”€â”€ Token chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Token chips --------------------------------------------------------- */
 .token-chip {
   display: inline-flex;
   align-items: center;
@@ -277,14 +277,14 @@
 .token-chip.symbol    { background: #fce7f3; color: #be185d; border: 1px solid #fbcfe8; }
 .token-chip.lbracket,.token-chip.rbracket { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
-/* â”€â”€ Hero gradient â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Hero gradient ------------------------------------------------------- */
 .hero-gradient {
   background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 40%, #fed7aa 80%, #fde68a20 100%);
   position: relative;
   overflow: hidden;
 }
 
-/* â”€â”€ Feature badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Feature badges ------------------------------------------------------ */
 .feature-badge {
   display: inline-flex;
   align-items: center;
@@ -300,7 +300,7 @@
   box-shadow: 0 1px 3px hsl(0 0% 0% / 0.05);
 }
 
-/* â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Cards --------------------------------------------------------------- */
 .ss-card {
   background: white;
   border: 1px solid hsl(30 20% 90%);
@@ -308,7 +308,7 @@
   box-shadow: 0 1px 4px hsl(0 0% 0% / 0.05), 0 4px 12px hsl(0 0% 0% / 0.03);
 }
 
-/* â”€â”€ Product card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Product card -------------------------------------------------------- */
 .product-card {
   background: white;
   border: 1px solid hsl(30 20% 91%);
@@ -339,7 +339,7 @@
   background: hsl(30 20% 96%);
 }
 
-/* â”€â”€ Qty buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Qty buttons --------------------------------------------------------- */
 .qty-btn {
   width: 24px;
   height: 24px;
@@ -358,7 +358,7 @@
 }
 .qty-btn:hover { background: hsl(25 95% 53%); color: white; border-color: hsl(25 95% 53%); }
 
-/* â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Buttons ------------------------------------------------------------- */
 .btn-orange {
   background: hsl(25 95% 53%);
   color: white;
@@ -392,7 +392,7 @@
 }
 .btn-ghost:hover { background: hsl(30 20% 96%); }
 
-/* â”€â”€ Status bar (light theme) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Status bar (light theme) -------------------------------------------- */
 .status-bar {
   background: hsl(30 20% 97%);
   color: hsl(220 10% 52%);
@@ -406,7 +406,7 @@
   border-radius: 0 0 12px 12px;
 }
 
-/* â”€â”€ Receipt â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Receipt ------------------------------------------------------------- */
 .receipt {
   font-family: var(--app-font-mono);
   font-size: 11.5px;
@@ -416,7 +416,7 @@
   padding: 12px;
 }
 
-/* â”€â”€ Nav link â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Nav link ------------------------------------------------------------ */
 .nav-link {
   appearance: none;
   border: 0;
@@ -496,7 +496,7 @@
   border: 2px solid white;
 }
 
-/* â”€â”€ Checkout CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Checkout CTA -------------------------------------------------------- */
 .checkout-cta {
   background: linear-gradient(135deg, hsl(25 95% 53%), hsl(20 90% 60%));
   border-radius: 12px;
@@ -505,7 +505,7 @@
   box-shadow: 0 4px 14px hsl(25 95% 53% / 0.32);
 }
 
-/* â”€â”€ Coupon badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Coupon badge -------------------------------------------------------- */
 .coupon-badge {
   background: hsl(25 95% 53%);
   color: white;
@@ -517,11 +517,11 @@
   letter-spacing: 0.05em;
 }
 
-/* â”€â”€ Log item â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Log item ------------------------------------------------------------ */
 .log-item { display: flex; align-items: flex-start; gap: 7px; font-size: 11px; padding: 2px 0; line-height: 1.5; }
 .log-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
 
-/* â”€â”€ Success / Error boxes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Success / Error boxes ----------------------------------------------- */
 .success-box {
   display: flex; align-items: center; gap: 7px;
   background: hsl(142 76% 36% / 0.07);
@@ -537,13 +537,13 @@
   color: hsl(0 84% 42%); font-size: 11.5px;
 }
 
-/* â”€â”€ Variable table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Variable table ------------------------------------------------------ */
 .var-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
 .var-table th { background: hsl(30 20% 96%); padding: 4px 8px; text-align: left; font-weight: 600; color: hsl(220 10% 48%); border-bottom: 1px solid hsl(30 20% 88%); font-size: 11px; }
 .var-table td { padding: 4px 8px; border-bottom: 1px solid hsl(30 20% 94%); vertical-align: middle; }
 .var-table tr:last-child td { border-bottom: none; }
 
-/* â”€â”€ Line numbers (light theme) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Line numbers (light theme) ------------------------------------------ */
 .line-numbers {
   font-family: var(--app-font-mono);
   font-size: 13px;
@@ -557,7 +557,7 @@
   border-right: 1px solid hsl(30 20% 90%);
 }
 
-/* â”€â”€ Dedicated Playground â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Dedicated Playground ------------------------------------------------- */
 .playground-page {
   width: min(var(--app-content-max), calc(100% - 40px));
   min-height: calc(100vh - 132px);
@@ -778,7 +778,7 @@
 .playground-oop-summary { margin-top: 12px; padding: 12px; border: 1px solid hsl(270 60% 55% / 0.15); border-radius: 8px; background: hsl(270 60% 55% / 0.06); }
 .playground-oop-summary h3 { margin: 0 0 8px; color: hsl(270 50% 38%); font-size: 10px; }
 .playground-oop-summary span { margin-right: 6px; padding: 3px 7px; border-radius: 999px; background: white; color: hsl(270 45% 42%); font-size: 8px; }
-/* â”€â”€ Examples page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Examples page ------------------------------------------------------- */
 .examples-page {
   width: min(var(--app-content-max), calc(100% - 40px));
   min-height: calc(100vh - 132px);
@@ -988,7 +988,7 @@
 }
 .examples-next h2 { margin: 3px 0; color: hsl(220 20% 14%); font-size: 20px; }
 .examples-next p { margin: 0; color: hsl(220 10% 48%); font-size: 10px; }
-/* â”€â”€ Documentation page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Documentation page -------------------------------------------------- */
 .docs-page {
   width: min(var(--app-content-max), calc(100% - 40px));
   min-height: calc(100vh - 132px);
@@ -1297,7 +1297,7 @@
 .docs-empty { padding: 48px 24px; text-align: center; }
 .docs-empty h2 { margin: 8px 0; }
 .docs-empty p { color: hsl(220 10% 48%); font-size: 12px; }
-/* â”€â”€ Routed content pages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Routed content pages ------------------------------------------------- */
 .content-page {
   width: min(var(--app-content-max), calc(100% - 40px));
   min-height: calc(100vh - 132px);
@@ -1454,11 +1454,11 @@
 .team-card strong, .team-card span { display: block; }
 .team-card strong { color: hsl(220 20% 16%); font-size: 14px; }
 .team-card span { margin-top: 3px; color: hsl(220 10% 50%); font-size: 11px; }
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ========================================================================
    RESPONSIVE LAYOUT
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ======================================================================== */
 
-/* â”€â”€ Desktop default (â‰¥1200px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Desktop default (≥1200px) ------------------------------------------- */
 /* Editor ~45%, Simulation ~55% — matches reference exactly */
 .workspace-grid { display: grid; grid-template-columns: 45fr 55fr; gap: 18px; align-items: stretch; }
 .editor-card { display: flex; flex-direction: column; }
@@ -1482,14 +1482,14 @@
 .header-search { display: flex; width: 220px; }
 .hero-illus { display: flex; }
 
-/* â”€â”€ Large tablet / small desktop (1024â€“1199px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Large tablet / small desktop (1024-1199px) ------------------------- */
 @media (max-width: 1199px) {
   .sim-row2 { grid-template-columns: 1fr 1fr; gap: 10px; }
   .analyzer-grid { grid-template-columns: repeat(3, 1fr); }
   .header-search { width: 180px; }
 }
 
-/* â”€â”€ Tablet landscape (768â€“1023px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Tablet landscape (768-1023px) -------------------------------------- */
 @media (max-width: 1023px) {
   .workspace-grid { grid-template-columns: 1fr; }
   .sim-row1 { grid-template-columns: 1fr 1fr; }
@@ -1501,7 +1501,7 @@
   .playground-editor, .playground-results { min-height: 600px; }
 }
 
-/* â”€â”€ Tablet portrait (600â€“767px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Tablet portrait (600-767px) ---------------------------------------- */
 @media (max-width: 767px) {
   .header-nav { display: none; }
   .header-search { display: none; }
@@ -1534,7 +1534,7 @@
   .analyzer-outer { padding: 0 12px 24px !important; }
 }
 
-/* â”€â”€ Mobile (â‰¤599px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Mobile (≤599px) ----------------------------------------------------- */
 @media (max-width: 599px) {
   .sim-row2 { grid-template-columns: 1fr; }
   .analyzer-grid { grid-template-columns: 1fr; }
@@ -1589,7 +1589,7 @@
   .playground-token-list { grid-template-columns: 1fr; }
 }
 
-/* â”€â”€ Small mobile (â‰¤380px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Small mobile (≤380px) ----------------------------------------------- */
 @media (max-width: 380px) {
   .products-grid { grid-template-columns: 1fr 1fr; }
   h1 { font-size: 24px !important; }

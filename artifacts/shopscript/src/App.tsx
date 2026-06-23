@@ -13,7 +13,7 @@ import { NotificationCenter, type AppNotification, type NotificationType } from 
 import { DEFAULT_PRODUCTS, INVENTORY_STORAGE_KEY, loadInventory, type InventoryProduct } from "./inventory-data";
 import { downloadReceiptPdf } from "./receipt-pdf";
 
-// â”€â”€â”€ Sample programs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Sample programs ----------------------------------------------------------
 const SAMPLE_VALID = `// ShopScript Sample Program
 let user = "Ava";
 let budget = 1200.00;
@@ -247,7 +247,7 @@ const EXAMPLE_LIBRARY: ShopScriptExample[] = [
     expected: "Class and instance cards appear, then both custom products are added and checked out.",
   },
 ];
-// â”€â”€â”€ Fallback images for OOP / custom products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Fallback images for OOP / custom products --------------------------------
 const OOP_IMG = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop&auto=format";
 const OOP_IMG_SM = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=60&h=60&fit=crop&auto=format";
 
@@ -257,7 +257,7 @@ function getProductImg(name: string, products: InventoryProduct[], small = false
   return small ? OOP_IMG_SM : OOP_IMG;
 }
 
-// â”€â”€â”€ Token chip class map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Token chip class map -----------------------------------------------------
 function tokenClass(type: string) {
   const m: Record<string, string> = {
     keyword:"keyword", string:"string", number:"number", operator:"operator",
@@ -268,12 +268,12 @@ function tokenClass(type: string) {
   return m[type] ?? "identifier";
 }
 
-// â”€â”€â”€ App metadata and navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- App metadata and navigation -----------------------------------------------
 const APP_VERSION = "0.3.0";
 const NAV_ITEMS = ["Home", "Docs", "Examples", "Playground", "Inventory", "About"] as const;
 type NavItem = typeof NAV_ITEMS[number];
 
-// â”€â”€â”€ SVG Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- SVG Icons ----------------------------------------------------------------
 const Ico = {
   code: (s=16,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
   cart: (s=16,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>,
@@ -975,7 +975,7 @@ function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
     </main>
   );
 }
-// â”€â”€â”€ OOP sub-cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- OOP sub-cards ------------------------------------------------------------
 function ClassCard({ def }: { def: ClassDefinition }) {
   return (
     <div style={{ background:"hsl(220 30% 98%)", border:"1px solid hsl(220 20% 88%)", borderRadius:10, padding:12, fontFamily:"var(--app-font-mono)", fontSize:12 }}>
@@ -1013,7 +1013,7 @@ function InstanceCard({ name, inst }: { name:string; inst:ObjectInstance }) {
   );
 }
 
-// â”€â”€â”€ Main App â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Main App -----------------------------------------------------------------
 export default function App() {
   const [code, setCode]       = useState(SAMPLE_VALID);
   const [result, setResult]   = useState<InterpreterResult | null>(null);
@@ -1250,10 +1250,10 @@ export default function App() {
     <div className="app-shell" style={{ background:"hsl(36 33% 97%)" }}>
       <NotificationCenter notices={notifications} onDismiss={dismissNotification} />
 
-      {/* â”â”â”â” HEADER â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
+      {/* ---- HEADER --------------------------------------------------- */}
       <header className="app-header">
         <div className="header-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"0 24px", height:56, display:"flex", alignItems:"center", gap:16 }}>
-          {/* Logo — always visible */}
+          {/* Logo -- always visible */}
           <button type="button" className="brand-button" onClick={() => navigate("Home")} aria-label="Open ShopScript home">
             <div style={{ background:"hsl(25 95% 53%)", borderRadius:8, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", color:"white", flexShrink:0 }}>
               {Ico.code(16,"white")}
@@ -1264,7 +1264,7 @@ export default function App() {
             </div>
           </button>
 
-          {/* Search — hidden on mobile */}
+          {/* Search -- hidden on mobile */}
           <button type="button" className="header-search nav-search" onClick={openDocsSearch} aria-label="Open documentation">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="hsl(220 10% 55%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -1273,7 +1273,7 @@ export default function App() {
             <span style={{ fontSize:10.5, background:"hsl(30 20% 90%)", padding:"1px 5px", borderRadius:3, color:"hsl(220 10% 55%)", flexShrink:0 }}>Ctrl K</span>
           </button>
 
-          {/* Nav — hidden on mobile */}
+          {/* Nav -- hidden on mobile */}
           <nav className="header-nav" aria-label="Primary navigation">
             {NAV_ITEMS.map((item) => (
               <button type="button" key={item} className={`nav-link${activeNav===item?" active":""}`} onClick={() => navigate(item)} aria-current={activeNav===item ? "page" : undefined}>{item}</button>
@@ -1294,7 +1294,7 @@ export default function App() {
               {Ico.chevron(13,"hsl(220 10% 50%)")}
             </button>
 
-            {/* Hamburger — visible on mobile only */}
+            {/* Hamburger -- visible on mobile only */}
             <button
               onClick={() => setMobileMenu(m => !m)}
               style={{ background:"none", border:"none", cursor:"pointer", display:"none", alignItems:"center", padding:4 }}
@@ -1316,12 +1316,12 @@ export default function App() {
       </header>
 
       {activeNav === "Home" ? (<>
-      {/* â”â”â”â” HERO â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
+      {/* ---- HERO ----------------------------------------------------- */}
       <div className="hero-gradient" style={{ padding:"34px 28px 26px" }}>
         <div className="hero-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:20 }}>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"white", border:"1px solid hsl(25 95% 53% / 0.22)", borderRadius:999, padding:"4px 12px", fontSize:12, color:"hsl(25 95% 53%)", fontWeight:600, marginBottom:14 }}>
-              Welcome to ShopScript ðŸ‘‹
+              Welcome to ShopScript 👋
             </div>
             <h1 style={{ fontSize:"clamp(22px, 3vw, 34px)", fontWeight:900, color:"hsl(220 20% 12%)", lineHeight:1.2, margin:"0 0 10px" }}>
               Mini Programming Language<br />
@@ -1344,16 +1344,16 @@ export default function App() {
             </div>
           </div>
 
-          {/* Decorative illustration — hidden on tablets */}
+          {/* Decorative illustration -- hidden on tablets */}
           <div className="hero-illus" style={{ alignItems:"center", gap:12, flexShrink:0 }}>
             <div style={{ background:"white", borderRadius:18, padding:"16px 20px", boxShadow:"0 8px 32px hsl(25 95% 53% / 0.16)", border:"1px solid hsl(25 95% 53% / 0.1)", display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:54 }}>ðŸ›’</span>
+              <span style={{ fontSize:54 }}>🛒</span>
               <div style={{ background:"hsl(25 95% 53%)", color:"white", fontSize:11, fontWeight:700, padding:"2px 12px", borderRadius:999 }}>
                 {cart.length > 0 ? `${cart.reduce((s,i) => s+i.quantity,0)} items` : "Ready"}
               </div>
             </div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {[{ e:"ðŸ“±", bg:"#dbeafe" }, { e:"ðŸŽ§", bg:"#dcfce7" }, { e: hasOOP ? "ðŸ§¬" : "ðŸ¤–", bg:"#fef9c3" }].map((d,i) => (
+              {[{ e:"📱", bg:"#dbeafe" }, { e:"🎧", bg:"#dcfce7" }, { e: hasOOP ? "🧬" : "🤖", bg:"#fef9c3" }].map((d,i) => (
                 <div key={i} style={{ background:d.bg, borderRadius:10, padding:"10px 14px", fontSize:24, border:"1px solid white", boxShadow:"0 2px 8px hsl(0 0% 0% / 0.07)" }}>{d.e}</div>
               ))}
             </div>
@@ -1361,13 +1361,13 @@ export default function App() {
         </div>
       </div>
 
-      {/* â”â”â”â” WORKSPACE â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
+      {/* ---- WORKSPACE ------------------------------------------------ */}
       <div className="workspace-outer" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"20px 20px 0" }}>
         <div className="workspace-grid">
 
-          {/* â”€â”€ LEFT: Editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* -- LEFT: Editor ------------------------------------------- */}
           <div className="ss-card editor-card" style={{ overflow:"hidden" }}>
-            {/* Top bar — light theme */}
+            {/* Top bar -- light theme */}
             <div style={{ background:"white", padding:"10px 12px 0", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap", borderBottom:"1px solid hsl(30 20% 90%)" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                 <span style={{ display:"flex", color:"hsl(25 95% 53%)" }}>{Ico.code(15,"hsl(25 95% 53%)")}</span>
@@ -1394,7 +1394,7 @@ export default function App() {
                 </select>
               </div>
             </div>
-            {/* File tab — light theme */}
+            {/* File tab -- light theme */}
             <div style={{ background:"hsl(30 20% 97%)", padding:"0 12px", borderBottom:"1px solid hsl(30 20% 90%)" }}>
               <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"white", color:"hsl(25 95% 53%)", fontFamily:"var(--app-font-mono)", fontSize:12, padding:"6px 14px 0", borderRadius:"6px 6px 0 0", border:"1px solid hsl(30 20% 90%)", borderBottom:"2px solid hsl(25 95% 53%)" }}>
                 main.shop
@@ -1426,7 +1426,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* â”€â”€ RIGHT: Simulation Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* -- RIGHT: Simulation Panel --------------------------------- */}
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <span style={{ color:"hsl(25 95% 53%)", display:"flex" }}>{Ico.bag(16,"hsl(25 95% 53%)")}</span>
@@ -1528,7 +1528,7 @@ export default function App() {
                           <div style={{ fontSize:11, color:"hsl(25 95% 53%)", fontWeight:600 }}>${item.price.toFixed(2)}</div>
                         </div>
                         <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-                          <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity - 1, item.price)} aria-label={"Decrease " + item.name + " quantity"}>âˆ’</button>
+                          <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity - 1, item.price)} aria-label={"Decrease " + item.name + " quantity"}>−</button>
                           <span style={{ fontSize:12, fontWeight:700, minWidth:18, textAlign:"center" }}>{item.quantity}</span>
                           <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity + 1, item.price)} aria-label={"Increase " + item.name + " quantity"}>+</button>
                         </div>
@@ -1615,7 +1615,7 @@ export default function App() {
                   <div className="receipt" style={{ fontSize:10.5, padding:10 }}>
                     <div style={{ textAlign:"center", marginBottom:8 }}>
                       <div style={{ fontWeight:800, color:"hsl(25 95% 48%)", fontSize:12 }}>ShopScript</div>
-                      <div style={{ fontSize:12.5, fontWeight:700, color:"hsl(220 20% 15%)", marginTop:2 }}>Thank you, {user}! ðŸŽ‰</div>
+                      <div style={{ fontSize:12.5, fontWeight:700, color:"hsl(220 20% 15%)", marginTop:2 }}>Thank you, {user}! 🎉</div>
                       <div style={{ fontSize:10, color:"#22c55e" }}>Order placed successfully.</div>
                     </div>
                     <div className="receipt-detail-row">
@@ -1655,7 +1655,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* â”â”â”â” ANALYZER ROW (full-width 5 columns) â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
+        {/* ---- ANALYZER ROW (full-width 5 columns) --------------------- */}
         <div className="analyzer-outer" style={{ padding:"16px 0 28px" }}>
           <div className="analyzer-grid">
 
@@ -1807,7 +1807,7 @@ export default function App() {
         <AboutPage onNavigate={navigate} />
       )}
 
-      {/* â”â”â”â” FOOTER â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
+      {/* ---- FOOTER --------------------------------------------------- */}
       <footer className="app-footer" style={{ background:"white", borderTop:"1px solid hsl(30 20% 90%)" }}>
         <div className="footer-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"14px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:12, color:"hsl(220 10% 55%)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
