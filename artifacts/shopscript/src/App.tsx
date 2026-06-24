@@ -1075,14 +1075,14 @@ function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
 // --- OOP sub-cards ------------------------------------------------------------
 function ClassCard({ def }: { def: ClassDefinition }) {
   return (
-    <div style={{ background:"hsl(220 30% 98%)", border:"1px solid hsl(220 20% 88%)", borderRadius:10, padding:12, fontFamily:"var(--app-font-mono)", fontSize:12 }}>
+    <div style={{ background:"var(--theme-surface-2)", border:"1px solid var(--theme-border)", borderRadius:10, padding:12, fontFamily:"var(--app-font-mono)", fontSize:12 }}>
       <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
         <span style={{ background:"var(--theme-accent)", color:"white", fontSize:10, fontWeight:700, padding:"1px 6px", borderRadius:4 }}>class</span>
         <span style={{ fontWeight:800, color:"var(--theme-text)", fontSize:13 }}>{def.name}</span>
         <span style={{ marginLeft:"auto", fontSize:10, color:"var(--theme-muted)" }}>{Object.keys(def.fields).length} fields</span>
       </div>
       {Object.entries(def.fields).map(([k,v]) => (
-        <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"3px 8px", background:"white", borderRadius:6, border:"1px solid hsl(220 20% 93%)", marginBottom:3 }}>
+        <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"3px 8px", background:"var(--theme-surface)", borderRadius:6, border:"1px solid var(--theme-border)", marginBottom:3 }}>
           <span style={{ color:"#7c3aed" }}>{k}</span>
           <span style={{ color:"var(--theme-muted)" }}>: {v.type}</span>
           <span style={{ color: v.type==="string"?"#15803d":"#c2410c" }}>{v.type==="string"?`"${v.value}"`:v.value}</span>
@@ -1093,7 +1093,7 @@ function ClassCard({ def }: { def: ClassDefinition }) {
 }
 function InstanceCard({ name, inst }: { name:string; inst:ObjectInstance }) {
   return (
-    <div style={{ background:"hsl(36 33% 97%)", border:"1px solid hsl(25 95% 53% / 0.25)", borderRadius:10, padding:12, fontFamily:"var(--app-font-mono)", fontSize:12 }}>
+    <div style={{ background:"var(--theme-surface-2)", border:"1px solid var(--theme-border)", borderRadius:10, padding:12, fontFamily:"var(--app-font-mono)", fontSize:12 }}>
       <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
         <span style={{ background:"hsl(220 60% 55%)", color:"white", fontSize:10, fontWeight:700, padding:"1px 6px", borderRadius:4 }}>new</span>
         <span style={{ fontWeight:800, color:"var(--theme-text)", fontSize:13 }}>{name}</span>
@@ -1528,7 +1528,7 @@ export default function App() {
 
           {/* Decorative illustration -- hidden on tablets */}
           <div className="hero-illus" style={{ alignItems:"center", gap:12, flexShrink:0 }}>
-            <div style={{ background:"white", borderRadius:18, padding:"16px 20px", boxShadow:"0 8px 32px hsl(25 95% 53% / 0.16)", border:"1px solid hsl(25 95% 53% / 0.1)", display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
+            <div style={{ background:"var(--theme-surface)", borderRadius:18, padding:"16px 20px", boxShadow:"var(--theme-shadow)", border:"1px solid var(--theme-border)", display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
               <span style={{ fontSize:54 }}>-</span>
               <div style={{ background:"var(--theme-accent)", color:"white", fontSize:11, fontWeight:700, padding:"2px 12px", borderRadius:999 }}>
                 {cart.length > 0 ? `${cart.reduce((s,i) => s+i.quantity,0)} items` : "Ready"}
@@ -1550,10 +1550,10 @@ export default function App() {
           {/* -- LEFT: Editor ------------------------------------------- */}
           <div className="ss-card editor-card" style={{ overflow:"hidden" }}>
             {/* Top bar -- light theme */}
-            <div style={{ background:"white", padding:"10px 12px 0", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap", borderBottom:"1px solid var(--theme-border)" }}>
+            <div style={{ background:"var(--theme-surface)", padding:"10px 12px 0", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap", borderBottom:"1px solid var(--theme-border)" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                 <span style={{ display:"flex", color:"var(--theme-accent)" }}>{Ico.code(15,"var(--theme-accent)")}</span>
-                <span style={{ fontSize:13, fontWeight:700, color:"hsl(220 20% 18%)" }}>ShopScript Editor</span>
+                <span style={{ fontSize:13, fontWeight:700, color:"var(--theme-text)" }}>ShopScript Editor</span>
               </div>
               <div style={{ display:"flex", gap:7, flexWrap:"wrap", paddingBottom:10 }}>
                 <EditorThemeToggle theme={editorTheme} onToggle={toggleEditorTheme} />
@@ -1566,7 +1566,7 @@ export default function App() {
                 <select
                   value={selectedSample}
                   onChange={(e) => { loadSample(e.target.value as "valid"|"syntax"|"semantic"|"oop"); }}
-                  style={{ background:"white", border:"1px solid var(--theme-border)", color:"hsl(220 20% 35%)", borderRadius:8, padding:"5px 9px", fontSize:12, cursor:"pointer" }}
+                  style={{ background:"var(--theme-surface)", border:"1px solid var(--theme-border)", color:"var(--theme-text-soft)", borderRadius:8, padding:"5px 9px", fontSize:12, cursor:"pointer" }}
                 >
                   <option value="" disabled>Load Sample</option>
                   <option value="valid">Valid Sample</option>
@@ -1578,7 +1578,7 @@ export default function App() {
             </div>
             {/* File tab -- light theme */}
             <div style={{ background:"var(--theme-surface-2)", padding:"0 12px", borderBottom:"1px solid var(--theme-border)" }}>
-              <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"white", color:"var(--theme-accent)", fontFamily:"var(--app-font-mono)", fontSize:12, padding:"6px 14px 0", borderRadius:"6px 6px 0 0", border:"1px solid var(--theme-border)", borderBottom:"2px solid var(--theme-accent)" }}>
+              <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"var(--theme-surface)", color:"var(--theme-accent)", fontFamily:"var(--app-font-mono)", fontSize:12, padding:"6px 14px 0", borderRadius:"6px 6px 0 0", border:"1px solid var(--theme-border)", borderBottom:"2px solid var(--theme-accent)" }}>
                 main.shop
                 <span style={{ color:"hsl(142 76% 32%)", fontSize:9, fontFamily:"var(--app-font-sans)", fontWeight:700 }}>Highlighted</span>
               </div>
@@ -1624,7 +1624,7 @@ export default function App() {
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
                   <div className="receipt-title">
                     <span style={{ color:"var(--theme-accent)", display:"flex" }}>{Ico.box(14,"var(--theme-accent)")}</span>
-                    <span style={{ fontWeight:700, fontSize:13, color:"hsl(220 20% 18%)" }}>Product Inventory</span>
+                    <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Product Inventory</span>
                   </div>
                   <button type="button" className="inventory-toggle" onClick={() => setShowAllInventory(value => !value)}>{showAllInventory ? "Show featured" : "View all " + availableProducts.length} {Ico.chevron(11)}</button>
                 </div>
@@ -1666,13 +1666,13 @@ export default function App() {
 
                 {/* OOP-defined products */}
                 {cart.filter(c => !products.find(p => p.name === c.name)).length > 0 && (
-                  <div style={{ marginTop:10, borderTop:"1px dashed hsl(30 20% 85%)", paddingTop:10 }}>
+                  <div style={{ marginTop:10, borderTop:"1px dashed var(--theme-border)", paddingTop:10 }}>
                     <div style={{ fontSize:10, color:"var(--theme-muted)", fontWeight:600, marginBottom:6 }}>OOP-defined products</div>
                     {cart.filter(c => !products.find(p => p.name === c.name)).map(c => (
                       <div key={c.name} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
                         <img src={OOP_IMG_SM} alt={c.name} className="product-img-sm" onError={e => { (e.target as HTMLImageElement).src="https://placehold.co/60x60/f0f0f0/999?text=OOP"; }}/>
                         <div>
-                          <div style={{ fontSize:11, fontWeight:600, color:"hsl(220 20% 20%)" }}>{c.name}</div>
+                          <div style={{ fontSize:11, fontWeight:600, color:"var(--theme-text)" }}>{c.name}</div>
                           <div style={{ fontSize:11, color:"var(--theme-accent)", fontWeight:700 }}>${c.price.toFixed(2)}</div>
                         </div>
                         <span style={{ marginLeft:"auto", fontSize:9, background:"hsl(220 60% 55%)", color:"white", borderRadius:4, padding:"1px 5px", fontWeight:700 }}>OOP</span>
@@ -1687,19 +1687,19 @@ export default function App() {
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
                   <div className="receipt-title">
                     <span style={{ color:"var(--theme-accent)", display:"flex" }}>{Ico.cart(14,"var(--theme-accent)")}</span>
-                    <span style={{ fontWeight:700, fontSize:13, color:"hsl(220 20% 18%)" }}>Shopping Cart</span>
+                    <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Shopping Cart</span>
                   </div>
                   {cart.length > 0 && <span style={{ background:"var(--theme-accent)", color:"white", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{cart.reduce((s,i)=>s+i.quantity,0)}</span>}
                 </div>
                 {cart.length === 0 ? (
-                  <div style={{ textAlign:"center", padding:"24px 0", color:"hsl(220 10% 60%)", fontSize:12 }}>
+                  <div style={{ textAlign:"center", padding:"24px 0", color:"var(--theme-muted)", fontSize:12 }}>
                     <div style={{ display:"flex", justifyContent:"center", marginBottom:8, opacity:0.35 }}>{Ico.cart(36,"var(--theme-muted)")}</div>
                     Cart is empty - run a program to add items
                   </div>
                 ) : (
                   <div>
                     {cart.map((item, i) => (
-                      <div key={i} style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 0", borderBottom: i<cart.length-1?"1px solid hsl(30 20% 93%)":"none" }}>
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 0", borderBottom: i<cart.length-1?"1px solid var(--theme-border)":"none" }}>
                         <img
                           src={getProductImg(item.name, products, true)}
                           alt={item.name}
@@ -1707,7 +1707,7 @@ export default function App() {
                           onError={e => { (e.target as HTMLImageElement).src=`https://placehold.co/60x60/f0f0f0/999?text=${encodeURIComponent(item.name[0])}`; }}
                         />
                         <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:12, fontWeight:600, color:"hsl(220 20% 20%)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{item.name}</div>
+                          <div style={{ fontSize:12, fontWeight:600, color:"var(--theme-text)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{item.name}</div>
                           <div style={{ fontSize:11, color:"var(--theme-accent)", fontWeight:600 }}>${item.price.toFixed(2)}</div>
                         </div>
                         <div style={{ display:"flex", alignItems:"center", gap:4 }}>
@@ -1715,7 +1715,7 @@ export default function App() {
                           <span style={{ fontSize:12, fontWeight:700, minWidth:18, textAlign:"center" }}>{item.quantity}</span>
                           <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity + 1, item.price)} aria-label={"Increase " + item.name + " quantity"}>+</button>
                         </div>
-                        <div style={{ fontSize:12, fontWeight:700, color:"hsl(220 20% 20%)", minWidth:50, textAlign:"right" }}>${(item.price*item.quantity).toFixed(2)}</div>
+                        <div style={{ fontSize:12, fontWeight:700, color:"var(--theme-text)", minWidth:50, textAlign:"right" }}>${(item.price*item.quantity).toFixed(2)}</div>
                         <button type="button" className="cart-remove" onClick={() => setCartItemQuantity(item.name, 0, item.price)} aria-label={"Remove " + item.name + " from cart"}>{Ico.x(11,"hsl(0 84% 65%)")}</button>
                       </div>
                     ))}
@@ -1734,7 +1734,7 @@ export default function App() {
               <div className="ss-card" style={{ padding:12 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:10 }}>
                   <span style={{ color:"#16a34a", display:"flex" }}>{Ico.tag(13,"#16a34a")}</span>
-                  <span style={{ fontWeight:700, fontSize:12.5, color:"hsl(220 20% 18%)" }}>Discount Status</span>
+                  <span style={{ fontWeight:700, fontSize:12.5, color:"var(--theme-text)" }}>Discount Status</span>
                 </div>
                 {coupon ? (
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
@@ -1754,20 +1754,20 @@ export default function App() {
                       <span style={{ fontSize:12, fontWeight:800, color:"#15803d" }}>${discountAmt.toFixed(2)}</span>
                     </div>
                   </div>
-                ) : <div style={{ color:"hsl(220 10% 58%)", fontSize:11, padding:"8px 0" }}>No coupon applied</div>}
+                ) : <div style={{ color:"var(--theme-muted)", fontSize:11, padding:"8px 0" }}>No coupon applied</div>}
               </div>
 
               {/* Checkout Summary */}
               <div className="ss-card" style={{ padding:12 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:10 }}>
                   <span style={{ color:"var(--theme-accent)", display:"flex" }}>{Ico.receipt(13,"var(--theme-accent)")}</span>
-                  <span style={{ fontWeight:700, fontSize:12.5, color:"hsl(220 20% 18%)" }}>Checkout Summary</span>
+                  <span style={{ fontWeight:700, fontSize:12.5, color:"var(--theme-text)" }}>Checkout Summary</span>
                 </div>
                 <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
                   {[
-                    { label:"Subtotal", value:`$${subtotal.toFixed(2)}`, color:"hsl(220 20% 20%)" },
+                    { label:"Subtotal", value:`$${subtotal.toFixed(2)}`, color:"var(--theme-text)" },
                     ...(coupon ? [{ label:"Discount", value:`-$${discountAmt.toFixed(2)}`, color:"#dc2626" }] : []),
-                    { label:"Shipping", value:`$${shipping.toFixed(2)}`, color:"hsl(220 20% 20%)" },
+                    { label:"Shipping", value:`$${shipping.toFixed(2)}`, color:"var(--theme-text)" },
                   ].map(r => (
                     <div key={r.label} style={{ display:"flex", justifyContent:"space-between", fontSize:11 }}>
                       <span style={{ color:"var(--theme-muted)" }}>{r.label}</span>
@@ -1786,7 +1786,7 @@ export default function App() {
                 <div className="receipt-header">
                   <div className="receipt-title">
                     <span style={{ color:"hsl(220 60% 55%)", display:"flex" }}>{Ico.clipboard(13,"hsl(220 60% 55%)")}</span>
-                    <span style={{ fontWeight:700, fontSize:12.5, color:"hsl(220 20% 18%)" }}>Receipt Preview</span>
+                    <span style={{ fontWeight:700, fontSize:12.5, color:"var(--theme-text)" }}>Receipt Preview</span>
                   </div>
                   {didCheckout && !hasErrors && (
                     <button className="btn-ghost receipt-download" onClick={downloadReceipt}>
@@ -1802,14 +1802,14 @@ export default function App() {
                       <div style={{ fontSize:10, color:"#22c55e" }}>Order placed successfully.</div>
                     </div>
                     <div className="receipt-detail-row">
-                      <span>Order ID</span><span style={{ fontWeight:600, color:"hsl(220 20% 20%)" }}>{orderId}</span>
+                      <span>Order ID</span><span style={{ fontWeight:600, color:"var(--theme-text)" }}>{orderId}</span>
                     </div>
                     <div className="receipt-total-row">
                       <span>Total Paid</span><span>${total.toFixed(2)}</span>
                     </div>
                   </div>
                 ) : (
-                  <div style={{ textAlign:"center", padding:"14px 0", color:"hsl(220 10% 60%)", fontSize:11 }}>
+                  <div style={{ textAlign:"center", padding:"14px 0", color:"var(--theme-muted)", fontSize:11 }}>
                     <div style={{ display:"flex", justifyContent:"center", marginBottom:6, opacity:0.3 }}>{Ico.clipboard(30,"var(--theme-muted)")}</div>
                     {hasErrors ? "Fix errors first" : "Run checkout; to see receipt"}
                   </div>
@@ -1845,7 +1845,7 @@ export default function App() {
             {/* Tokens */}
             <div className="ss-card" style={{ padding:14 }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
-                <span style={{ fontWeight:700, fontSize:13, color:"hsl(220 20% 18%)" }}>Tokens</span>
+                <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Tokens</span>
                 {result && <span style={{ background:"var(--theme-accent)", color:"white", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.tokens.length}</span>}
               </div>
               <div style={{ display:"flex", flexWrap:"wrap", gap:4, maxHeight:120, overflowY:"auto" }}>
@@ -1853,14 +1853,14 @@ export default function App() {
                   result.tokens.map((t:Token,i) => (
                     <span key={i} className={`token-chip ${tokenClass(t.type)}`}>{t.type==="string"?`"${t.value}"`:t.value}</span>
                   ))
-                ) : <span style={{ color:"hsl(220 10% 60%)", fontSize:12 }}>Run program to see tokens...</span>}
+                ) : <span style={{ color:"var(--theme-muted)", fontSize:12 }}>Run program to see tokens...</span>}
               </div>
             </div>
 
             {/* Syntax Errors */}
             <div className="ss-card" style={{ padding:14 }}>
-              <div style={{ marginBottom:10 }}><span style={{ fontWeight:700, fontSize:13, color:"hsl(220 20% 18%)" }}>Syntax Errors</span></div>
-              {!hasRun ? <div style={{ color:"hsl(220 10% 60%)", fontSize:12 }}>Not run yet</div>
+              <div style={{ marginBottom:10 }}><span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Syntax Errors</span></div>
+              {!hasRun ? <div style={{ color:"var(--theme-muted)", fontSize:12 }}>Not run yet</div>
                 : result?.syntaxErrors.length===0 && result?.lexErrors.length===0 ? (
                   <div>
                     <div className="success-box" style={{ marginBottom:5 }}><span style={{ display:"flex" }}>{Ico.check(13)}</span> No syntax errors</div>
@@ -1877,8 +1877,8 @@ export default function App() {
 
             {/* Semantic Errors */}
             <div className="ss-card" style={{ padding:14 }}>
-              <div style={{ marginBottom:10 }}><span style={{ fontWeight:700, fontSize:13, color:"hsl(220 20% 18%)" }}>Semantic Errors</span></div>
-              {!hasRun ? <div style={{ color:"hsl(220 10% 60%)", fontSize:12 }}>Not run yet</div>
+              <div style={{ marginBottom:10 }}><span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Semantic Errors</span></div>
+              {!hasRun ? <div style={{ color:"var(--theme-muted)", fontSize:12 }}>Not run yet</div>
                 : result?.semanticErrors.length===0 ? (
                   <div>
                     <div className="success-box" style={{ marginBottom:5 }}><span style={{ display:"flex" }}>{Ico.check(13)}</span> No semantic errors</div>
@@ -1896,8 +1896,8 @@ export default function App() {
             {/* Variable Table */}
             <div className="ss-card" style={{ padding:14 }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
-                <span style={{ fontWeight:700, fontSize:13, color:"hsl(220 20% 18%)" }}>Variable Table</span>
-                {result && <span style={{ background:"hsl(220 20% 88%)", color:"hsl(220 20% 40%)", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.variables.length}</span>}
+                <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Variable Table</span>
+                {result && <span style={{ background:"var(--theme-accent-soft)", color:"var(--theme-accent)", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.variables.length}</span>}
               </div>
               {result?.variables.length ? (
                 <table className="var-table">
@@ -1912,13 +1912,13 @@ export default function App() {
                     ))}
                   </tbody>
                 </table>
-              ) : <div style={{ color:"hsl(220 10% 60%)", fontSize:12 }}>No variables declared</div>}
+              ) : <div style={{ color:"var(--theme-muted)", fontSize:12 }}>No variables declared</div>}
             </div>
 
             {/* Output Logs */}
             <div className="ss-card" style={{ padding:14 }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
-                <span style={{ fontWeight:700, fontSize:13, color:"hsl(220 20% 18%)" }}>Output Logs</span>
+                <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Output Logs</span>
                 {result && <span style={{ background:"hsl(142 76% 36% / 0.14)", color:"hsl(142 76% 28%)", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.logs.length}</span>}
               </div>
               <div style={{ maxHeight:150, overflowY:"auto", display:"flex", flexDirection:"column", gap:2 }}>
@@ -1926,10 +1926,10 @@ export default function App() {
                   result.logs.map((log,i) => (
                     <div key={i} className="log-item">
                       <div className="log-dot" style={{ background: i===0?"#89b4fa": i===result.logs.length-1&&didCheckout?"#a6e3a1":"#22c55e" }} />
-                      <span style={{ fontFamily:"var(--app-font-mono)", fontSize:10.5, color:"hsl(220 15% 35%)" }}>{log}</span>
+                      <span style={{ fontFamily:"var(--app-font-mono)", fontSize:10.5, color:"var(--theme-text-soft)" }}>{log}</span>
                     </div>
                   ))
-                ) : <div style={{ color:"hsl(220 10% 60%)", fontSize:12 }}>No logs yet</div>}
+                ) : <div style={{ color:"var(--theme-muted)", fontSize:12 }}>No logs yet</div>}
               </div>
             </div>
           </div>
