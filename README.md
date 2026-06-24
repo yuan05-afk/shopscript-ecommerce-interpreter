@@ -46,15 +46,15 @@ The project combines programming language concepts with a visual and user-friend
 
 ```text
 User Input
-    ↓
+    v
 Lexical Analysis
-    ↓
+    v
 Syntax Analysis
-    ↓
+    v
 Semantic Analysis
-    ↓
+    v
 Interpreter / Executor
-    ↓
+    v
 Visual E-commerce Simulation
 ```
 
@@ -125,10 +125,10 @@ pnpm --filter @workspace/shopscript run build
 
 #### Troubleshooting
 
-* **`Use pnpm instead`** — run `pnpm install`, not `npm install`.
-* **`Missing script: dev`** — the root package has no `dev` script; use the filtered command shown above.
-* **`PORT environment variable is required`** — set `PORT` and `BASE_PATH` in the same terminal before starting or building the app.
-* **Install pauses at the esbuild postinstall step** — allow it a short time to download the Windows binary. If it remains stuck, press `Ctrl+C`, check the network connection, and run `pnpm install` again.
+* **`Use pnpm instead`** - run `pnpm install`, not `npm install`.
+* **`Missing script: dev`** - the root package has no `dev` script; use the filtered command shown above.
+* **`PORT environment variable is required`** - set `PORT` and `BASE_PATH` in the same terminal before starting or building the app.
+* **Install pauses at the esbuild postinstall step** - allow it a short time to download the Windows binary. If it remains stuck, press `Ctrl+C`, check the network connection, and run `pnpm install` again.
 
 ---
 
@@ -139,8 +139,10 @@ pnpm --filter @workspace/shopscript run build
 | Declare variable   | `let <name> = <value>;`            | `let user = "Ava";`              |
 | Declare number     | `let <name> = <number>;`           | `let budget = 1200.00;`          |
 | Declare empty list | `let <name> = [];`                 | `let cart = [];`                 |
+| Register runtime product | `product "<Product>" @ <price> stock <qty>;` | `product "Hoverboard" @ 250.00 stock 2;` |
 | Add to cart        | `add "<Product>" <qty> @ <price>;` | `add "Smartphone X" 1 @ 599.00;` |
 | Override price     | `add "<Product>" <qty> @ <price> override;` | `add "Smartphone X" 1 @ 200.00 override;` |
+| Create coupon     | `coupon "<CODE>" <percent>%;`     | `coupon "FLASH25" 25%;`          |
 | Apply coupon       | `apply coupon "<CODE>";`           | `apply coupon "SAVE10";`         |
 | Set shipping       | `set shipping = <amount>;`         | `set shipping = 40.00;`          |
 | Checkout           | `checkout;`                        | `checkout;`                      |
@@ -166,6 +168,19 @@ checkout;
 
 ---
 
+## Runtime Product Registration
+
+Use `product` when a script needs a temporary product that is not in the persistent Inventory page catalog:
+
+```shopscript
+product "Hoverboard" @ 250.00 stock 2;
+add "Hoverboard" 1 @ 250.00;
+checkout;
+```
+
+This product exists for the current program run only. It does not permanently change the Inventory CRUD page.
+
+---
 ## Manual Price Override
 
 ShopScript validates catalog prices by default. If a script intentionally uses a sale/manual price, add the `override` keyword after the price:
@@ -296,13 +311,16 @@ class Product {
 
 ```text
 src/
-├── App.tsx                    # Main UI component
-├── shopscript-interpreter.ts  # Lexer, syntax checker, semantic checker, and executor
-├── index.css                  # Main styling and orange/white theme
-└── main.tsx                   # React entry point
+|-- App.tsx                    # Main UI component
+|-- shopscript-interpreter.ts  # Lexer, syntax checker, semantic checker, and executor
+|-- index.css                  # Main styling and orange/white theme
+`-- main.tsx                   # React entry point
 
 public/
-└── assets/                    # Optional images or design assets
+`-- assets/                    # Optional images or design assets
+
+docs/
+`-- SHOPSCRIPT_LANGUAGE_SPEC.md # Canonical ShopScript grammar and language rules
 
 README.md                      # Project documentation
 ```
@@ -311,12 +329,12 @@ README.md                      # Project documentation
 
 ## Tech Stack
 
-* **React** — user interface
-* **TypeScript** — typed application logic
-* **Vite** — development and build tool
-* **Tailwind CSS** — utility-based styling
-* **Custom CSS** — theme, layout, and visual polish
-* **Pure TypeScript Interpreter** — lexer, syntax checker, semantic checker, and executor
+* **React** - user interface
+* **TypeScript** - typed application logic
+* **Vite** - development and build tool
+* **Tailwind CSS** - utility-based styling
+* **Custom CSS** - theme, layout, and visual polish
+* **Pure TypeScript Interpreter** - lexer, syntax checker, semantic checker, executor, scoped runtime, control flow, and OOP support
 
 ---
 
@@ -350,11 +368,10 @@ ShopScript is designed as an educational programming language interpreter, not a
 ## Limitations
 
 * E-commerce actions are simulated only.
-* Page refresh resets all program state.
-* Each statement must be written on its own line.
-* Advanced expressions are not yet supported.
-* Control flow keywords are recognized, but full execution of `if`, `else`, `for`, and `while` is not yet implemented.
-* OOP keywords are recognized, but full class execution is not yet implemented.
+* Page refresh resets the current program state.
+* Inventory persistence is local/browser-based for the demo, not a production database.
+* Constructors, return values, imports, and production checkout/payment features are outside the current required subset.
+* The supported syntax is the canonical ShopScript syntax documented in `docs/SHOPSCRIPT_LANGUAGE_SPEC.md`; early `cart.add(...)` PDF-style examples are not implemented as a parallel dialect.
 
 ---
 
@@ -362,3 +379,15 @@ ShopScript is designed as an educational programming language interpreter, not a
 
 **ShopScript v0.3.0**
 Programming Languages Final Project
+
+
+## Coupon Manager
+
+The Inventory > Coupons view lets users create, edit, disable, delete, and reset reusable discount codes. Managed coupons are saved in browser localStorage and are passed into the interpreter during validation. Scripts can also create temporary runtime coupons with:
+
+```shopscript
+coupon "FLASH25" 25%;
+apply coupon "FLASH25";
+```
+
+Runtime coupons exist only for the current program run and do not overwrite the saved coupon catalog.

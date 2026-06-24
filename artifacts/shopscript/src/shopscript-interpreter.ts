@@ -90,11 +90,31 @@ export interface RuntimeInventoryProduct {
 // ---------------------------------------------------------------------------
 // COUPONS
 // ---------------------------------------------------------------------------
-const COUPONS: Record<string, number> = {
+export interface RuntimeCoupon {
+  code: string;
+  discount: number;
+  active: boolean;
+}
+
+const DEFAULT_COUPON_RATES: Record<string, number> = {
   SAVE10: 0.1,
   STUDENT10: 0.1,
   NONE: 0.0,
 };
+
+function normalizeCouponCode(value: string): string {
+  return value.trim().toUpperCase().replace(/\s+/g, "_");
+}
+
+function createCouponMap(coupons?: RuntimeCoupon[]): Map<string, number> {
+  const couponMap = new Map<string, number>();
+  Object.entries(DEFAULT_COUPON_RATES).forEach(([code, discount]) => couponMap.set(code, discount));
+  coupons?.forEach(coupon => {
+    const code = normalizeCouponCode(coupon.code);
+    if (code && coupon.active && Number.isFinite(coupon.discount)) couponMap.set(code, coupon.discount);
+  });
+  return couponMap;
+}
 
 // ---------------------------------------------------------------------------
 // TOKEN TYPES
@@ -119,7 +139,7 @@ export const TOKEN_TYPES = {
 };
 
 const KEYWORDS = new Set([
-  "let", "int", "float", "string", "bool", "void", "add", "apply", "coupon", "set", "checkout", "override",
+  "let", "int", "float", "string", "bool", "void", "product", "stock", "add", "apply", "coupon", "set", "checkout", "override",
   "if", "else", "for", "while", "class", "new", "true", "false",
   "shipping", "budget", "cart", "user", "return", "this", "public", "private", "method",
 ]);
@@ -316,6 +336,34 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
       continue;
     }
 
+
+    // product "Name" @ <price> stock <qty>;
+    if (t.type === TOKEN_TYPES.KEYWORD && t.value === "product") {
+      consume();
+      const name = peek();
+      if (name.type !== TOKEN_TYPES.STRING) {
+        errors.push({ message: `Expected product name string after 'product' at line ${name.line}`, line: name.line });
+      } else { consume(); }
+      if (!expect(TOKEN_TYPES.AT)) {
+        errors.push({ message: `Expected '@' in product declaration at line ${peek().line}`, line: peek().line });
+      }
+      const price = peek();
+      if (price.type !== TOKEN_TYPES.NUMBER) {
+        errors.push({ message: `Expected product price number after '@' at line ${price.line}`, line: price.line });
+      } else { consume(); }
+      const stockKeyword = peek();
+      if (stockKeyword.type !== TOKEN_TYPES.KEYWORD || stockKeyword.value !== "stock") {
+        errors.push({ message: `Expected 'stock' in product declaration at line ${stockKeyword.line}`, line: stockKeyword.line });
+      } else { consume(); }
+      const stock = peek();
+      if (stock.type !== TOKEN_TYPES.NUMBER) {
+        errors.push({ message: `Expected stock quantity number at line ${stock.line}`, line: stock.line });
+      } else { consume(); }
+      if (!expect(TOKEN_TYPES.SEMICOLON)) {
+        errors.push({ message: `Missing semicolon after product declaration at line ${t.line}`, line: t.line });
+      }
+      continue;
+    }
     // add "<product>" <qty> @ <price> [override]; OR add <instanceVar> <qty>;
     if (t.type === TOKEN_TYPES.KEYWORD && t.value === "add") {
       consume();
@@ -349,6 +397,26 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
       }
       if (!expect(TOKEN_TYPES.SEMICOLON)) {
         errors.push({ message: `Missing semicolon after add command at line ${t.line}`, line: t.line });
+      }
+      continue;
+    }
+
+    // syntax runtime coupon declaration: coupon "<CODE>" <percent>%;
+    if (t.type === TOKEN_TYPES.KEYWORD && t.value === "coupon") {
+      consume();
+      const code = peek();
+      if (code.type !== TOKEN_TYPES.STRING) {
+        errors.push({ message: "Expected coupon code string at line " + code.line, line: code.line });
+      } else { consume(); }
+      const rate = peek();
+      if (rate.type !== TOKEN_TYPES.NUMBER) {
+        errors.push({ message: "Expected coupon discount number at line " + rate.line, line: rate.line });
+      } else { consume(); }
+      if (peek().type === TOKEN_TYPES.OPERATOR && peek().value === "%") {
+        consume();
+      }
+      if (!expect(TOKEN_TYPES.SEMICOLON)) {
+        errors.push({ message: "Missing semicolon after coupon declaration at line " + t.line, line: t.line });
       }
       continue;
     }
@@ -417,15 +485,16 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
 // ---------------------------------------------------------------------------
 // INTERPRETER / EXECUTOR
 // ---------------------------------------------------------------------------
-export function interpret(source: string, catalog?: RuntimeInventoryProduct[]): InterpreterResult {
+export function interpret(source: string, catalog?: RuntimeInventoryProduct[], coupons?: RuntimeCoupon[]): InterpreterResult {
   const { tokens, errors: lexErrors } = tokenize(source);
   if (usesStructuredRuntime(source)) {
-    return interpretStructured(source, tokens, lexErrors, catalog);
+    return interpretStructured(source, tokens, lexErrors, catalog, coupons);
   }
   const syntaxErrors = checkSyntax(tokens);
   const runtimeInventory = catalog
     ? new Map(catalog.map(product => [product.name, product]))
     : new Map(Object.entries(INVENTORY).map(([name, product]) => [name, { name, price: product.price, stock: Number.POSITIVE_INFINITY, inStock: true }]));
+  const runtimeCoupons = createCouponMap(coupons);
 
   const semanticErrors: SemanticError[] = [];
   const cart: CartItem[] = [];
@@ -525,6 +594,31 @@ export function interpret(source: string, catalog?: RuntimeInventoryProduct[]): 
         continue;
       }
 
+
+      // runtime product declaration: product "Name" @ price stock qty;
+      if (t.type === TOKEN_TYPES.KEYWORD && t.value === "product") {
+        consume();
+        const nameToken = consume();
+        consume(); // @
+        const priceToken = consume();
+        consume(); // stock
+        const stockToken = consume();
+        consume(); // ;
+        const productName = nameToken.value;
+        const price = parseFloat(priceToken.value);
+        const stock = parseFloat(stockToken.value);
+        if (runtimeInventory.has(productName)) {
+          semanticErrors.push({ message: `Product "${productName}" already exists in inventory`, line: nameToken.line });
+        } else if (isNaN(price) || price < 0) {
+          semanticErrors.push({ message: "Product price must be a valid non-negative number", line: priceToken.line });
+        } else if (!Number.isInteger(stock) || stock < 0) {
+          semanticErrors.push({ message: "Product stock must be a non-negative whole number", line: stockToken.line });
+        } else {
+          runtimeInventory.set(productName, { name: productName, price, stock, inStock: stock > 0 });
+          logs.push(`${ts} Runtime product "${productName}" registered @ $${price.toFixed(2)} with ${stock} unit(s)`);
+        }
+        continue;
+      }
       // add command (string form or instance form)
       if (t.type === TOKEN_TYPES.KEYWORD && t.value === "add") {
         consume();
@@ -596,17 +690,43 @@ export function interpret(source: string, catalog?: RuntimeInventoryProduct[]): 
         continue;
       }
 
+      // legacy runtime coupon declaration
+      if (t.type === TOKEN_TYPES.KEYWORD && t.value === "coupon") {
+        consume();
+        const codeToken = consume();
+        const rateToken = consume();
+        const hasPercent = peek().type === TOKEN_TYPES.OPERATOR && peek().value === "%";
+        if (hasPercent) consume();
+        consume(); // ;
+        const code = normalizeCouponCode(codeToken.value);
+        const rawRate = parseFloat(rateToken.value);
+        const couponDiscount = hasPercent ? rawRate / 100 : rawRate;
+        if (!code) {
+          semanticErrors.push({ message: "Coupon code cannot be empty", line: codeToken.line });
+        } else if (runtimeCoupons.has(code)) {
+          semanticErrors.push({ message: "Coupon \"" + code + "\" already exists", line: codeToken.line });
+        } else if (!Number.isFinite(couponDiscount) || couponDiscount < 0 || couponDiscount > 0.95) {
+          semanticErrors.push({ message: "Coupon discount must be from 0% to 95%", line: rateToken.line });
+        } else {
+          runtimeCoupons.set(code, couponDiscount);
+          logs.push(ts + " Runtime coupon \"" + code + "\" registered (" + (couponDiscount * 100).toFixed(0) + "% off)");
+        }
+        continue;
+      }
+
       // apply coupon
       if (t.type === TOKEN_TYPES.KEYWORD && t.value === "apply") {
         consume(); consume(); // apply coupon
         const codeToken = consume();
         consume(); // ;
-        if (COUPONS[codeToken.value] === undefined) {
-          semanticErrors.push({ message: `Invalid coupon code "${codeToken.value}"`, line: codeToken.line });
+        const code = normalizeCouponCode(codeToken.value);
+        const couponDiscount = runtimeCoupons.get(code);
+        if (couponDiscount === undefined) {
+          semanticErrors.push({ message: "Invalid coupon code \"" + codeToken.value + "\"", line: codeToken.line });
         } else {
-          coupon = codeToken.value;
-          discount = COUPONS[codeToken.value];
-          logs.push(`${ts} Coupon "${codeToken.value}" applied (${(discount * 100).toFixed(0)}% off)`);
+          coupon = code;
+          discount = couponDiscount;
+          logs.push(ts + " Coupon \"" + code + "\" applied (" + (discount * 100).toFixed(0) + "% off)");
         }
         continue;
       }
@@ -724,7 +844,7 @@ function usesStructuredRuntime(source: string): boolean {
   return /\b(int|float|string|bool|if|else|for|while|public|private|method)\b/.test(source);
 }
 
-function interpretStructured(source: string, tokens: Token[], lexErrors: LexError[], catalog?: RuntimeInventoryProduct[]): InterpreterResult {
+function interpretStructured(source: string, tokens: Token[], lexErrors: LexError[], catalog?: RuntimeInventoryProduct[], coupons?: RuntimeCoupon[]): InterpreterResult {
   const runtimeInventory = catalog
     ? new Map(catalog.map(product => [product.name, product]))
     : new Map(Object.entries(INVENTORY).map(([name, product]) => [name, { name, price: product.price, stock: Number.POSITIVE_INFINITY, inStock: true }]));
@@ -746,6 +866,7 @@ function interpretStructured(source: string, tokens: Token[], lexErrors: LexErro
   const now = new Date();
   const ts = `[${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}]`;
   const logs = [`${ts} Program started.`, `${ts} Structured runtime enabled.`];
+  const runtimeCoupons = createCouponMap(coupons);
   const addError = (message: string, line: number) => semanticErrors.push({ message, line });
   const createScope = (parent?: StructuredScope): StructuredScope => {
     const scope = { id: nextScopeId++, depth: parent ? parent.depth + 1 : 0, parent, values: new Map<string, StructuredBinding>() };
@@ -1016,6 +1137,18 @@ function interpretStructured(source: string, tokens: Token[], lexErrors: LexErro
       logs.push(`${ts} Method '${call[1]}.${call[2]}' executed`);
       return;
     }
+
+    const productDecl = text.match(/^product\s+"([^"]+)"\s+@\s+(.+?)\s+stock\s+(.+);$/);
+    if (productDecl) {
+      const productName = productDecl[1];
+      const price = Number(evalExpr(productDecl[2], scope, line, thisObject).value);
+      const stock = Number(evalExpr(productDecl[3], scope, line, thisObject).value);
+      if (runtimeInventory.has(productName)) addError(`Product "${productName}" already exists in inventory`, line);
+      else if (isNaN(price) || price < 0) addError("Product price must be a valid non-negative number", line);
+      else if (!Number.isInteger(stock) || stock < 0) addError("Product stock must be a non-negative whole number", line);
+      else { runtimeInventory.set(productName, { name: productName, price, stock, inStock: stock > 0 }); logs.push(`${ts} Runtime product "${productName}" registered @ $${price.toFixed(2)} with ${stock} unit(s)`); }
+      return;
+    }
     const addProduct = text.match(/^add\s+"([^"]+)"\s+(.+)\s+@\s+(.+?)(\s+override)?;$/);
     if (addProduct) {
       const productName = addProduct[1];
@@ -1043,10 +1176,24 @@ function interpretStructured(source: string, tokens: Token[], lexErrors: LexErro
       else { addToCart(cart, String(nameField.value.value), qty, Number(priceField.value.value)); updateCartVar(scope); }
       return;
     }
+    const couponDecl = text.match(/^coupon\s+"([^"]+)"\s+(.+?)(?:\s*%)?;$/);
+    if (couponDecl) {
+      const hasPercent = /%\s*;$/.test(text);
+      const code = normalizeCouponCode(couponDecl[1]);
+      const rawRate = Number(evalExpr(couponDecl[2], scope, line, thisObject).value);
+      const couponDiscount = hasPercent ? rawRate / 100 : rawRate;
+      if (!code) addError("Coupon code cannot be empty", line);
+      else if (runtimeCoupons.has(code)) addError("Coupon \"" + code + "\" already exists", line);
+      else if (!Number.isFinite(couponDiscount) || couponDiscount < 0 || couponDiscount > 0.95) addError("Coupon discount must be from 0% to 95%", line);
+      else { runtimeCoupons.set(code, couponDiscount); logs.push(ts + " Runtime coupon \"" + code + "\" registered"); }
+      return;
+    }
     const apply = text.match(/^apply\s+coupon\s+"([^"]+)";$/);
     if (apply) {
-      if (COUPONS[apply[1]] === undefined) addError(`Invalid coupon code "${apply[1]}"`, line);
-      else { coupon = apply[1]; discount = COUPONS[apply[1]]; logs.push(`${ts} Coupon "${apply[1]}" applied`); }
+      const code = normalizeCouponCode(apply[1]);
+      const couponDiscount = runtimeCoupons.get(code);
+      if (couponDiscount === undefined) addError("Invalid coupon code \"" + apply[1] + "\"", line);
+      else { coupon = code; discount = couponDiscount; logs.push(ts + " Coupon \"" + code + "\" applied"); }
       return;
     }
     if (text === "checkout;") { if (cart.length === 0) addError("Cannot checkout with an empty cart", line); else { didCheckout = true; logs.push(`${ts} Checkout completed.`); } return; }

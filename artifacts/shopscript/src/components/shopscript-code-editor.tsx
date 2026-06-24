@@ -11,6 +11,7 @@ interface ShopScriptCodeEditorProps {
   className?: string;
   ariaLabel: string;
   errorLines?: number[];
+  onCursorChange?: (position: { line: number; col: number }) => void;
 }
 
 const KEYWORDS = new Set([
@@ -78,6 +79,7 @@ export function ShopScriptCodeEditor({
   className = "",
   ariaLabel,
   errorLines = [],
+  onCursorChange,
 }: ShopScriptCodeEditorProps) {
   const localRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
@@ -85,6 +87,13 @@ export function ShopScriptCodeEditor({
   const textareaRef = editorRef ?? localRef;
   const lines = code.split("\n");
   const errorLineSet = new Set(errorLines);
+
+  const reportCursor = (textarea: HTMLTextAreaElement) => {
+    if (!onCursorChange) return;
+    const beforeCursor = textarea.value.slice(0, textarea.selectionStart);
+    const cursorLines = beforeCursor.split("\n");
+    onCursorChange({ line: cursorLines.length, col: cursorLines[cursorLines.length - 1].length + 1 });
+  };
 
   const syncScroll = (event: UIEvent<HTMLTextAreaElement>) => {
     if (highlightRef.current) {
@@ -109,6 +118,7 @@ export function ShopScriptCodeEditor({
         if (textareaRef.current) {
           textareaRef.current.selectionStart = start + 2;
           textareaRef.current.selectionEnd = start + 2;
+          reportCursor(textareaRef.current);
         }
       }, 0);
     }
@@ -126,8 +136,15 @@ export function ShopScriptCodeEditor({
         <textarea
           ref={textareaRef}
           value={code}
-          onChange={event => onCodeChange(event.target.value)}
+          onChange={event => {
+            onCodeChange(event.target.value);
+            reportCursor(event.currentTarget);
+          }}
           onKeyDown={handleKeyDown}
+          onKeyUp={event => reportCursor(event.currentTarget)}
+          onClick={event => reportCursor(event.currentTarget)}
+          onSelect={event => reportCursor(event.currentTarget)}
+          onFocus={event => reportCursor(event.currentTarget)}
           onScroll={syncScroll}
           spellCheck={false}
           autoCorrect="off"

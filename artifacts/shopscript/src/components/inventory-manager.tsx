@@ -8,6 +8,7 @@ interface InventoryPageProps {
   onDelete: (id: string) => void;
   onReset: () => void;
   onNotify: (type: NotificationType, title: string, message: string) => void;
+  onOpenCoupons?: () => void;
 }
 
 type ProductDraft = Omit<InventoryProduct, "id" | "imgSm">;
@@ -17,7 +18,7 @@ const icon = (path: string) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path} /></svg>
 );
 
-export function InventoryPage({ products, onSave, onDelete, onReset, onNotify }: InventoryPageProps) {
+export function InventoryPage({ products, onSave, onDelete, onReset, onNotify, onOpenCoupons }: InventoryPageProps) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | "active" | "low" | "out">("all");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -72,7 +73,10 @@ export function InventoryPage({ products, onSave, onDelete, onReset, onNotify }:
     <main className="inventory-page">
       <section className="inventory-hero">
         <div><span className="page-eyebrow">Shared product catalog</span><h1>Product Inventory</h1><p>Create and manage the products used by Home, the cart, and ShopScript semantic validation.</p></div>
-        <button className="btn-orange inventory-add-btn" type="button" onClick={openCreate}>{icon("M12 5v14M5 12h14")} Add Product</button>
+        <div className="inventory-hero-actions">
+          <button className="btn-ghost inventory-add-btn" type="button" onClick={onOpenCoupons}>{icon("M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z")} Coupons</button>
+          <button className="btn-orange inventory-add-btn" type="button" onClick={openCreate}>{icon("M12 5v14M5 12h14")} Add Product</button>
+        </div>
       </section>
 
       <section className="inventory-stats" aria-label="Inventory summary">
@@ -84,7 +88,7 @@ export function InventoryPage({ products, onSave, onDelete, onReset, onNotify }:
 
       {formOpen && (
         <section className="inventory-form-card ss-card" aria-label={editingId ? "Edit product" : "Add product"}>
-          <div className="inventory-section-heading"><div><span className="page-eyebrow">{editingId ? "Update catalog entry" : "New catalog entry"}</span><h2>{editingId ? "Edit product" : "Add product"}</h2></div><button type="button" className="inventory-icon-btn" onClick={closeForm} aria-label="Close product form">×</button></div>
+          <div className="inventory-section-heading"><div><span className="page-eyebrow">{editingId ? "Update catalog entry" : "New catalog entry"}</span><h2>{editingId ? "Edit product" : "Add product"}</h2></div><button type="button" className="inventory-icon-btn" onClick={closeForm} aria-label="Close product form">x</button></div>
           <form onSubmit={submit} className="inventory-form">
             <label><span>Product name *</span><input value={draft.name} onChange={event => setDraft({ ...draft, name: event.target.value })} placeholder="e.g. Mechanical Keyboard" /></label>
             <label><span>SKU *</span><input value={draft.sku} onChange={event => setDraft({ ...draft, sku: event.target.value })} placeholder="e.g. ACC-004" /></label>

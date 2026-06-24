@@ -1,17 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="default">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>ShopScript</title>
-    <meta name="description" content="ShopScript — built on Replit. Update this description to reflect the app." />
+    <meta name="description" content="ShopScript is a mini programming language interpreter for e-commerce simulation." />
     <meta name="robots" content="index, follow" />
     <meta property="og:title" content="ShopScript" />
-    <meta property="og:description" content="ShopScript — built on Replit. Update this description to reflect the app." />
+    <meta property="og:description" content="ShopScript is a mini programming language interpreter for e-commerce simulation." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="ShopScript" />
-    <meta name="twitter:description" content="ShopScript — built on Replit. Update this description to reflect the app." />
+    <meta name="twitter:description" content="ShopScript is a mini programming language interpreter for e-commerce simulation." />
+    <script>
+      (() => {
+        const key = "shopscript.theme";
+        const themes = new Set(["default", "emerald-gold", "midnight", "cyber-ochre"]);
+        try {
+          const theme = localStorage.getItem(key);
+          const next = themes.has(theme) ? theme : "default";
+          document.documentElement.dataset.theme = next;
+          document.documentElement.style.colorScheme = next === "midnight" || next === "cyber-ochre" ? "dark" : "light";
+        } catch {
+          document.documentElement.dataset.theme = "default";
+          document.documentElement.style.colorScheme = "light";
+        }
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -165,3 +165,174 @@
   .sim-row2 { grid-template-columns: 1fr; }
   .receipt-download { flex: 0 0 auto; }
 }
+
+/* Theme-aware notifications ---------------------------------------------- */
+html[data-theme]:not([data-theme="default"]) .app-notification {
+  background: color-mix(in srgb, var(--theme-surface) 96%, transparent) !important;
+  border-color: var(--theme-border) !important;
+  border-left-color: var(--theme-accent) !important;
+  color: var(--theme-text) !important;
+  box-shadow: var(--theme-shadow) !important;
+}
+html[data-theme]:not([data-theme="default"]) .notification-copy strong {
+  color: var(--theme-text) !important;
+  font-weight: 850 !important;
+}
+html[data-theme]:not([data-theme="default"]) .notification-copy p {
+  color: var(--theme-text-soft) !important;
+  font-weight: 560 !important;
+}
+html[data-theme]:not([data-theme="default"]) .app-notification > button {
+  color: var(--theme-muted) !important;
+}
+html[data-theme]:not([data-theme="default"]) .app-notification > button:hover {
+  color: var(--theme-accent-strong) !important;
+}
+html[data-theme]:not([data-theme="default"]) .notification-symbol {
+  background: var(--theme-accent-soft) !important;
+  color: var(--theme-accent-strong) !important;
+}
+html[data-theme]:not([data-theme="default"]) .notification-timer {
+  background: var(--theme-accent-strong) !important;
+  opacity: 0.55 !important;
+}
+html[data-theme="emerald-gold"] .app-notification.success {
+  border-left-color: #0D3B2E !important;
+}
+html[data-theme="emerald-gold"] .success .notification-symbol {
+  background: rgba(13, 59, 46, 0.12) !important;
+  color: #0D3B2E !important;
+}
+html[data-theme="midnight"] .app-notification {
+  background: #161618 !important;
+  border-color: #3A3A40 !important;
+  border-left-color: #C8102E !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.58), 0 0 0 1px rgba(200, 16, 46, 0.16) !important;
+}
+html[data-theme="midnight"] .notification-symbol {
+  background: rgba(200, 16, 46, 0.16) !important;
+  color: #FF4D64 !important;
+}
+html[data-theme="cyber-ochre"] .app-notification {
+  background: #10100D !important;
+  border-color: #5B4500 !important;
+  border-left-color: #FFE600 !important;
+  box-shadow: 0 0 0 1px rgba(255, 230, 0, 0.18), 0 18px 46px rgba(0, 0, 0, 0.65), 0 0 26px rgba(255, 230, 0, 0.14) !important;
+}
+html[data-theme="cyber-ochre"] .notification-symbol {
+  background: rgba(255, 230, 0, 0.16) !important;
+  color: #FFE600 !important;
+}
+html[data-theme="cyber-ochre"] .notification-timer {
+  background: linear-gradient(90deg, #FFE600, #B6FF00) !important;
+  box-shadow: 0 0 12px rgba(255, 230, 0, 0.4);
+}
+html[data-theme]:not([data-theme="default"]) .app-notification.error {
+  border-left-color: hsl(0 72% 55%) !important;
+}
+html[data-theme]:not([data-theme="default"]) .app-notification.warning {
+  border-left-color: hsl(35 90% 50%) !important;
+}
+html[data-theme]:not([data-theme="default"]) .app-notification.info {
+  border-left-color: var(--theme-accent) !important;
+}
+
+
+/* Theme-aware editor diagnostics ----------------------------------------- */
+:root {
+  --editor-error: #dc2626;
+  --editor-error-bg: #fff1f2;
+  --editor-error-border: #fecaca;
+  --editor-error-line: rgba(220, 38, 38, 0.10);
+}
+.editor-diagnostic {
+  background: var(--editor-error-bg) !important;
+  border-top-color: var(--editor-error-border) !important;
+  color: var(--editor-error) !important;
+}
+.editor-diagnostic strong,
+.editor-diagnostic span {
+  color: var(--editor-error) !important;
+}
+.ide-gutter .ide-error-line {
+  background: var(--editor-error-bg) !important;
+  color: var(--editor-error) !important;
+  font-weight: 900 !important;
+}
+.ide-highlight-line.has-error {
+  background: linear-gradient(90deg, var(--editor-error-line), transparent 78%) !important;
+  border-left-color: var(--editor-error) !important;
+}
+.playground-editor-footer span:first-child.error,
+.status-bar span[style*="#dc2626"] {
+  color: var(--editor-error) !important;
+}
+.playground-editor-footer span:first-child.error::before,
+.status-bar span[style*="#dc2626"]::before {
+  background: var(--editor-error) !important;
+}
+html[data-theme="emerald-gold"] {
+  --editor-error: #b91c1c;
+  --editor-error-bg: #fff1f0;
+  --editor-error-border: #f2b8b5;
+  --editor-error-line: rgba(185, 28, 28, 0.10);
+}
+html[data-theme="midnight"] {
+  --editor-error: #ff304f;
+  --editor-error-bg: #2a1016;
+  --editor-error-border: rgba(255, 48, 79, 0.45);
+  --editor-error-line: rgba(255, 48, 79, 0.20);
+}
+html[data-theme="cyber-ochre"] {
+  --editor-error: #ff3b30;
+  --editor-error-bg: #2a0d08;
+  --editor-error-border: rgba(255, 59, 48, 0.48);
+  --editor-error-line: rgba(255, 59, 48, 0.22);
+}
+html[data-theme="midnight"] .editor-diagnostic,
+html[data-theme="cyber-ochre"] .editor-diagnostic {
+  box-shadow: inset 3px 0 0 var(--editor-error);
+}
+html[data-theme="midnight"] .ide-gutter .ide-error-line,
+html[data-theme="cyber-ochre"] .ide-gutter .ide-error-line {
+  background: color-mix(in srgb, var(--editor-error) 18%, var(--ide-gutter)) !important;
+  color: #ffffff !important;
+}
+html[data-theme="midnight"] .ide-highlight-line.has-error,
+html[data-theme="cyber-ochre"] .ide-highlight-line.has-error {
+  background: linear-gradient(90deg, var(--editor-error-line), rgba(255,255,255,0.055), transparent 74%) !important;
+  border-left-width: 3px !important;
+}
+html[data-theme="cyber-ochre"] .editor-diagnostic strong,
+html[data-theme="cyber-ochre"] .editor-diagnostic span,
+html[data-theme="midnight"] .editor-diagnostic strong,
+html[data-theme="midnight"] .editor-diagnostic span {
+  color: #ffffff !important;
+}
+html[data-theme="cyber-ochre"] .editor-diagnostic {
+  text-shadow: none !important;
+}
+html[data-theme="midnight"] .playground-editor-footer span:first-child.error,
+html[data-theme="cyber-ochre"] .playground-editor-footer span:first-child.error,
+html[data-theme="emerald-gold"] .playground-editor-footer span:first-child.error {
+  color: var(--editor-error) !important;
+}
+html[data-theme="midnight"] .playground-editor-footer span:first-child.error::before,
+html[data-theme="cyber-ochre"] .playground-editor-footer span:first-child.error::before,
+html[data-theme="emerald-gold"] .playground-editor-footer span:first-child.error::before {
+  background: var(--editor-error) !important;
+}
+
+
+/* Home editor inline error status override ------------------------------- */
+.status-bar span[style*="#dc2626"] {
+  color: var(--editor-error) !important;
+}
+.status-bar span[style*="background: hasErrors"],
+.status-bar span[style*="background:#dc2626"],
+.status-bar span[style*="background: #dc2626"] {
+  background: var(--editor-error) !important;
+}
+html[data-theme]:not([data-theme="default"]) .status-bar span[style*="#dc2626"] {
+  color: var(--editor-error) !important;
+}

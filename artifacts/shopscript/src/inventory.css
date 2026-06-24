@@ -157,3 +157,349 @@
   .inventory-form-actions button { justify-content: center; width: 100%; }
   .inventory-reset { width: 100%; justify-content: center; }
 }
+
+/* Coupon manager --------------------------------------------------------- */
+.coupon-page code { color: var(--theme-accent-strong, hsl(25 95% 48%)); font-weight: 700; }
+.coupon-grid { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: 14px; padding: 14px; }
+.coupon-form-card, .coupon-card, .coupon-empty {
+  border: 1px solid var(--theme-border, hsl(30 20% 88%));
+  border-radius: 14px;
+  background: var(--theme-surface, #fff);
+  color: var(--theme-text, hsl(220 20% 15%));
+  padding: 14px;
+}
+.coupon-form-card h2 { margin: 0 0 12px; font-size: 16px; }
+.coupon-form-card label { display: grid; gap: 6px; margin-bottom: 11px; color: var(--theme-text-soft, hsl(220 10% 45%)); font-size: 12px; font-weight: 700; }
+.coupon-form-card input, .coupon-form-card textarea {
+  width: 100%; border: 1px solid var(--theme-border, hsl(30 20% 88%)); border-radius: 10px;
+  background: var(--theme-surface-2, hsl(30 20% 97%)); color: var(--theme-text, hsl(220 20% 15%));
+  padding: 9px 10px; font: inherit; font-weight: 500;
+}
+.coupon-form-card textarea { min-height: 76px; resize: vertical; }
+.coupon-checkbox { display: flex !important; grid-template-columns: none !important; align-items: center; gap: 8px !important; }
+.coupon-checkbox input { width: auto; }
+.coupon-form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.coupon-list { display: grid; gap: 10px; align-content: start; }
+.coupon-card { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 14px; }
+.coupon-card strong { display: block; font-size: 15px; letter-spacing: 0.04em; }
+.coupon-card span { display: block; margin-top: 3px; color: var(--theme-muted, hsl(220 10% 50%)); font-size: 12px; line-height: 1.35; }
+.coupon-card-meta { display: flex; align-items: center; gap: 8px; }
+.coupon-card-meta b { font-size: 18px; color: var(--theme-accent-strong, hsl(25 95% 48%)); }
+.coupon-card-meta em { font-style: normal; border-radius: 999px; padding: 3px 8px; font-size: 11px; font-weight: 800; }
+.coupon-card-meta em.active { background: hsl(142 76% 36% / 0.12); color: hsl(142 76% 28%); }
+.coupon-card-meta em.inactive { background: hsl(0 84% 60% / 0.1); color: hsl(0 72% 42%); }
+.coupon-card-actions { display: flex; gap: 6px; }
+.coupon-card-actions button {
+  border: 1px solid var(--theme-border, hsl(30 20% 88%)); border-radius: 9px; background: var(--theme-surface-2, hsl(30 20% 97%));
+  color: var(--theme-text, hsl(220 20% 15%)); padding: 7px 9px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.coupon-card-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+.coupon-empty { color: var(--theme-muted, hsl(220 10% 50%)); text-align: center; padding: 30px; }
+@media (max-width: 900px) {
+  .coupon-grid { grid-template-columns: 1fr; }
+  .coupon-card { grid-template-columns: 1fr; }
+  .coupon-card-actions { justify-content: flex-start; }
+}
+
+
+/* Unified inventory hero -------------------------------------------------- */
+.inventory-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--theme-border, hsl(30 20% 88%));
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 92% 18%, var(--theme-accent-soft, hsl(25 95% 53% / 0.13)) 0, transparent 34%),
+    linear-gradient(135deg, var(--theme-surface, #fff) 0%, var(--theme-surface-2, hsl(30 20% 97%)) 52%, var(--theme-accent-soft, hsl(25 95% 53% / 0.13)) 100%);
+  box-shadow: var(--theme-shadow, 0 18px 48px hsl(25 60% 24% / 0.10));
+  color: var(--theme-text, hsl(220 24% 13%));
+}
+.inventory-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--theme-surface, #fff) 86%, transparent), transparent 70%);
+}
+.inventory-hero > * { position: relative; z-index: 1; }
+.inventory-hero h1 {
+  color: var(--theme-text, hsl(220 24% 13%));
+  font-size: clamp(38px, 4.8vw, 62px);
+  font-weight: 850;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+.inventory-hero p {
+  max-width: 820px;
+  color: var(--theme-text-soft, hsl(220 10% 43%));
+  font-size: clamp(14px, 1.1vw, 17px);
+  line-height: 1.75;
+}
+.inventory-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.inventory-hero .btn-orange,
+.inventory-hero .btn-ghost,
+.inventory-add-btn {
+  min-height: 46px;
+  border-radius: 13px;
+  padding: 0 20px !important;
+  font-size: 14px !important;
+  font-weight: 850;
+}
+.inventory-hero .btn-ghost {
+  background: var(--theme-surface, #fff);
+  color: var(--theme-text, hsl(220 24% 13%));
+  border-color: var(--theme-border, hsl(30 20% 88%));
+  box-shadow: var(--theme-shadow, 0 10px 22px hsl(25 60% 24% / 0.10));
+}
+.inventory-hero .btn-orange { box-shadow: var(--theme-shadow, 0 12px 26px hsl(25 60% 24% / 0.10)); }
+.inventory-hero .page-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  padding: 4px 10px;
+  border: 1px solid var(--theme-accent-soft, hsl(25 95% 53% / 0.13));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-surface, #fff) 78%, transparent);
+  color: var(--theme-accent-strong, hsl(25 95% 45%));
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.inventory-hero .page-eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--theme-accent, hsl(25 95% 53%));
+  box-shadow: 0 0 0 4px var(--theme-accent-soft, hsl(25 95% 53% / 0.13));
+}
+@media (max-width: 767px) {
+  .inventory-hero { border-radius: 20px; padding: 24px 18px; }
+  .inventory-hero h1 { font-size: clamp(30px, 11vw, 44px); }
+  .inventory-hero-actions { justify-content: stretch; }
+  .inventory-hero-actions .btn-orange,
+  .inventory-hero-actions .btn-ghost { width: 100%; justify-content: center; }
+}
+
+
+/* Inventory full theme coverage ------------------------------------------ */
+html[data-theme]:not([data-theme="default"]) .inventory-page {
+  color: var(--theme-text) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-stats > div,
+html[data-theme]:not([data-theme="default"]) .inventory-form-card,
+html[data-theme]:not([data-theme="default"]) .inventory-catalog,
+html[data-theme]:not([data-theme="default"]) .inventory-manager,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card,
+html[data-theme]:not([data-theme="default"]) .coupon-card,
+html[data-theme]:not([data-theme="default"]) .coupon-empty {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+  box-shadow: var(--theme-shadow) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-toolbar,
+html[data-theme]:not([data-theme="default"]) .inventory-table th,
+html[data-theme]:not([data-theme="default"]) .inventory-search,
+html[data-theme]:not([data-theme="default"]) .inventory-filters,
+html[data-theme]:not([data-theme="default"]) .inventory-table code,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card input,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card textarea,
+html[data-theme]:not([data-theme="default"]) .inventory-form input:not([type="checkbox"]) {
+  background: var(--theme-surface-2) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-table td,
+html[data-theme]:not([data-theme="default"]) .inventory-table th,
+html[data-theme]:not([data-theme="default"]) .inventory-section-heading h2,
+html[data-theme]:not([data-theme="default"]) .inventory-product-cell strong,
+html[data-theme]:not([data-theme="default"]) .coupon-card strong,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card h2 {
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-stats span,
+html[data-theme]:not([data-theme="default"]) .inventory-stats small,
+html[data-theme]:not([data-theme="default"]) .inventory-product-cell small,
+html[data-theme]:not([data-theme="default"]) .coupon-card span,
+html[data-theme]:not([data-theme="default"]) .inventory-form label,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card label {
+  color: var(--theme-muted) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-stats strong,
+html[data-theme]:not([data-theme="default"]) .coupon-card-meta b,
+html[data-theme]:not([data-theme="default"]) .inventory-table strong,
+html[data-theme]:not([data-theme="default"]) .inventory-filters button.active {
+  color: var(--theme-accent-strong) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-filters button.active {
+  background: var(--theme-accent-soft) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-table tbody tr:hover {
+  background: var(--theme-accent-soft) !important;
+}
+html[data-theme="cyber-ochre"] .inventory-hero,
+html[data-theme="cyber-ochre"] .inventory-catalog,
+html[data-theme="cyber-ochre"] .inventory-stats > div,
+html[data-theme="cyber-ochre"] .inventory-manager {
+  border-color: color-mix(in srgb, var(--theme-accent) 35%, var(--theme-border)) !important;
+}
+
+
+/* Final inventory theme readability pass --------------------------------- */
+html[data-theme]:not([data-theme="default"]) .inventory-page,
+html[data-theme]:not([data-theme="default"]) .coupon-page {
+  background: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-hero,
+html[data-theme]:not([data-theme="default"]) .inventory-catalog,
+html[data-theme]:not([data-theme="default"]) .inventory-manager,
+html[data-theme]:not([data-theme="default"]) .inventory-form-card,
+html[data-theme]:not([data-theme="default"]) .inventory-stats > div,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card,
+html[data-theme]:not([data-theme="default"]) .coupon-card,
+html[data-theme]:not([data-theme="default"]) .coupon-empty {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+  box-shadow: var(--theme-shadow) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-hero {
+  background: var(--theme-hero) !important;
+  border-color: color-mix(in srgb, var(--theme-accent) 34%, var(--theme-border)) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-hero h1,
+html[data-theme]:not([data-theme="default"]) .inventory-hero p,
+html[data-theme]:not([data-theme="default"]) .inventory-section-heading h2,
+html[data-theme]:not([data-theme="default"]) .inventory-stats strong,
+html[data-theme]:not([data-theme="default"]) .inventory-product-cell strong,
+html[data-theme]:not([data-theme="default"]) .inventory-table th,
+html[data-theme]:not([data-theme="default"]) .inventory-table td,
+html[data-theme]:not([data-theme="default"]) .coupon-card strong,
+html[data-theme]:not([data-theme="default"]) .coupon-card p,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card h2,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card input,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card textarea,
+html[data-theme]:not([data-theme="default"]) .inventory-form input,
+html[data-theme]:not([data-theme="default"]) .inventory-search input {
+  color: var(--theme-text) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-stats span,
+html[data-theme]:not([data-theme="default"]) .inventory-stats small,
+html[data-theme]:not([data-theme="default"]) .inventory-product-cell small,
+html[data-theme]:not([data-theme="default"]) .inventory-form label,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card label,
+html[data-theme]:not([data-theme="default"]) .coupon-card span,
+html[data-theme]:not([data-theme="default"]) .inventory-empty,
+html[data-theme]:not([data-theme="default"]) .inventory-search {
+  color: var(--theme-muted) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-toolbar,
+html[data-theme]:not([data-theme="default"]) .inventory-table th,
+html[data-theme]:not([data-theme="default"]) .inventory-table code,
+html[data-theme]:not([data-theme="default"]) .inventory-search,
+html[data-theme]:not([data-theme="default"]) .inventory-filters,
+html[data-theme]:not([data-theme="default"]) .inventory-filters button,
+html[data-theme]:not([data-theme="default"]) .inventory-icon-btn,
+html[data-theme]:not([data-theme="default"]) .inventory-row-actions button,
+html[data-theme]:not([data-theme="default"]) .coupon-card-actions button,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card input,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card textarea,
+html[data-theme]:not([data-theme="default"]) .inventory-form input:not([type="checkbox"]) {
+  background: var(--theme-surface-2) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-filters button.active,
+html[data-theme]:not([data-theme="default"]) .stock-count,
+html[data-theme]:not([data-theme="default"]) .stock-count.low,
+html[data-theme]:not([data-theme="default"]) .inventory-table code,
+html[data-theme]:not([data-theme="default"]) .coupon-card-meta em,
+html[data-theme]:not([data-theme="default"]) .coupon-card-meta em.active,
+html[data-theme]:not([data-theme="default"]) .coupon-card-meta em.inactive,
+html[data-theme]:not([data-theme="default"]) .page-eyebrow {
+  background: var(--theme-accent-soft) !important;
+  border-color: color-mix(in srgb, var(--theme-accent) 45%, var(--theme-border)) !important;
+  color: var(--theme-accent-strong) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-status.active,
+html[data-theme]:not([data-theme="default"]) .coupon-card-meta b,
+html[data-theme]:not([data-theme="default"]) .inventory-table strong {
+  color: var(--theme-accent-strong) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-table td,
+html[data-theme]:not([data-theme="default"]) .inventory-table th,
+html[data-theme]:not([data-theme="default"]) .inventory-table tbody tr,
+html[data-theme]:not([data-theme="default"]) .inventory-table-wrap {
+  border-color: var(--theme-border) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-table tbody tr:hover {
+  background: var(--theme-accent-soft) !important;
+}
+html[data-theme="cyber-ochre"] .inventory-hero,
+html[data-theme="cyber-ochre"] .inventory-catalog,
+html[data-theme="cyber-ochre"] .inventory-manager,
+html[data-theme="cyber-ochre"] .inventory-form-card,
+html[data-theme="cyber-ochre"] .coupon-card,
+html[data-theme="cyber-ochre"] .coupon-form-card {
+  box-shadow: 0 0 0 1px rgba(255, 179, 0, 0.18), 0 22px 52px rgba(0, 0, 0, 0.55) !important;
+}
+
+
+/* Inventory theme visual polish pass ------------------------------------- */
+html[data-theme="emerald-gold"] .inventory-page,
+html[data-theme="emerald-gold"] .coupon-page { scrollbar-color: #C5A059 #F3F1E7; }
+html[data-theme="midnight"] .inventory-page,
+html[data-theme="midnight"] .coupon-page { scrollbar-color: #C8102E #161618; }
+html[data-theme="cyber-ochre"] .inventory-page,
+html[data-theme="cyber-ochre"] .coupon-page { scrollbar-color: #FFE600 #0B0B08; }
+html[data-theme]:not([data-theme="default"]) .inventory-stats span,
+html[data-theme]:not([data-theme="default"]) .inventory-stats small,
+html[data-theme]:not([data-theme="default"]) .inventory-product-cell small,
+html[data-theme]:not([data-theme="default"]) .inventory-form label,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card label,
+html[data-theme]:not([data-theme="default"]) .coupon-card span,
+html[data-theme]:not([data-theme="default"]) .coupon-card p,
+html[data-theme]:not([data-theme="default"]) .inventory-empty,
+html[data-theme]:not([data-theme="default"]) .inventory-table td {
+  font-weight: 560 !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-hero h1,
+html[data-theme]:not([data-theme="default"]) .inventory-section-heading h2,
+html[data-theme]:not([data-theme="default"]) .inventory-stats strong,
+html[data-theme]:not([data-theme="default"]) .inventory-product-cell strong,
+html[data-theme]:not([data-theme="default"]) .coupon-card strong,
+html[data-theme]:not([data-theme="default"]) .coupon-form-card h2,
+html[data-theme]:not([data-theme="default"]) .inventory-table th {
+  font-weight: 850 !important;
+}
+html[data-theme="emerald-gold"] .inventory-toolbar,
+html[data-theme="emerald-gold"] .inventory-table th,
+html[data-theme="emerald-gold"] .inventory-search,
+html[data-theme="emerald-gold"] .inventory-filters,
+html[data-theme="emerald-gold"] .inventory-table code,
+html[data-theme="emerald-gold"] .coupon-form-card input,
+html[data-theme="emerald-gold"] .coupon-form-card textarea,
+html[data-theme="emerald-gold"] .inventory-form input:not([type="checkbox"]) {
+  background: #F6F2E6 !important;
+  border-color: #D8C99E !important;
+}
+html[data-theme="emerald-gold"] .inventory-filters button.active,
+html[data-theme="emerald-gold"] .stock-count,
+html[data-theme="emerald-gold"] .stock-count.low,
+html[data-theme="emerald-gold"] .inventory-table code,
+html[data-theme="emerald-gold"] .coupon-card-meta em,
+html[data-theme="emerald-gold"] .page-eyebrow {
+  background: rgba(197, 160, 89, 0.18) !important;
+  color: #0D3B2E !important;
+}

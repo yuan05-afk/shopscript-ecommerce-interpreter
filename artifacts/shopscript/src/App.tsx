@@ -11,7 +11,9 @@ import { EditorThemeToggle, ShopScriptCodeEditor, type EditorTheme } from "./com
 import { InventoryPage } from "./components/inventory-page";
 import { NotificationCenter, type AppNotification, type NotificationType } from "./components/notification-center";
 import { DEFAULT_PRODUCTS, INVENTORY_STORAGE_KEY, loadInventory, type InventoryProduct } from "./inventory-data";
+import { COUPON_STORAGE_KEY, DEFAULT_COUPONS, loadCoupons, type CouponEntry } from "./coupon-data";
 import { downloadReceiptPdf } from "./receipt-pdf";
+import { ThemeManager, THEME_OPTIONS, type Theme } from "./theme-manager";
 
 // --- Sample programs ----------------------------------------------------------
 const SAMPLE_VALID = `// ShopScript Sample Program
@@ -42,11 +44,12 @@ let user = "Carol";
 let budget = 300.00;
 let cart = [];
 
+product "Hoverboard" @ 250.00 stock 2;
 add "Hoverboard" 1 @ 250.00;
 add "Phone Case" 0 @ 29.00;
 
 apply coupon "BLACKFRIDAY";
-set shipping = 40.00;
+set shipping = -5.00;
 
 checkout;`;
 
@@ -68,6 +71,7 @@ let cart = [];
 int qty = 0;
 float unitPrice = 29.00;
 bool ready = true;
+float shipping = 0.00;
 
 while (qty < 2) {
   qty = qty + 1;
@@ -100,7 +104,7 @@ for (int i = 0; i < 2; i = i + 1) {
 }
 
 checkout;`;
-const SAMPLE_OOP = `// ShopScript OOP Demo — class & new
+const SAMPLE_OOP = `// ShopScript OOP Demo - class & new
 let user = "Dev";
 let cart = [];
 
@@ -134,7 +138,44 @@ set shipping = 20.00;
 
 checkout;`;
 
+const SAMPLE_FINAL_DEMO = `// Final ShopScript Demonstration
+string user = "Ava";
+let cart = [];
+int qty = 0;
+bool ready = true;
+float shipping = 0.00;
+
+while (qty < 2) {
+  qty = qty + 1;
+}
+
+class Product {
+  public string name = "Phone Case";
+  public float price = 29.00;
+  private float cost = 10.00;
+
+  public method discount(float rate) {
+    set this.price = this.price * rate;
+  }
+}
+
+let item = new Product;
+item.discount(0.5);
+
+if (ready && qty == 2) {
+  add "Wireless Earbuds" 1 @ 199.00;
+  add item qty;
+}
+else {
+  set shipping = 0.00;
+}
+
+apply coupon "SAVE10";
+set shipping = 40.00;
+checkout;`;
+
 type ExampleCategory = "Starter" | "E-commerce" | "Language" | "Errors" | "OOP";
+type CursorPosition = { line: number; col: number };
 
 interface ShopScriptExample {
   id: string;
@@ -191,6 +232,42 @@ const EXAMPLE_LIBRARY: ShopScriptExample[] = [
     expected: "SAVE10 applies 10% off before shipping and produces a completed receipt.",
   },
   {
+    id: "runtime-coupon",
+    title: "Create coupon in code",
+    category: "E-commerce",
+    summary: "Define a temporary discount inside the script before applying it.",
+    code: [
+      "// Runtime Coupon Registration",
+      'let user = "Mika";',
+      "let cart = [];",
+      "",
+      'add "Phone Case" 2 @ 29.00;',
+      'coupon "FLASH25" 25%;',
+      'apply coupon "FLASH25";',
+      "checkout;",
+    ].join("\n"),
+    concepts: ["coupon", "discount", "checkout"],
+    expected: "FLASH25 is registered for this run, then applies 25% off the subtotal.",
+  },
+  {
+    id: "runtime-product",
+    title: "Register product in code",
+    category: "E-commerce",
+    summary: "Define a runtime product inside the script, then add it like catalog inventory.",
+    code: [
+      "// Runtime Product Registration",
+      'let user = "Rin";',
+      "let cart = [];",
+      "",
+      'product "Hoverboard" @ 250.00 stock 2;',
+      'add "Hoverboard" 1 @ 250.00;',
+      "",
+      'apply coupon "NONE";',
+      "checkout;",
+    ].join("\n"),
+    concepts: ["product", "runtime inventory", "stock", "semantic"],
+    expected: "Hoverboard is registered for this run, added to the cart, and accepted by semantic validation.",
+  },  {
     id: "price-override",
     title: "Manual sale price override",
     category: "E-commerce",
@@ -218,6 +295,15 @@ const EXAMPLE_LIBRARY: ShopScriptExample[] = [
     expected: "The method discounts the public price to $14.50, then the for loop adds two units.",
   },
   {
+    id: "final-demonstration",
+    title: "Final end-to-end demonstration",
+    category: "Language",
+    summary: "Run one complete program covering types, scope, control flow, OOP methods, encapsulation, inventory, coupon, shipping, checkout, and receipt output.",
+    code: SAMPLE_FINAL_DEMO,
+    concepts: ["lexer", "syntax", "semantic", "scope", "types", "control flow", "OOP", "checkout"],
+    expected: "The program creates a discounted object product, adds catalog and object items, applies SAVE10, sets shipping, and produces a receipt.",
+  },
+  {
     id: "syntax-debugging",
     title: "Syntax-error debugging",
     category: "Errors",
@@ -234,7 +320,7 @@ const EXAMPLE_LIBRARY: ShopScriptExample[] = [
     summary: "See logical validation for inventory, quantity, and coupon rules.",
     code: SAMPLE_SEMANTIC_ERROR,
     concepts: ["semantic", "inventory", "quantity", "coupon"],
-    expected: "The Semantic Errors panel reports an unknown product, zero quantity, and invalid coupon.",
+    expected: "Hoverboard is registered successfully, then the Semantic Errors panel reports zero quantity, invalid coupon, and invalid shipping.",
     isError: true,
   },
   {
@@ -333,7 +419,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
       </section>
 
       <div className="docs-search-wrap">
-        <span aria-hidden="true">{Ico.book(17, "hsl(25 95% 53%)")}</span>
+        <span aria-hidden="true">{Ico.book(17, "var(--theme-accent)")}</span>
         <input
           id="docs-search"
           className="docs-search"
@@ -369,7 +455,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
         <div className="docs-content">
           {visibleSections.length === 0 && (
             <section className="docs-empty ss-card">
-              <div className="page-icon">{Ico.book(22, "hsl(25 95% 53%)")}</div>
+              <div className="page-icon">{Ico.book(22, "var(--theme-accent)")}</div>
               <h2>No matching documentation</h2>
               <p>Try searching for syntax, coupon, OOP, errors, setup, or control flow.</p>
               <button className="btn-ghost" onClick={() => setQuery("")}>Clear search</button>
@@ -385,7 +471,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
               </div>
               <p>ShopScript is a mini programming language that turns source code into a visual e-commerce simulation. It is designed to demonstrate programming-language concepts, not to operate as a real online store.</p>
               <div className="docs-callout">
-                {Ico.alert(17, "hsl(25 95% 45%)")}
+                {Ico.alert(17, "var(--theme-accent-strong)")}
                 <div><strong>Educational scope</strong><span>No real accounts, payments, database orders, or production checkout are performed.</span></div>
               </div>
               <div className="docs-feature-grid">
@@ -482,7 +568,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
                 <div><strong>Run shortcut</strong><span>Press Ctrl+Enter on Windows/Linux or Command+Enter on macOS.</span></div>
               </div>
               <div className="docs-callout">
-                {Ico.alert(17, "hsl(25 95% 45%)")}
+                {Ico.alert(17, "var(--theme-accent-strong)")}
                 <div><strong>Immediate feedback</strong><span>Runs and interface actions show popup notifications. Error lines are marked in the editor, and the first diagnostic appears directly below it. Full lexical, syntax, and semantic details remain available in the analyzer panels.</span></div>
               </div>
             </article>
@@ -499,7 +585,9 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
                   <thead><tr><th>Action</th><th>Syntax</th><th>Effect</th></tr></thead>
                   <tbody>
                     <tr><td>Add product</td><td><code>{'add "Smartphone X" 1 @ 599.00;'}</code></td><td>Adds a known product and quantity.</td></tr>
+                    <tr><td>Register runtime product</td><td><code>{'product "Hoverboard" @ 250.00 stock 2;'}</code></td><td>Registers a product for the current program run.</td></tr>
                     <tr><td>Override price</td><td><code>{'add "Smartphone X" 1 @ 200.00 override;'}</code></td><td>Uses an intentional manual or sale price.</td></tr>
+                    <tr><td>Create coupon</td><td><code>{'coupon "FLASH25" 25%;'}</code></td><td>Registers a temporary coupon for the current run.</td></tr>
                     <tr><td>Apply coupon</td><td><code>{'apply coupon "SAVE10";'}</code></td><td>Applies a supported discount.</td></tr>
                     <tr><td>Set shipping</td><td><code>set shipping = 40.00;</code></td><td>Sets a non-negative shipping fee.</td></tr>
                     <tr><td>Checkout</td><td><code>checkout;</code></td><td>Completes a non-empty simulated cart.</td></tr>
@@ -507,7 +595,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
                 </table>
               </div>
               <h3>Supported coupons</h3>
-              <div className="docs-chip-row"><span>SAVE10 · 10%</span><span>STUDENT10 · 10%</span><span>NONE · 0%</span></div>
+              <div className="docs-chip-row"><span>SAVE10 - 10%</span><span>STUDENT10 - 10%</span><span>NONE - 0%</span><span>Manage more in Inventory</span></div>
               <h3>Inventory</h3>
               <div className="docs-inventory-list">
                 {[
@@ -527,13 +615,13 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
               <div className="docs-section-heading">
                 <span className="docs-step">07</span>
                 <div><span className="docs-kicker">Object orientation</span><h2>Current OOP syntax</h2></div>
-                <span className="docs-status progress">Partial</span>
+                <span className="docs-status implemented">Implemented</span>
               </div>
-              <p>ShopScript currently supports classes with default fields, instance creation, field assignment, and adding an instance to the cart when it has name and price fields.</p>
-              <pre><code>{'class Product {\n  name = "Unknown";\n  price = 0.00;\n  stock = true;\n}\n\nlet phone = new Product;\nset phone.name = "Pixel 9 Pro";\nset phone.price = 849.00;\nadd phone 1;\ncheckout;'}</code></pre>
-              <div className="docs-callout neutral">
-                {Ico.dna(17, "hsl(220 60% 50%)")}
-                <div><strong>Still planned</strong><span>Typed fields, methods, parameters, this binding, public/private access, and encapsulation checks.</span></div>
+              <p>ShopScript supports classes, object creation, typed public/private fields, method parameters, this binding, field assignment, encapsulation checks, and adding an object to the cart when it exposes public name and price fields.</p>
+              <pre><code>{'class Product {\n  public string name = "Phone Case";\n  public float price = 29.00;\n  private float cost = 10.00;\n\n  public method discount(float rate) {\n    set this.price = this.price * rate;\n  }\n}\n\nlet item = new Product;\nitem.discount(0.5);\nadd item 2;\ncheckout;'}</code></pre>
+              <div className="docs-callout success">
+                {Ico.dna(17, "hsl(142 76% 32%)")}
+                <div><strong>Encapsulation implemented</strong><span>Public fields and methods are available to scripts; private fields and private methods are rejected when accessed from outside the object.</span></div>
               </div>
             </article>
           )}
@@ -567,7 +655,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
                 <div><span className="docs-kicker">Roadmap alignment</span><h2>Current implementation status</h2></div>
                 <span className="docs-status progress">In progress</span>
               </div>
-              <p>The website now demonstrates the main academic language requirements. Remaining work is mostly polish, final documentation, and broader test coverage.</p>
+              <p>The website now demonstrates the main academic language requirements. Remaining work is focused on final submission polish and verification.</p>
               <div className="docs-status-columns">
                 <div>
                   <h3>{Ico.check(15)} Available now</h3>
@@ -575,6 +663,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
                     <li>Lexer and token display</li>
                     <li>Current-statement syntax checks</li>
                     <li>E-commerce semantic validation</li>
+                    <li>Runtime product registration from ShopScript code</li>
                     <li>Cart, discount, checkout, and receipt</li>
                     <li>Variables and basic classes/instances</li>
                     <li>Shared syntax-highlighted Light/Dark editor</li>
@@ -583,19 +672,20 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
                     <li>Explicit int, float, bool, and string declarations</li>
                     <li>Public/private fields and public method execution</li>
                     <li>Automated interpreter tests</li>
+                    <li>Final end-to-end demonstration sample</li>
                   </ul>
                 </div>
                 <div>
-                  <h3>{Ico.alert(15, "hsl(25 95% 48%)")} Remaining polish</h3>
+                  <h3>{Ico.alert(15, "var(--theme-accent-strong)")} Remaining polish</h3>
                   <ul>
-                    <li>Formal AST and scope visualization in the analyzer</li>
-                    <li>More edge-case tests for invalid expressions and loops</li>
-                    <li>Final language-spec documentation before submission</li>
+                    <li>Optional AST and scope visualization in the analyzer</li>
+                    <li>Responsive and keyboard-accessibility audit</li>
+                    <li>Final requirements audit against the project specification PDFs</li>
                   </ul>
                 </div>
               </div>
               <div className="docs-next-card">
-                <div><span className="page-eyebrow">Next project milestone</span><strong>Final language documentation</strong><p>The main required runtime features are implemented. The next roadmap work is documenting the final grammar and expanding edge-case tests.</p></div>
+                <div><span className="page-eyebrow">Next project milestone</span><strong>Final submission audit</strong><p>The required runtime, language spec, examples, and regression tests are in place. The next roadmap work is the final requirements and demo-flow audit.</p></div>
                 <button className="btn-orange" onClick={() => onNavigate("Playground")}>Open Playground {Ico.chevron(13, "white")}</button>
               </div>
             </article>
@@ -639,7 +729,7 @@ function ExamplesPage({ onOpenExample, onNavigate }: { onOpenExample: (code: str
           ))}
         </div>
         <div className="examples-search-wrap">
-          {Ico.code(15, "hsl(25 95% 53%)")}
+          {Ico.code(15, "var(--theme-accent)")}
           <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search examples..." aria-label="Search examples" />
           {query && <button onClick={() => setQuery("")} aria-label="Clear examples search">{Ico.x(11)}</button>}
         </div>
@@ -679,7 +769,7 @@ function ExamplesPage({ onOpenExample, onNavigate }: { onOpenExample: (code: str
         </section>
       ) : (
         <section className="examples-empty ss-card">
-          <div className="page-icon">{Ico.code(22, "hsl(25 95% 53%)")}</div>
+          <div className="page-icon">{Ico.code(22, "var(--theme-accent)")}</div>
           <h2>No matching examples</h2>
           <p>Change the category or clear your search.</p>
           <button className="btn-ghost" onClick={() => { setFilter("All"); setQuery(""); }}>Reset filters</button>
@@ -712,11 +802,16 @@ interface PlaygroundPageProps {
   onNavigate: (page: NavItem) => void;
   theme: EditorTheme;
   onToggleTheme: () => void;
+  cursorPosition: CursorPosition;
+  onCursorChange: (position: CursorPosition) => void;
+  selectedExampleId: string;
+  onSelectedExampleChange: (id: string) => void;
 }
 
-function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, onLoadExample, onNavigate, theme, onToggleTheme }: PlaygroundPageProps) {
+function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, onLoadExample, onNavigate, theme, onToggleTheme, cursorPosition, onCursorChange, selectedExampleId, onSelectedExampleChange }: PlaygroundPageProps) {
   const [activeTab, setActiveTab] = useState<PlaygroundTab>("Output");
   const lines = code.split("\n");
+
   const totalErrors = (result?.lexErrors.length ?? 0) + (result?.syntaxErrors.length ?? 0) + (result?.semanticErrors.length ?? 0);
   const errorGroups: Array<{ label: string; items: Array<{ message: string; line: number }> }> = [
     { label: "Lexical", items: result?.lexErrors ?? [] },
@@ -758,14 +853,15 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
       <div className="playground-layout">
         <section className="playground-editor ss-card">
           <div className="playground-panel-bar">
-            <div className="playground-panel-title">{Ico.code(16, "hsl(25 95% 53%)")}<div><strong>main.shop</strong><span>ShopScript source</span></div></div>
+            <div className="playground-panel-title">{Ico.code(16, "var(--theme-accent)")}<div><strong>main.shop</strong><span>ShopScript source</span></div></div>
             <div className="playground-editor-actions">
               <select
-                defaultValue=""
+                value={selectedExampleId}
                 onChange={event => {
-                  const example = EXAMPLE_LIBRARY.find(item => item.id === event.target.value);
+                  const nextId = event.target.value;
+                  onSelectedExampleChange(nextId);
+                  const example = EXAMPLE_LIBRARY.find(item => item.id === nextId);
                   if (example) onLoadExample(example.code);
-                  event.target.value = "";
                 }}
                 aria-label="Load a ShopScript example"
               >
@@ -785,16 +881,17 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
             className="playground-ide"
             ariaLabel="ShopScript playground editor"
             errorLines={hasRun ? playgroundErrorLines : []}
+            onCursorChange={onCursorChange}
           />
           {hasRun && primaryPlaygroundError && (
             <div className="editor-diagnostic playground-diagnostic" role="alert">
-              <strong>{primaryPlaygroundError.category} error · Line {primaryPlaygroundError.line}</strong>
-              <span>{primaryPlaygroundError.message}{playgroundErrors.length > 1 ? " · " + (playgroundErrors.length - 1) + " more error(s) below" : ""}</span>
+              <strong>{primaryPlaygroundError.category} error - Line {primaryPlaygroundError.line}</strong>
+              <span>{primaryPlaygroundError.message}{playgroundErrors.length > 1 ? " - " + (playgroundErrors.length - 1) + " more error(s) below" : ""}</span>
             </div>
           )}
           <div className="playground-editor-footer">
             <span className={!hasRun ? "idle" : totalErrors > 0 ? "error" : "success"}>{!hasRun ? "Ready" : totalErrors > 0 ? "Error" : "Ready"}</span>
-            <span>Lines {lines.length}, Col 1</span>
+            <span>Line {cursorPosition.line}, Col {cursorPosition.col} / {lines.length} lines</span>
             <span>ShopScript v{APP_VERSION}</span>
           </div>
         </section>
@@ -836,7 +933,7 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
                       <div className="playground-cart-list">
                         <h3>Cart</h3>
                         {result.cart.map(item => (
-                          <div key={item.name}><span>{item.name}<small> × {item.quantity}</small></span><strong>{"$"}{(item.price * item.quantity).toFixed(2)}</strong></div>
+                          <div key={item.name}><span>{item.name}<small> - {item.quantity}</small></span><strong>{"$"}{(item.price * item.quantity).toFixed(2)}</strong></div>
                         ))}
                       </div>
                     )}
@@ -859,7 +956,7 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
                     <div className="playground-panel-note">Token type, lexeme, and source position</div>
                     <div className="playground-token-list">
                       {result.tokens.map((token, index) => (
-                        <div key={index}><span className={"token-chip " + tokenClass(token.type)}>{token.value || token.type}</span><small>{token.type} · L{token.line}:C{token.col}</small></div>
+                        <div key={index}><span className={"token-chip " + tokenClass(token.type)}>{token.value || token.type}</span><small>{token.type} - L{token.line}:C{token.col}</small></div>
                       ))}
                     </div>
                   </>
@@ -935,21 +1032,21 @@ function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
 
       <section className="about-grid">
         <article className="ss-card about-card">
-          <div className="about-card-title">{Ico.zap(18, "hsl(25 95% 53%)")} Project purpose</div>
+          <div className="about-card-title">{Ico.zap(18, "var(--theme-accent)")} Project purpose</div>
           <p>
             The project demonstrates lexical analysis, syntax analysis, semantic analysis, names and scope,
             data types, control flow, and object-oriented programming through an approachable online-store scenario.
           </p>
         </article>
         <article className="ss-card about-card">
-          <div className="about-card-title">{Ico.cart(18, "hsl(25 95% 53%)")} Educational scope</div>
+          <div className="about-card-title">{Ico.cart(18, "var(--theme-accent)")} Educational scope</div>
           <p>
             ShopScript simulates store behavior only. It does not process real payments, create customer accounts,
             store production orders, or operate as a commercial e-commerce platform.
           </p>
         </article>
         <article className="ss-card about-card">
-          <div className="about-card-title">{Ico.table(18, "hsl(25 95% 53%)")} Interpreter pipeline</div>
+          <div className="about-card-title">{Ico.table(18, "var(--theme-accent)")} Interpreter pipeline</div>
           <div className="pipeline-list">
             {["Source code", "Lexical analysis", "Syntax analysis", "Semantic analysis", "Execution", "Visual simulation"].map((step, index) => (
               <div key={step}><span>{index + 1}</span>{step}</div>
@@ -960,7 +1057,7 @@ function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
 
       <section className="team-section ss-card">
         <div className="section-heading">
-          <div className="page-icon small">{Ico.users(20, "hsl(25 95% 53%)")}</div>
+          <div className="page-icon small">{Ico.users(20, "var(--theme-accent)")}</div>
           <div><span className="page-eyebrow">Project team</span><h2>Creators</h2></div>
         </div>
         <div className="team-grid">
@@ -980,14 +1077,14 @@ function ClassCard({ def }: { def: ClassDefinition }) {
   return (
     <div style={{ background:"hsl(220 30% 98%)", border:"1px solid hsl(220 20% 88%)", borderRadius:10, padding:12, fontFamily:"var(--app-font-mono)", fontSize:12 }}>
       <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-        <span style={{ background:"hsl(25 95% 53%)", color:"white", fontSize:10, fontWeight:700, padding:"1px 6px", borderRadius:4 }}>class</span>
-        <span style={{ fontWeight:800, color:"hsl(220 20% 15%)", fontSize:13 }}>{def.name}</span>
-        <span style={{ marginLeft:"auto", fontSize:10, color:"hsl(220 10% 55%)" }}>{Object.keys(def.fields).length} fields</span>
+        <span style={{ background:"var(--theme-accent)", color:"white", fontSize:10, fontWeight:700, padding:"1px 6px", borderRadius:4 }}>class</span>
+        <span style={{ fontWeight:800, color:"var(--theme-text)", fontSize:13 }}>{def.name}</span>
+        <span style={{ marginLeft:"auto", fontSize:10, color:"var(--theme-muted)" }}>{Object.keys(def.fields).length} fields</span>
       </div>
       {Object.entries(def.fields).map(([k,v]) => (
         <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"3px 8px", background:"white", borderRadius:6, border:"1px solid hsl(220 20% 93%)", marginBottom:3 }}>
           <span style={{ color:"#7c3aed" }}>{k}</span>
-          <span style={{ color:"hsl(220 10% 50%)" }}>: {v.type}</span>
+          <span style={{ color:"var(--theme-muted)" }}>: {v.type}</span>
           <span style={{ color: v.type==="string"?"#15803d":"#c2410c" }}>{v.type==="string"?`"${v.value}"`:v.value}</span>
         </div>
       ))}
@@ -999,13 +1096,13 @@ function InstanceCard({ name, inst }: { name:string; inst:ObjectInstance }) {
     <div style={{ background:"hsl(36 33% 97%)", border:"1px solid hsl(25 95% 53% / 0.25)", borderRadius:10, padding:12, fontFamily:"var(--app-font-mono)", fontSize:12 }}>
       <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
         <span style={{ background:"hsl(220 60% 55%)", color:"white", fontSize:10, fontWeight:700, padding:"1px 6px", borderRadius:4 }}>new</span>
-        <span style={{ fontWeight:800, color:"hsl(220 20% 15%)", fontSize:13 }}>{name}</span>
-        <span style={{ marginLeft:"auto", fontSize:10, color:"hsl(25 95% 53%)", fontWeight:600 }}>: {inst.className}</span>
+        <span style={{ fontWeight:800, color:"var(--theme-text)", fontSize:13 }}>{name}</span>
+        <span style={{ marginLeft:"auto", fontSize:10, color:"var(--theme-accent)", fontWeight:600 }}>: {inst.className}</span>
       </div>
       {Object.entries(inst.fields).map(([k,v]) => (
-        <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"3px 8px", background:"white", borderRadius:6, border:"1px solid hsl(30 20% 90%)", marginBottom:3 }}>
+        <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"3px 8px", background:"white", borderRadius:6, border:"1px solid var(--theme-border)", marginBottom:3 }}>
           <span style={{ color:"#7c3aed" }}>{k}</span>
-          <span style={{ color:"hsl(220 10% 50%)" }}>: {v.type}</span>
+          <span style={{ color:"var(--theme-muted)" }}>: {v.type}</span>
           <span style={{ color: v.type==="string"?"#15803d":"#c2410c" }}>{v.type==="string"?`"${v.value}"`:v.value}</span>
         </div>
       ))}
@@ -1020,13 +1117,24 @@ export default function App() {
   const [hasRun, setHasRun]   = useState(false);
   const [activeNav, setNav]   = useState<NavItem>("Home");
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [inventoryView, setInventoryView] = useState<"products" | "coupons">("products");
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [appTheme, setAppTheme] = useState<Theme>(() => ThemeManager.init());
   const [editorTheme, setEditorTheme] = useState<EditorTheme>("light");
   const [showAllInventory, setShowAllInventory] = useState(false);
   const [products, setProducts] = useState<InventoryProduct[]>(loadInventory);
+  const [coupons, setCoupons] = useState<CouponEntry[]>(loadCoupons);
+  const [cursorPosition, setCursorPosition] = useState<CursorPosition>({ line: 1, col: 1 });
+  const [selectedSample, setSelectedSample] = useState<"" | "valid" | "syntax" | "semantic" | "oop">("valid");
+  const [selectedExampleId, setSelectedExampleId] = useState("");
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const notificationIdRef = useRef(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lines = code.split("\n");
+
+  useEffect(() => {
+    ThemeManager.applyTheme(appTheme);
+  }, [appTheme]);
 
   const dismissNotification = useCallback((id: number) => {
     setNotifications(current => current.filter(notice => notice.id !== id));
@@ -1055,29 +1163,30 @@ export default function App() {
   }, [pushNotification]);
 
   const runProgram = useCallback(() => {
-    const nextResult = interpret(code, products);
+    const nextResult = interpret(code, products, coupons);
     setResult(nextResult);
     setHasRun(true);
     notifyInterpreterResult(nextResult);
-  }, [code, products, notifyInterpreterResult]);
+  }, [code, products, coupons, notifyInterpreterResult]);
   const executeCode = useCallback((nextCode: string, successTitle = "Cart updated", successMessage = "The source and simulation are synchronized.") => {
-    const nextResult = interpret(nextCode, products);
+    const nextResult = interpret(nextCode, products, coupons);
     setCode(nextCode);
     setResult(nextResult);
     setHasRun(true);
     notifyInterpreterResult(nextResult, successTitle, successMessage);
-  }, [products, notifyInterpreterResult]);
+  }, [products, coupons, notifyInterpreterResult]);
   const toggleEditorTheme = useCallback(() => {
     setEditorTheme(current => current === "light" ? "dark" : "light");
   }, [products]);
-  const clearEditor = () => { setCode(""); setResult(null); setHasRun(false); pushNotification("info", "Editor cleared", "Start a new ShopScript program or load a sample."); };
+  const clearEditor = () => { setCode(""); setResult(null); setHasRun(false); setSelectedSample(""); setSelectedExampleId(""); setCursorPosition({ line: 1, col: 1 }); pushNotification("info", "Editor cleared", "Start a new ShopScript program or load a sample."); };
   const loadSample = (t: "valid"|"syntax"|"semantic"|"oop") => {
     const m = { valid:SAMPLE_VALID, syntax:SAMPLE_SYNTAX_ERROR, semantic:SAMPLE_SEMANTIC_ERROR, oop:SAMPLE_OOP };
-    setCode(m[t]); setResult(null); setHasRun(false); pushNotification("info", "Sample loaded", "Run the program to validate and simulate this sample.");
+    setSelectedSample(t); setSelectedExampleId(""); setCode(m[t]); setResult(null); setHasRun(false); setCursorPosition({ line: 1, col: 1 }); pushNotification("info", "Sample loaded", "Run the program to validate and simulate this sample.");
   };
   const navigate = useCallback((destination: NavItem) => {
     setNav(destination);
     setMobileMenu(false);
+    setThemeMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [products]);
   const openDocsSearch = useCallback(() => {
@@ -1085,29 +1194,52 @@ export default function App() {
     window.setTimeout(() => document.getElementById("docs-search")?.focus(), 0);
   }, [navigate, products]);
   const openExample = useCallback((exampleCode: string) => {
-    const nextResult = interpret(exampleCode, products);
+    const nextResult = interpret(exampleCode, products, coupons);
+    setSelectedSample("");
     setCode(exampleCode);
     setResult(nextResult);
     setHasRun(true);
+    setCursorPosition({ line: 1, col: 1 });
     notifyInterpreterResult(nextResult, "Example loaded", "The example is open and its simulation is ready.");
     navigate("Home");
     window.setTimeout(() => {
       textareaRef.current?.focus();
       textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 0);
-  }, [navigate, products, notifyInterpreterResult]);
+  }, [navigate, products, coupons, notifyInterpreterResult]);
   const updatePlaygroundCode = useCallback((nextCode: string) => {
+    setSelectedSample("");
+    setSelectedExampleId("");
     setCode(nextCode);
     setResult(null);
     setHasRun(false);
   }, [products]);
   const loadExampleInPlayground = useCallback((exampleCode: string) => {
+    setSelectedSample("");
     setCode(exampleCode);
     setResult(null);
     setHasRun(false);
+    setCursorPosition({ line: 1, col: 1 });
     navigate("Playground");
   }, [navigate, products]);
+  const changeTheme = useCallback((theme: Theme) => {
+    setAppTheme(theme);
+    const option = THEME_OPTIONS.find(item => item.id === theme);
+    pushNotification("success", "Theme updated", (option?.label ?? "Theme") + " is now active.");
+  }, [pushNotification]);
+  const openFinalDemo = useCallback(() => {
+    setSelectedSample("");
+    setSelectedExampleId("final-demo");
+    setCode(SAMPLE_FINAL_DEMO);
+    setResult(null);
+    setHasRun(false);
+    setThemeMenuOpen(false);
+    navigate("Playground");
+    pushNotification("info", "Final demo opened", "The end-to-end demonstration is ready in the Playground.");
+  }, [navigate, pushNotification]);
   const startNewProgram = () => {
+    setSelectedSample("");
+    setSelectedExampleId("");
     setCode("");
     setResult(null);
     setHasRun(false);
@@ -1120,7 +1252,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    setResult(interpret(SAMPLE_VALID, products));
+    setResult(interpret(SAMPLE_VALID, products, coupons));
     setHasRun(true);
   }, []); // eslint-disable-line
   useEffect(() => {
@@ -1142,6 +1274,14 @@ export default function App() {
     }
   }, [products, pushNotification]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(COUPON_STORAGE_KEY, JSON.stringify(coupons));
+    } catch {
+      pushNotification("warning", "Coupons not persisted", "The browser could not save coupon changes locally.");
+    }
+  }, [coupons, pushNotification]);
+
   const saveInventoryProduct = useCallback((product: InventoryProduct) => {
     const isEditing = products.some(item => item.id === product.id);
     setProducts(current => isEditing
@@ -1158,6 +1298,25 @@ export default function App() {
     if (window.confirm("Reset the inventory to the six default products?")) {
       setProducts(DEFAULT_PRODUCTS);
       pushNotification("success", "Inventory reset", "The six default ShopScript products were restored.");
+    }
+  }, [pushNotification]);
+
+  const saveCoupon = useCallback((couponEntry: CouponEntry) => {
+    const isEditing = coupons.some(item => item.id === couponEntry.id);
+    setCoupons(current => isEditing
+      ? current.map(item => item.id === couponEntry.id ? couponEntry : item)
+      : [...current, couponEntry]);
+    pushNotification("success", isEditing ? "Coupon updated" : "Coupon created", couponEntry.code + " is now available to ShopScript validation.");
+  }, [coupons, pushNotification]);
+  const deleteCoupon = useCallback((id: string) => {
+    const couponEntry = coupons.find(item => item.id === id);
+    setCoupons(current => current.filter(item => item.id !== id));
+    pushNotification("success", "Coupon deleted", (couponEntry?.code ?? "The coupon") + " was removed from the shared discount catalog.");
+  }, [coupons, pushNotification]);
+  const resetCoupons = useCallback(() => {
+    if (window.confirm("Reset coupons to the default set?")) {
+      setCoupons(DEFAULT_COUPONS);
+      pushNotification("success", "Coupons reset", "The default ShopScript coupons were restored.");
     }
   }, [pushNotification]);
 
@@ -1255,22 +1414,22 @@ export default function App() {
         <div className="header-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"0 24px", height:56, display:"flex", alignItems:"center", gap:16 }}>
           {/* Logo -- always visible */}
           <button type="button" className="brand-button" onClick={() => navigate("Home")} aria-label="Open ShopScript home">
-            <div style={{ background:"hsl(25 95% 53%)", borderRadius:8, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", color:"white", flexShrink:0 }}>
+            <div style={{ background:"var(--theme-accent)", borderRadius:8, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", color:"white", flexShrink:0 }}>
               {Ico.code(16,"white")}
             </div>
             <div>
-              <div style={{ fontWeight:800, fontSize:15, color:"hsl(25 95% 48%)", lineHeight:1.1 }}>ShopScript</div>
-              <div style={{ fontSize:9.5, color:"hsl(220 10% 55%)", lineHeight:1 }}>Code. Simulate. Sell.</div>
+              <div className="brand-title" style={{ fontWeight:800, fontSize:15, lineHeight:1.1 }}>ShopScript</div>
+              <div className="brand-subtitle" style={{ fontSize:9.5, lineHeight:1 }}>Code. Simulate. Sell.</div>
             </div>
           </button>
 
           {/* Search -- hidden on mobile */}
           <button type="button" className="header-search nav-search" onClick={openDocsSearch} aria-label="Open documentation">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="hsl(220 10% 55%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--theme-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
             <span className="header-search-label">Search docs, examples, or commands...</span>
-            <span style={{ fontSize:10.5, background:"hsl(30 20% 90%)", padding:"1px 5px", borderRadius:3, color:"hsl(220 10% 55%)", flexShrink:0 }}>Ctrl K</span>
+            <span style={{ fontSize:10.5, background:"var(--theme-border)", padding:"1px 5px", borderRadius:3, color:"var(--theme-muted)", flexShrink:0 }}>Ctrl K</span>
           </button>
 
           {/* Nav -- hidden on mobile */}
@@ -1286,13 +1445,36 @@ export default function App() {
               <span className="new-program-label">New Program</span> {Ico.plus(13,"white")}
             </button>
 
-            <button type="button" className="account-button" onClick={() => navigate("About")} aria-label="Open About ShopScript">
-              <span className="account-avatar">
-                SS
-                <span className="online-dot" />
-              </span>
-              {Ico.chevron(13,"hsl(220 10% 50%)")}
-            </button>
+            <div className="theme-menu-wrap">
+              <button type="button" className="account-button" onClick={() => setThemeMenuOpen(open => !open)} aria-expanded={themeMenuOpen} aria-haspopup="menu" aria-label="Open theme and quick actions">
+                <span className="account-avatar">
+                  SS
+                  <span className="online-dot" />
+                </span>
+                {Ico.chevron(13,"var(--theme-muted)")}
+              </button>
+              {themeMenuOpen && (
+                <div className="theme-menu" role="menu" aria-label="Theme settings">
+                  <div className="theme-menu-header">
+                    <div><strong>Interface theme</strong><span>Choose a high-contrast palette for the ShopScript workspace.</span></div>
+                    <button type="button" className="theme-menu-close" onClick={() => setThemeMenuOpen(false)} aria-label="Close theme menu">x</button>
+                  </div>
+                  <div className="theme-options">
+                    {THEME_OPTIONS.map(option => (
+                      <button type="button" key={option.id} className={"theme-option" + (appTheme === option.id ? " active" : "")} onClick={() => changeTheme(option.id)} role="menuitemradio" aria-checked={appTheme === option.id}>
+                        <span className="theme-swatches" aria-hidden="true">{option.swatches.map(color => <i key={color} className="theme-swatch" style={{ backgroundColor: color }} />)}</span>
+                        <span className="theme-copy"><strong>{option.label}</strong><span>{option.description}</span></span>
+                        <span className="theme-check" aria-hidden="true">{appTheme === option.id ? "*" : ""}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="theme-menu-actions">
+                    <button type="button" className="theme-menu-action" onClick={openFinalDemo}>Open final demo <span>Playground</span></button>
+                    <button type="button" className="theme-menu-action" onClick={() => navigate("About")}>Project overview <span>About</span></button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Hamburger -- visible on mobile only */}
             <button
@@ -1320,14 +1502,14 @@ export default function App() {
       <div className="hero-gradient" style={{ padding:"34px 28px 26px" }}>
         <div className="hero-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:20 }}>
           <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"white", border:"1px solid hsl(25 95% 53% / 0.22)", borderRadius:999, padding:"4px 12px", fontSize:12, color:"hsl(25 95% 53%)", fontWeight:600, marginBottom:14 }}>
-              Welcome to ShopScript 👋
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"white", border:"1px solid hsl(25 95% 53% / 0.22)", borderRadius:999, padding:"4px 12px", fontSize:12, color:"var(--theme-accent)", fontWeight:600, marginBottom:14 }}>
+              Welcome to ShopScript -
             </div>
-            <h1 style={{ fontSize:"clamp(22px, 3vw, 34px)", fontWeight:900, color:"hsl(220 20% 12%)", lineHeight:1.2, margin:"0 0 10px" }}>
+            <h1 style={{ fontSize:"clamp(22px, 3vw, 34px)", fontWeight:900, color:"var(--theme-text)", lineHeight:1.2, margin:"0 0 10px" }}>
               Mini Programming Language<br />
-              <span style={{ color:"hsl(25 95% 53%)" }}>for E-commerce Simulation</span>
+              <span style={{ color:"var(--theme-accent)" }}>for E-commerce Simulation</span>
             </h1>
-            <p style={{ color:"hsl(220 10% 45%)", fontSize:"clamp(13px, 1.5vw, 15px)", margin:"0 0 18px" }}>
+            <p style={{ color:"var(--theme-text-soft)", fontSize:"clamp(13px, 1.5vw, 15px)", margin:"0 0 18px" }}>
               Write simple scripts. Simulate carts. See results instantly.
             </p>
             <div className="hero-badges" style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
@@ -1347,13 +1529,13 @@ export default function App() {
           {/* Decorative illustration -- hidden on tablets */}
           <div className="hero-illus" style={{ alignItems:"center", gap:12, flexShrink:0 }}>
             <div style={{ background:"white", borderRadius:18, padding:"16px 20px", boxShadow:"0 8px 32px hsl(25 95% 53% / 0.16)", border:"1px solid hsl(25 95% 53% / 0.1)", display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:54 }}>🛒</span>
-              <div style={{ background:"hsl(25 95% 53%)", color:"white", fontSize:11, fontWeight:700, padding:"2px 12px", borderRadius:999 }}>
+              <span style={{ fontSize:54 }}>-</span>
+              <div style={{ background:"var(--theme-accent)", color:"white", fontSize:11, fontWeight:700, padding:"2px 12px", borderRadius:999 }}>
                 {cart.length > 0 ? `${cart.reduce((s,i) => s+i.quantity,0)} items` : "Ready"}
               </div>
             </div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {[{ e:"📱", bg:"#dbeafe" }, { e:"🎧", bg:"#dcfce7" }, { e: hasOOP ? "🧬" : "🤖", bg:"#fef9c3" }].map((d,i) => (
+              {[{ e:"-", bg:"#dbeafe" }, { e:"-", bg:"#dcfce7" }, { e: hasOOP ? "-" : "-", bg:"#fef9c3" }].map((d,i) => (
                 <div key={i} style={{ background:d.bg, borderRadius:10, padding:"10px 14px", fontSize:24, border:"1px solid white", boxShadow:"0 2px 8px hsl(0 0% 0% / 0.07)" }}>{d.e}</div>
               ))}
             </div>
@@ -1368,9 +1550,9 @@ export default function App() {
           {/* -- LEFT: Editor ------------------------------------------- */}
           <div className="ss-card editor-card" style={{ overflow:"hidden" }}>
             {/* Top bar -- light theme */}
-            <div style={{ background:"white", padding:"10px 12px 0", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap", borderBottom:"1px solid hsl(30 20% 90%)" }}>
+            <div style={{ background:"white", padding:"10px 12px 0", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap", borderBottom:"1px solid var(--theme-border)" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <span style={{ display:"flex", color:"hsl(25 95% 53%)" }}>{Ico.code(15,"hsl(25 95% 53%)")}</span>
+                <span style={{ display:"flex", color:"var(--theme-accent)" }}>{Ico.code(15,"var(--theme-accent)")}</span>
                 <span style={{ fontSize:13, fontWeight:700, color:"hsl(220 20% 18%)" }}>ShopScript Editor</span>
               </div>
               <div style={{ display:"flex", gap:7, flexWrap:"wrap", paddingBottom:10 }}>
@@ -1379,12 +1561,12 @@ export default function App() {
                   {Ico.play()} Run Program
                 </button>
                 <button className="btn-ghost" style={{ padding:"5px 10px", fontSize:12 }} onClick={clearEditor}>
-                  {Ico.x(10,"hsl(220 10% 50%)")} Clear
+                  {Ico.x(10,"var(--theme-muted)")} Clear
                 </button>
                 <select
-                  onChange={(e) => { loadSample(e.target.value as "valid"|"syntax"|"semantic"|"oop"); e.target.value=""; }}
-                  defaultValue=""
-                  style={{ background:"white", border:"1px solid hsl(30 20% 88%)", color:"hsl(220 20% 35%)", borderRadius:8, padding:"5px 9px", fontSize:12, cursor:"pointer" }}
+                  value={selectedSample}
+                  onChange={(e) => { loadSample(e.target.value as "valid"|"syntax"|"semantic"|"oop"); }}
+                  style={{ background:"white", border:"1px solid var(--theme-border)", color:"hsl(220 20% 35%)", borderRadius:8, padding:"5px 9px", fontSize:12, cursor:"pointer" }}
                 >
                   <option value="" disabled>Load Sample</option>
                   <option value="valid">Valid Sample</option>
@@ -1395,8 +1577,8 @@ export default function App() {
               </div>
             </div>
             {/* File tab -- light theme */}
-            <div style={{ background:"hsl(30 20% 97%)", padding:"0 12px", borderBottom:"1px solid hsl(30 20% 90%)" }}>
-              <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"white", color:"hsl(25 95% 53%)", fontFamily:"var(--app-font-mono)", fontSize:12, padding:"6px 14px 0", borderRadius:"6px 6px 0 0", border:"1px solid hsl(30 20% 90%)", borderBottom:"2px solid hsl(25 95% 53%)" }}>
+            <div style={{ background:"var(--theme-surface-2)", padding:"0 12px", borderBottom:"1px solid var(--theme-border)" }}>
+              <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"white", color:"var(--theme-accent)", fontFamily:"var(--app-font-mono)", fontSize:12, padding:"6px 14px 0", borderRadius:"6px 6px 0 0", border:"1px solid var(--theme-border)", borderBottom:"2px solid var(--theme-accent)" }}>
                 main.shop
                 <span style={{ color:"hsl(142 76% 32%)", fontSize:9, fontFamily:"var(--app-font-sans)", fontWeight:700 }}>Highlighted</span>
               </div>
@@ -1411,17 +1593,18 @@ export default function App() {
               className="home-ide"
               ariaLabel="ShopScript Home editor"
               errorLines={errorLines}
+              onCursorChange={setCursorPosition}
             />
             {hasRun && primaryError && (
-              <div className="editor-diagnostic" role="alert"><strong>{primaryError.category} error · Line {primaryError.line}</strong><span>{primaryError.message}{interpreterErrors.length > 1 ? " · " + (interpreterErrors.length - 1) + " more error(s) below" : ""}</span></div>
+              <div className="editor-diagnostic" role="alert"><strong>{primaryError.category} error - Line {primaryError.line}</strong><span>{primaryError.message}{interpreterErrors.length > 1 ? " - " + (interpreterErrors.length - 1) + " more error(s) below" : ""}</span></div>
             )}
             {/* Status bar */}
             <div className="status-bar">
-              <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                <span style={{ width:7, height:7, borderRadius:"50%", background: hasErrors&&hasRun?"#f38ba8":"#a6e3a1", display:"inline-block" }} />
-                <span style={{ color: hasErrors&&hasRun?"#f38ba8":"#a6e3a1" }}>{hasErrors&&hasRun ? "Error" : "Ready"}</span>
+              <div className={"status-state " + (hasErrors && hasRun ? "error" : "success")}>
+                <span className="status-dot" />
+                <span>{hasErrors&&hasRun ? "Error" : "Ready"}</span>
               </div>
-              <span>Lines {lines.length}, Col 1</span>
+              <span>Line {cursorPosition.line}, Col {cursorPosition.col} / {lines.length} lines</span>
               <span>ShopScript v{APP_VERSION}</span>
             </div>
           </div>
@@ -1429,9 +1612,9 @@ export default function App() {
           {/* -- RIGHT: Simulation Panel --------------------------------- */}
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <span style={{ color:"hsl(25 95% 53%)", display:"flex" }}>{Ico.bag(16,"hsl(25 95% 53%)")}</span>
-              <span style={{ fontWeight:800, fontSize:15, color:"hsl(220 20% 15%)" }}>Simulation Panel</span>
-              {hasOOP && <span style={{ marginLeft:"auto", background:"hsl(25 95% 53% / 0.1)", color:"hsl(25 95% 45%)", border:"1px solid hsl(25 95% 53% / 0.25)", borderRadius:999, fontSize:11, fontWeight:700, padding:"2px 10px" }}>OOP Mode</span>}
+              <span style={{ color:"var(--theme-accent)", display:"flex" }}>{Ico.bag(16,"var(--theme-accent)")}</span>
+              <span style={{ fontWeight:800, fontSize:15, color:"var(--theme-text)" }}>Simulation Panel</span>
+              {hasOOP && <span style={{ marginLeft:"auto", background:"hsl(25 95% 53% / 0.1)", color:"var(--theme-accent-strong)", border:"1px solid hsl(25 95% 53% / 0.25)", borderRadius:999, fontSize:11, fontWeight:700, padding:"2px 10px" }}>OOP Mode</span>}
             </div>
 
             {/* Row 1: Inventory + Cart */}
@@ -1440,7 +1623,7 @@ export default function App() {
               <div className="ss-card" style={{ padding:14 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
                   <div className="receipt-title">
-                    <span style={{ color:"hsl(25 95% 53%)", display:"flex" }}>{Ico.box(14,"hsl(25 95% 53%)")}</span>
+                    <span style={{ color:"var(--theme-accent)", display:"flex" }}>{Ico.box(14,"var(--theme-accent)")}</span>
                     <span style={{ fontWeight:700, fontSize:13, color:"hsl(220 20% 18%)" }}>Product Inventory</span>
                   </div>
                   <button type="button" className="inventory-toggle" onClick={() => setShowAllInventory(value => !value)}>{showAllInventory ? "Show featured" : "View all " + availableProducts.length} {Ico.chevron(11)}</button>
@@ -1456,7 +1639,7 @@ export default function App() {
                         className="product-card"
                         onClick={() => addInventoryProduct(p.name, p.price)}
                         aria-label={"Add " + p.name + " to the ShopScript cart"}
-                        title={"Add " + p.name + " · " + p.stock + " in stock"}
+                        title={"Add " + p.name + " - " + p.stock + " in stock"}
                       >
                         <div style={{ position:"relative" }}>
                           <img
@@ -1466,7 +1649,7 @@ export default function App() {
                             onError={e => { (e.target as HTMLImageElement).src = "https://placehold.co/200x80/f0f0f0/999?text=" + encodeURIComponent(p.name); }}
                           />
                           {inCart && (
-                            <span style={{ position:"absolute", top:4, right:4, background:"hsl(25 95% 53%)", color:"white", fontSize:9, fontWeight:700, borderRadius:999, padding:"1px 5px", boxShadow:"0 1px 4px hsl(0 0% 0% / 0.2)" }}>
+                            <span style={{ position:"absolute", top:4, right:4, background:"var(--theme-accent)", color:"white", fontSize:9, fontWeight:700, borderRadius:999, padding:"1px 5px", boxShadow:"0 1px 4px hsl(0 0% 0% / 0.2)" }}>
                               {inCart.quantity}
                             </span>
                           )}
@@ -1474,7 +1657,7 @@ export default function App() {
                         <span className="product-card-body">
                           <strong>{p.name}</strong>
                           <span className="product-price">{"$"}{p.price.toFixed(2)}</span>
-                          <span className="product-availability"><i /> {p.stock} in stock · click to add</span>
+                          <span className="product-availability"><i /> {p.stock} in stock - click to add</span>
                         </span>
                       </button>
                     );
@@ -1484,13 +1667,13 @@ export default function App() {
                 {/* OOP-defined products */}
                 {cart.filter(c => !products.find(p => p.name === c.name)).length > 0 && (
                   <div style={{ marginTop:10, borderTop:"1px dashed hsl(30 20% 85%)", paddingTop:10 }}>
-                    <div style={{ fontSize:10, color:"hsl(220 10% 55%)", fontWeight:600, marginBottom:6 }}>OOP-defined products</div>
+                    <div style={{ fontSize:10, color:"var(--theme-muted)", fontWeight:600, marginBottom:6 }}>OOP-defined products</div>
                     {cart.filter(c => !products.find(p => p.name === c.name)).map(c => (
                       <div key={c.name} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
                         <img src={OOP_IMG_SM} alt={c.name} className="product-img-sm" onError={e => { (e.target as HTMLImageElement).src="https://placehold.co/60x60/f0f0f0/999?text=OOP"; }}/>
                         <div>
                           <div style={{ fontSize:11, fontWeight:600, color:"hsl(220 20% 20%)" }}>{c.name}</div>
-                          <div style={{ fontSize:11, color:"hsl(25 95% 53%)", fontWeight:700 }}>${c.price.toFixed(2)}</div>
+                          <div style={{ fontSize:11, color:"var(--theme-accent)", fontWeight:700 }}>${c.price.toFixed(2)}</div>
                         </div>
                         <span style={{ marginLeft:"auto", fontSize:9, background:"hsl(220 60% 55%)", color:"white", borderRadius:4, padding:"1px 5px", fontWeight:700 }}>OOP</span>
                       </div>
@@ -1503,15 +1686,15 @@ export default function App() {
               <div className="ss-card" style={{ padding:14 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
                   <div className="receipt-title">
-                    <span style={{ color:"hsl(25 95% 53%)", display:"flex" }}>{Ico.cart(14,"hsl(25 95% 53%)")}</span>
+                    <span style={{ color:"var(--theme-accent)", display:"flex" }}>{Ico.cart(14,"var(--theme-accent)")}</span>
                     <span style={{ fontWeight:700, fontSize:13, color:"hsl(220 20% 18%)" }}>Shopping Cart</span>
                   </div>
-                  {cart.length > 0 && <span style={{ background:"hsl(25 95% 53%)", color:"white", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{cart.reduce((s,i)=>s+i.quantity,0)}</span>}
+                  {cart.length > 0 && <span style={{ background:"var(--theme-accent)", color:"white", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{cart.reduce((s,i)=>s+i.quantity,0)}</span>}
                 </div>
                 {cart.length === 0 ? (
                   <div style={{ textAlign:"center", padding:"24px 0", color:"hsl(220 10% 60%)", fontSize:12 }}>
-                    <div style={{ display:"flex", justifyContent:"center", marginBottom:8, opacity:0.35 }}>{Ico.cart(36,"hsl(220 10% 50%)")}</div>
-                    Cart is empty — run a program to add items
+                    <div style={{ display:"flex", justifyContent:"center", marginBottom:8, opacity:0.35 }}>{Ico.cart(36,"var(--theme-muted)")}</div>
+                    Cart is empty - run a program to add items
                   </div>
                 ) : (
                   <div>
@@ -1525,10 +1708,10 @@ export default function App() {
                         />
                         <div style={{ flex:1, minWidth:0 }}>
                           <div style={{ fontSize:12, fontWeight:600, color:"hsl(220 20% 20%)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{item.name}</div>
-                          <div style={{ fontSize:11, color:"hsl(25 95% 53%)", fontWeight:600 }}>${item.price.toFixed(2)}</div>
+                          <div style={{ fontSize:11, color:"var(--theme-accent)", fontWeight:600 }}>${item.price.toFixed(2)}</div>
                         </div>
                         <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-                          <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity - 1, item.price)} aria-label={"Decrease " + item.name + " quantity"}>−</button>
+                          <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity - 1, item.price)} aria-label={"Decrease " + item.name + " quantity"}>-</button>
                           <span style={{ fontSize:12, fontWeight:700, minWidth:18, textAlign:"center" }}>{item.quantity}</span>
                           <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity + 1, item.price)} aria-label={"Increase " + item.name + " quantity"}>+</button>
                         </div>
@@ -1536,9 +1719,9 @@ export default function App() {
                         <button type="button" className="cart-remove" onClick={() => setCartItemQuantity(item.name, 0, item.price)} aria-label={"Remove " + item.name + " from cart"}>{Ico.x(11,"hsl(0 84% 65%)")}</button>
                       </div>
                     ))}
-                    <div style={{ display:"flex", justifyContent:"space-between", padding:"8px 0 0", borderTop:"1px solid hsl(30 20% 88%)", fontSize:12, marginTop:2 }}>
-                      <span style={{ color:"hsl(220 10% 50%)" }}>Subtotal ({cart.length} item{cart.length!==1?"s":""})</span>
-                      <span style={{ fontWeight:700, color:"hsl(25 95% 53%)" }}>${subtotal.toFixed(2)}</span>
+                    <div style={{ display:"flex", justifyContent:"space-between", padding:"8px 0 0", borderTop:"1px solid var(--theme-border)", fontSize:12, marginTop:2 }}>
+                      <span style={{ color:"var(--theme-muted)" }}>Subtotal ({cart.length} item{cart.length!==1?"s":""})</span>
+                      <span style={{ fontWeight:700, color:"var(--theme-accent)" }}>${subtotal.toFixed(2)}</span>
                     </div>
                   </div>
                 )}
@@ -1556,14 +1739,14 @@ export default function App() {
                 {coupon ? (
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:4 }}>
-                      <span style={{ fontSize:11, color:"hsl(220 10% 50%)" }}>Coupon Applied</span>
+                      <span style={{ fontSize:11, color:"var(--theme-muted)" }}>Coupon Applied</span>
                       <div style={{ display:"flex", alignItems:"center", gap:4 }}>
                         <span className="coupon-badge">{coupon}</span>
                         {Ico.check(12)}
                       </div>
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", fontSize:11 }}>
-                      <span style={{ color:"hsl(220 10% 50%)" }}>Discount ({(discount*100).toFixed(0)}%)</span>
+                      <span style={{ color:"var(--theme-muted)" }}>Discount ({(discount*100).toFixed(0)}%)</span>
                       <span style={{ fontWeight:700, color:"#dc2626" }}>-${discountAmt.toFixed(2)}</span>
                     </div>
                     <div style={{ background:"hsl(142 76% 36% / 0.08)", borderRadius:6, padding:"5px 8px", display:"flex", justifyContent:"space-between" }}>
@@ -1577,7 +1760,7 @@ export default function App() {
               {/* Checkout Summary */}
               <div className="ss-card" style={{ padding:12 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:10 }}>
-                  <span style={{ color:"hsl(25 95% 53%)", display:"flex" }}>{Ico.receipt(13,"hsl(25 95% 53%)")}</span>
+                  <span style={{ color:"var(--theme-accent)", display:"flex" }}>{Ico.receipt(13,"var(--theme-accent)")}</span>
                   <span style={{ fontWeight:700, fontSize:12.5, color:"hsl(220 20% 18%)" }}>Checkout Summary</span>
                 </div>
                 <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
@@ -1587,13 +1770,13 @@ export default function App() {
                     { label:"Shipping", value:`$${shipping.toFixed(2)}`, color:"hsl(220 20% 20%)" },
                   ].map(r => (
                     <div key={r.label} style={{ display:"flex", justifyContent:"space-between", fontSize:11 }}>
-                      <span style={{ color:"hsl(220 10% 50%)" }}>{r.label}</span>
+                      <span style={{ color:"var(--theme-muted)" }}>{r.label}</span>
                       <span style={{ fontWeight:600, color:r.color }}>{r.value}</span>
                     </div>
                   ))}
-                  <div style={{ borderTop:"1px solid hsl(30 20% 88%)", paddingTop:5, display:"flex", justifyContent:"space-between", fontSize:13 }}>
+                  <div style={{ borderTop:"1px solid var(--theme-border)", paddingTop:5, display:"flex", justifyContent:"space-between", fontSize:13 }}>
                     <span style={{ fontWeight:700 }}>Total</span>
-                    <span style={{ fontWeight:800, color:"hsl(25 95% 53%)" }}>${total.toFixed(2)}</span>
+                    <span style={{ fontWeight:800, color:"var(--theme-accent)" }}>${total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -1614,8 +1797,8 @@ export default function App() {
                 {didCheckout && !hasErrors ? (
                   <div className="receipt" style={{ fontSize:10.5, padding:10 }}>
                     <div style={{ textAlign:"center", marginBottom:8 }}>
-                      <div style={{ fontWeight:800, color:"hsl(25 95% 48%)", fontSize:12 }}>ShopScript</div>
-                      <div style={{ fontSize:12.5, fontWeight:700, color:"hsl(220 20% 15%)", marginTop:2 }}>Thank you, {user}! 🎉</div>
+                      <div style={{ fontWeight:800, color:"var(--theme-accent-strong)", fontSize:12 }}>ShopScript</div>
+                      <div style={{ fontSize:12.5, fontWeight:700, color:"var(--theme-text)", marginTop:2 }}>Thank you, {user}! -</div>
                       <div style={{ fontSize:10, color:"#22c55e" }}>Order placed successfully.</div>
                     </div>
                     <div className="receipt-detail-row">
@@ -1627,7 +1810,7 @@ export default function App() {
                   </div>
                 ) : (
                   <div style={{ textAlign:"center", padding:"14px 0", color:"hsl(220 10% 60%)", fontSize:11 }}>
-                    <div style={{ display:"flex", justifyContent:"center", marginBottom:6, opacity:0.3 }}>{Ico.clipboard(30,"hsl(220 10% 50%)")}</div>
+                    <div style={{ display:"flex", justifyContent:"center", marginBottom:6, opacity:0.3 }}>{Ico.clipboard(30,"var(--theme-muted)")}</div>
                     {hasErrors ? "Fix errors first" : "Run checkout; to see receipt"}
                   </div>
                 )}
@@ -1647,8 +1830,8 @@ export default function App() {
                     </div>
                   )}
                 </div>
-                <button style={{ width:"100%", background:"white", color:"hsl(25 95% 48%)", border:"none", borderRadius:8, padding:"9px 0", fontWeight:700, fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }} onClick={runProgram}>
-                  {Ico.cart(14,"hsl(25 95% 48%)")} {didCheckout&&!hasErrors ? "Run Again" : "Checkout Now"}
+                <button style={{ width:"100%", background:"white", color:"var(--theme-accent-strong)", border:"none", borderRadius:8, padding:"9px 0", fontWeight:700, fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }} onClick={runProgram}>
+                  {Ico.cart(14,"var(--theme-accent-strong)")} {didCheckout&&!hasErrors ? "Run Again" : "Checkout Now"}
                 </button>
               </div>
             </div>
@@ -1663,7 +1846,7 @@ export default function App() {
             <div className="ss-card" style={{ padding:14 }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
                 <span style={{ fontWeight:700, fontSize:13, color:"hsl(220 20% 18%)" }}>Tokens</span>
-                {result && <span style={{ background:"hsl(25 95% 53%)", color:"white", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.tokens.length}</span>}
+                {result && <span style={{ background:"var(--theme-accent)", color:"white", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.tokens.length}</span>}
               </div>
               <div style={{ display:"flex", flexWrap:"wrap", gap:4, maxHeight:120, overflowY:"auto" }}>
                 {hasRun && result?.tokens.length ? (
@@ -1681,7 +1864,7 @@ export default function App() {
                 : result?.syntaxErrors.length===0 && result?.lexErrors.length===0 ? (
                   <div>
                     <div className="success-box" style={{ marginBottom:5 }}><span style={{ display:"flex" }}>{Ico.check(13)}</span> No syntax errors</div>
-                    <div style={{ fontSize:11, color:"hsl(220 10% 55%)" }}>Your code is syntactically correct.</div>
+                    <div style={{ fontSize:11, color:"var(--theme-muted)" }}>Your code is syntactically correct.</div>
                   </div>
                 ) : (
                   <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
@@ -1699,7 +1882,7 @@ export default function App() {
                 : result?.semanticErrors.length===0 ? (
                   <div>
                     <div className="success-box" style={{ marginBottom:5 }}><span style={{ display:"flex" }}>{Ico.check(13)}</span> No semantic errors</div>
-                    <div style={{ fontSize:11, color:"hsl(220 10% 55%)" }}>All variables and operations are valid.</div>
+                    <div style={{ fontSize:11, color:"var(--theme-muted)" }}>All variables and operations are valid.</div>
                   </div>
                 ) : (
                   <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
@@ -1723,7 +1906,7 @@ export default function App() {
                     {result.variables.map((v,i) => (
                       <tr key={i}>
                         <td style={{ fontFamily:"var(--app-font-mono)", color:"#7c3aed" }}>{v.name}</td>
-                        <td style={{ color:"hsl(220 10% 50%)" }}>{v.type}</td>
+                        <td style={{ color:"var(--theme-muted)" }}>{v.type}</td>
                         <td style={{ fontFamily:"var(--app-font-mono)", color:"#15803d", maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{v.value}</td>
                       </tr>
                     ))}
@@ -1756,10 +1939,10 @@ export default function App() {
         {hasRun && hasOOP && (
           <div className="ss-card" style={{ padding:18, marginBottom:28 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
-              <span style={{ color:"hsl(25 95% 53%)", display:"flex" }}>{Ico.dna(17,"hsl(25 95% 53%)")}</span>
-              <span style={{ fontWeight:800, fontSize:15, color:"hsl(220 20% 15%)" }}>OOP — Classes &amp; Instances</span>
+              <span style={{ color:"var(--theme-accent)", display:"flex" }}>{Ico.dna(17,"var(--theme-accent)")}</span>
+              <span style={{ fontWeight:800, fontSize:15, color:"var(--theme-text)" }}>OOP - Classes &amp; Instances</span>
               <div style={{ marginLeft:"auto", display:"flex", gap:6 }}>
-                {classes.length>0 && <span style={{ background:"hsl(25 95% 53% / 0.1)", color:"hsl(25 95% 45%)", border:"1px solid hsl(25 95% 53% / 0.25)", borderRadius:999, fontSize:11, fontWeight:700, padding:"2px 10px" }}>{classes.length} class{classes.length!==1?"es":""}</span>}
+                {classes.length>0 && <span style={{ background:"hsl(25 95% 53% / 0.1)", color:"var(--theme-accent-strong)", border:"1px solid hsl(25 95% 53% / 0.25)", borderRadius:999, fontSize:11, fontWeight:700, padding:"2px 10px" }}>{classes.length} class{classes.length!==1?"es":""}</span>}
                 {Object.keys(instances).length>0 && <span style={{ background:"hsl(220 60% 55% / 0.1)", color:"hsl(220 60% 45%)", border:"1px solid hsl(220 60% 55% / 0.25)", borderRadius:999, fontSize:11, fontWeight:700, padding:"2px 10px" }}>{Object.keys(instances).length} instance{Object.keys(instances).length!==1?"s":""}</span>}
               </div>
             </div>
@@ -1789,7 +1972,19 @@ export default function App() {
       ) : activeNav === "Examples" ? (
         <ExamplesPage onOpenExample={openExample} onNavigate={navigate} />
       ) : activeNav === "Inventory" ? (
-        <InventoryPage products={products} onSave={saveInventoryProduct} onDelete={deleteInventoryProduct} onReset={resetInventory} onNotify={pushNotification} />
+        <InventoryPage
+          view={inventoryView}
+          onViewChange={setInventoryView}
+          products={products}
+          onSave={saveInventoryProduct}
+          onDelete={deleteInventoryProduct}
+          onReset={resetInventory}
+          onNotify={pushNotification}
+          coupons={coupons}
+          onSaveCoupon={saveCoupon}
+          onDeleteCoupon={deleteCoupon}
+          onResetCoupons={resetCoupons}
+        />
       ) : activeNav === "Playground" ? (
         <PlaygroundPage
           code={code}
@@ -1802,24 +1997,28 @@ export default function App() {
           onNavigate={navigate}
           theme={editorTheme}
           onToggleTheme={toggleEditorTheme}
+          cursorPosition={cursorPosition}
+          onCursorChange={setCursorPosition}
+          selectedExampleId={selectedExampleId}
+          onSelectedExampleChange={setSelectedExampleId}
         />
       ) : (
         <AboutPage onNavigate={navigate} />
       )}
 
       {/* ---- FOOTER --------------------------------------------------- */}
-      <footer className="app-footer" style={{ background:"white", borderTop:"1px solid hsl(30 20% 90%)" }}>
-        <div className="footer-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"14px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:12, color:"hsl(220 10% 55%)" }}>
+      <footer className="app-footer" style={{ background:"white", borderTop:"1px solid var(--theme-border)" }}>
+        <div className="footer-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"14px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:12, color:"var(--theme-muted)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ color:"hsl(25 95% 53%)", fontWeight:700 }}>ShopScript</span>
-            <span>—</span>
-            <span>Programming Languages Final Project · v{APP_VERSION}</span>
+            <span style={{ color:"var(--theme-accent)", fontWeight:700 }}>ShopScript</span>
+            <span>-</span>
+            <span>Programming Languages Final Project - v{APP_VERSION}</span>
           </div>
           <div className="footer-right" style={{ display:"flex", gap:20 }}>
             {[
               { icon:Ico.sun(13,"hsl(45 90% 50%)"), label:"Light & Clean" },
               { icon:Ico.heart(13,"hsl(340 75% 55%)"), label:"Friendly" },
-              { icon:Ico.zap(13,"hsl(25 95% 53%)"), label:"Fast & Intuitive" },
+              { icon:Ico.zap(13,"var(--theme-accent)"), label:"Fast & Intuitive" },
               { icon:Ico.code(13,"hsl(220 60% 55%)"), label:"Built for Developers" },
             ].map(f => (
               <span key={f.label} style={{ display:"flex", alignItems:"center", gap:5 }}>

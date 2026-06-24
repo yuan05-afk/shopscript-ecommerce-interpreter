@@ -8,21 +8,21 @@ Use this document to decide what to build next and to report project status. Do 
 
 ## Status legend
 
-- **DONE** — implemented and verifiable for the required scope.
-- **IN PROGRESS** — a working subset exists, but mandatory requirements remain.
-- **NOT STARTED** — no executable implementation exists; placeholders or reserved keywords do not count.
-- **BLOCKED** — work cannot continue without a project decision or external input.
+- **DONE** - implemented and verifiable for the required scope.
+- **IN PROGRESS** - a working subset exists, but mandatory requirements remain.
+- **NOT STARTED** - no executable implementation exists; placeholders or reserved keywords do not count.
+- **BLOCKED** - work cannot continue without a project decision or external input.
 
 ## Sources and authority
 
 Use these sources in this order:
 
-1. `PROJECT+SPECIFICATION.pdf` — mandatory academic requirements.
-2. This roadmap — agreed implementation sequence and current status.
-3. `artifacts/shopscript/src/shopscript-interpreter.ts` — current language behavior.
-4. `artifacts/shopscript/src/App.tsx` and `index.css` — current website behavior and presentation.
-5. `ShopScript_Ecommerce_Project_Plan.pdf` — intended design, examples, and expanded feature ideas.
-6. `README.md` — user documentation; update it when behavior changes.
+1. `PROJECT+SPECIFICATION.pdf` - mandatory academic requirements.
+2. This roadmap - agreed implementation sequence and current status.
+3. `artifacts/shopscript/src/shopscript-interpreter.ts` - current language behavior.
+4. `artifacts/shopscript/src/App.tsx` and `index.css` - current website behavior and presentation.
+5. `ShopScript_Ecommerce_Project_Plan.pdf` - intended design, examples, and expanded feature ideas.
+6. `README.md` - user documentation; update it when behavior changes.
 
 ## Scope guardrails
 
@@ -41,6 +41,7 @@ The PDFs contain examples such as `int qty = 2;` and `cart.add(...)`, while the 
 To avoid two competing dialects:
 
 - Preserve the current commands (`add`, `apply coupon`, `set shipping`, and `checkout`) unless the team explicitly approves a migration.
+- Runtime coupon declaration is supported with `coupon "CODE" 25%;`; persistent coupon CRUD belongs in the website Coupon Manager.
 - Extend the current grammar to meet mandatory concepts.
 - Add explicit `int`, `float`, `string`, and `bool` declarations during the data-type phase, while deciding whether `let` remains supported as inferred typing.
 - Do not implement the PDF''s `cart.add` dialect in parallel unless compatibility with both syntaxes is an explicit requirement.
@@ -63,7 +64,7 @@ To avoid two competing dialects:
 | 10 | Automated testing and required demonstrations | **IN PROGRESS** |
 | 11 | Final documentation and submission validation | **IN PROGRESS** |
 
-## Phase 0 — Repository and local development setup
+## Phase 0 - Repository and local development setup
 
 **Status: DONE**
 
@@ -87,7 +88,7 @@ pnpm --filter @workspace/shopscript run build
 
 Do not reopen this phase unless setup, package-manager policy, or entry points change.
 
-## Phase 1 — Language design and formal grammar
+## Phase 1 - Language design and formal grammar
 
 **Status: IN PROGRESS**
 
@@ -96,14 +97,13 @@ Already implemented:
 - The language purpose and e-commerce simulation scope are defined.
 - Working syntax exists for variables, cart additions, coupons, shipping, checkout, classes, instances, and field assignment.
 - Sample programs demonstrate valid, syntax-error, semantic-error, and basic OOP cases.
+- `docs/SHOPSCRIPT_LANGUAGE_SPEC.md` defines the canonical v0.3.0 language reference, including grammar, expressions, blocks, typed declarations, control flow, OOP methods/access modifiers, semantic rules, and runtime limits.
 
 Still required:
 
-- Write one canonical grammar matching the implementation target.
-- Define expression grammar, operator precedence, blocks, assignments, typed declarations, control flow, and OOP methods/access modifiers.
-- Decide and document whether `let` coexists with explicit typed declarations.
-- Resolve differences between the PDF command examples and the current website syntax.
-- Define runtime limits, especially maximum loop iterations.
+- Add valid and invalid automated tests for every grammar production.
+- Keep README examples and website examples synchronized with the canonical spec.
+- Review the spec against the final instructor requirements before submission.
 
 Acceptance criteria:
 
@@ -114,9 +114,9 @@ Acceptance criteria:
 
 Recommended deliverable:
 
-- Add `docs/SHOPSCRIPT_LANGUAGE_SPEC.md` before implementing control flow.
+- Use `docs/SHOPSCRIPT_LANGUAGE_SPEC.md` as the canonical reference for future interpreter, website, README, and test changes.
 
-## Phase 2 — Lexical analysis
+## Phase 2 - Lexical analysis
 
 **Status: IN PROGRESS**
 
@@ -143,7 +143,7 @@ Acceptance criteria:
 - Invalid characters and malformed literals produce deterministic lexical errors.
 - Lexer tests cover every token category and failure mode.
 
-## Phase 3 — Syntax analysis
+## Phase 3 - Syntax analysis
 
 **Status: IN PROGRESS**
 
@@ -175,7 +175,7 @@ Engineering note:
 
 The current checker and executor independently walk raw tokens. Before control flow, introduce an AST to prevent grammar and runtime behavior from diverging.
 
-## Phase 4 — Names, scope, and binding
+## Phase 4 - Names, scope, and binding
 
 **Status: IN PROGRESS**
 
@@ -203,13 +203,14 @@ Acceptance criteria:
 - Undeclared access and same-scope duplicates produce semantic errors.
 - The website demonstrates global and local variables.
 
-## Phase 5 — Semantic analysis
+## Phase 5 - Semantic analysis
 
 **Status: IN PROGRESS**
 
 Already implemented:
 
 - Unknown product detection.
+- Runtime product registration with `product "Name" @ price stock qty;`.
 - Positive quantity and non-negative price checks.
 - Coupon-code validation.
 - Non-negative shipping validation.
@@ -235,7 +236,7 @@ Acceptance criteria:
 - Every rule has a semantic-error sample and automated test.
 - Error messages state what is wrong and where it occurred.
 
-## Phase 6 — Control flow
+## Phase 6 - Control flow
 
 **Status: DONE**
 
@@ -250,7 +251,7 @@ Still useful later:
 
 - Add more invalid-loop and malformed-condition regression tests.
 
-## Phase 7 — Data types and type system
+## Phase 7 - Data types and type system
 
 **Status: DONE**
 
@@ -265,7 +266,7 @@ Still useful later:
 
 - Add more conversion/error tests for invalid assignments.
 
-## Phase 8 — Object-oriented features and encapsulation
+## Phase 8 - Object-oriented features and encapsulation
 
 **Status: DONE**
 
@@ -280,7 +281,7 @@ Still useful later:
 
 - Add constructor syntax only if required by the instructor.
 
-## Phase 9 — Website and interpreter-output integration
+## Phase 9 - Website and interpreter-output integration
 
 **Status: IN PROGRESS**
 
@@ -294,18 +295,19 @@ Already implemented:
 - Shared syntax-highlighted Home/Playground editor with a default Light theme and Dark toggle.
 - Interactive inventory expansion, product-add, cart quantity, and removal controls that update and re-run ShopScript source while preserving intentional price overrides.
 - Persistent Inventory page with product create, read, update, delete, search, stock/status filters, and a catalog shared with Home and semantic validation.
+- Persistent Coupon Manager with create, edit, delete, reset, active/inactive filters, and a catalog shared with ShopScript coupon validation.
+- Runtime coupon declarations with `coupon "CODE" 25%;` plus managed coupon validation during interpreter runs.
 - Popup notifications, editor line markers, and inline diagnostics for interpreter, stock, cart, checkout, and inventory CRUD outcomes.
 - Source editor area and sample selection.
 - Run/reset behavior.
 - Product catalog, cart, coupon, shipping, totals, checkout, and receipt.
 - Token, error, variable, and execution-log panels.
 - Class and instance visualization.
-- Valid, syntax-error, semantic-error, price-override, type/scope/control-flow, and OOP method/encapsulation samples.
+- Valid, syntax-error, semantic-error, runtime-product, price-override, type/scope/control-flow, OOP method/encapsulation, and final end-to-end demonstration samples.
 
 Still required:
 
 - Add optional AST/scope visualization to the analyzer.
-- Expand edge-case tests for malformed expressions, loops, and OOP misuse.
 - Decide whether checkout should persistently decrement Inventory stock, or keep current behavior as validation-only simulation.
 - Verify responsive behavior and keyboard accessibility.
 
@@ -316,20 +318,20 @@ Acceptance criteria:
 - Invalid programs never show a misleading successful receipt.
 - The UI remains usable on desktop, tablet, and mobile widths.
 
-## Phase 10 — Automated tests and demonstrations
+## Phase 10 - Automated tests and demonstrations
 
 **Status: IN PROGRESS**
 
 Implemented:
 
-- `pnpm --filter @workspace/shopscript run test:interpreter` validates typed declarations, control flow, OOP methods, encapsulation, and price override behavior.
+- `pnpm --filter @workspace/shopscript run test:interpreter` validates typed declarations, control flow, OOP methods, encapsulation, price override behavior, and the final end-to-end demonstration program.
+- Regression tests now cover invalid lexer input, malformed syntax, missing braces, unknown statements, inventory errors, runtime product registration, coupon errors, price mismatch, empty checkout, undeclared variables, duplicate declarations, type mismatch, invalid expressions, loop safety, private access, bad method arguments, and invalid object products.
 
 Still required:
 
-- Add more regression tests for invalid syntax, invalid expressions, loop safety, and inventory edge cases.
-- Add final end-to-end demonstration program covering all mandatory modules.
+- Add any instructor-specific edge-case tests discovered during the final specification audit.
 
-## Phase 11 — Final documentation and submission validation
+## Phase 11 - Final documentation and submission validation
 
 **Status: IN PROGRESS**
 
@@ -345,12 +347,12 @@ Still required:
 - Document the final grammar and type rules.
 - Add screenshots or a short demonstration flow if required by the instructor.
 - Prepare answers for the specification''s Q&A section using only implemented behavior.
-- Ensure the final sample demonstrates all Modules 1–7.
+- Ensure the final sample demonstrates all Modules 1-7.
 - Run a final requirements audit against `PROJECT+SPECIFICATION.pdf`.
 
 Final submission gate:
 
-- Phases 1–10 satisfy their acceptance criteria.
+- Phases 1-10 satisfy their acceptance criteria.
 - `pnpm install`, tests, typecheck, and build all pass from a clean checkout.
 - The website demonstration covers lexer, parser, scope, semantics, control flow, data types, and OOP.
 - Documentation does not claim unimplemented features.
@@ -371,14 +373,14 @@ Future agents should work in this order:
 9. Add comprehensive automated tests.
 10. Perform the final specification and documentation audit.
 
-Do not start optional editor replacement, animation, persistence, authentication, payments, or database work before steps 1–9 are complete.
+Do not start optional editor replacement, animation, persistence, authentication, payments, or database work before steps 1-9 are complete.
 
 ## Status update protocol
 
 When work changes a phase:
 
 1. Update its status and the summary table.
-2. Move completed bullets from “Still required” to “Already implemented.”
+2. Move completed bullets from "Still required" to "Already implemented."
 3. Add evidence: source file, test, or command.
 4. Update relevant README examples.
 5. Update `AGENTS.md` if architecture or commands changed.
