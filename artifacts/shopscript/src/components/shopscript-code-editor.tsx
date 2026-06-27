@@ -14,19 +14,31 @@ interface ShopScriptCodeEditorProps {
   onCursorChange?: (position: { line: number; col: number }) => void;
 }
 
-const KEYWORDS = new Set([
-  "let", "int", "float", "string", "bool", "void", "add", "apply", "coupon", "set", "checkout", "override",
-  "if", "else", "for", "while", "class", "new", "public", "private", "method", "return", "this",
-  "shipping", "budget", "cart", "user",
+const DECLARATION_KEYWORDS = new Set(["let", "int", "float", "string", "bool", "void"]);
+const COMMAND_KEYWORDS = new Set(["product", "add", "apply", "coupon", "set", "checkout", "override"]);
+const CONTROL_KEYWORDS = new Set(["if", "else", "for", "while", "return"]);
+const OOP_KEYWORDS = new Set(["class", "new", "public", "private", "method", "this"]);
+const DOMAIN_KEYWORDS = new Set(["stock", "shipping", "budget", "cart", "user"]);
+const ALL_KEYWORDS = new Set([
+  ...DECLARATION_KEYWORDS,
+  ...COMMAND_KEYWORDS,
+  ...CONTROL_KEYWORDS,
+  ...OOP_KEYWORDS,
+  ...DOMAIN_KEYWORDS,
 ]);
 
-const TOKEN_PATTERN = /("(?:\\.|[^"\\])*"|\/\/.*|\b(?:let|int|float|string|bool|void|add|apply|coupon|set|checkout|override|if|else|for|while|class|new|public|private|method|return|this|shipping|budget|cart|user)\b|\b(?:true|false)\b|\b\d+(?:\.\d+)?\b|[@=+\-*/%<>!&|]+|[{}\[\]();,.]|\s+|[A-Za-z_][A-Za-z0-9_]*|.)/g;
+const TOKEN_PATTERN = /("(?:\\.|[^"\\])*"|\/\/.*|\b[A-Za-z_][A-Za-z0-9_]*\b|\b\d+(?:\.\d+)?\b|[@=+\-*/%<>!&|]+|[{}\[\]();,.]|\s+|.)/g;
 
 function tokenStyle(token: string): string {
   if (token.startsWith("//")) return "comment";
   if (token.startsWith('"')) return "string";
-  if (KEYWORDS.has(token)) return "keyword";
   if (token === "true" || token === "false") return "boolean";
+  if (DECLARATION_KEYWORDS.has(token)) return "keyword keyword-declaration";
+  if (COMMAND_KEYWORDS.has(token)) return "keyword keyword-command";
+  if (CONTROL_KEYWORDS.has(token)) return "keyword keyword-control";
+  if (OOP_KEYWORDS.has(token)) return "keyword keyword-oop";
+  if (DOMAIN_KEYWORDS.has(token)) return "keyword keyword-domain";
+  if (ALL_KEYWORDS.has(token)) return "keyword";
   if (/^\d/.test(token)) return "number";
   if (/^[@=+\-*/%<>!&|]+$/.test(token)) return "operator";
   if (/^[{}\[\]();,.]$/.test(token)) return "punctuation";

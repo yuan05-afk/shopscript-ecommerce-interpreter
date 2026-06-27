@@ -1949,7 +1949,6 @@ html[data-theme="cyber-ochre"] .shopscript-ide:not(.ide-dark) {
 html[data-theme="midnight"] .online-dot,
 html[data-theme="cyber-ochre"] .online-dot { border-color: var(--theme-surface); }
 
-
 /* Unified page heroes ----------------------------------------------------- */
 .docs-hero,
 .examples-hero,
@@ -2083,7 +2082,6 @@ html[data-theme="cyber-ochre"] .online-dot { border-color: var(--theme-surface);
   .examples-count { width: 100%; min-width: 0; }
 }
 
-
 /* Full theme coverage polish --------------------------------------------- */
 html[data-theme]:not([data-theme="default"]) .app-shell,
 html[data-theme]:not([data-theme="default"]) .workspace-outer {
@@ -2099,9 +2097,6 @@ html[data-theme]:not([data-theme="default"]) .editor-card > div:first-child,
 html[data-theme]:not([data-theme="default"]) .app-footer,
 html[data-theme]:not([data-theme="default"]) .product-card,
 html[data-theme]:not([data-theme="default"]) .receipt-preview,
-html[data-theme]:not([data-theme="default"]) .playground-output-summary div,
-html[data-theme]:not([data-theme="default"]) .playground-cart-list,
-html[data-theme]:not([data-theme="default"]) .playground-log-list,
 html[data-theme]:not([data-theme="default"]) .docs-search-wrap,
 html[data-theme]:not([data-theme="default"]) .examples-search-wrap,
 html[data-theme]:not([data-theme="default"]) .examples-next,
@@ -2198,7 +2193,6 @@ html[data-theme="cyber-ochre"] .shopscript-ide {
   border-color: color-mix(in srgb, var(--theme-accent) 35%, var(--theme-border)) !important;
 }
 
-
 /* Crimson Dracula editorial polish --------------------------------------- */
 html[data-theme="midnight"] .docs-hero,
 html[data-theme="midnight"] .examples-hero,
@@ -2235,7 +2229,6 @@ html[data-theme="midnight"] .examples-count {
   background: linear-gradient(135deg, #C8102E, #660813) !important;
   color: #FFFFFF !important;
 }
-
 
 /* Theme contrast repair --------------------------------------------------- */
 html[data-theme="emerald-gold"] .shopscript-ide:not(.ide-dark) {
@@ -2303,10 +2296,6 @@ html[data-theme]:not([data-theme="default"]) .docs-analyzer-grid > div,
 html[data-theme]:not([data-theme="default"]) .docs-pipeline > div,
 html[data-theme]:not([data-theme="default"]) .docs-status-columns > div,
 html[data-theme]:not([data-theme="default"]) .example-expected,
-html[data-theme]:not([data-theme="default"]) .playground-output-summary div,
-html[data-theme]:not([data-theme="default"]) .playground-cart-list,
-html[data-theme]:not([data-theme="default"]) .playground-log-list,
-html[data-theme]:not([data-theme="default"]) .playground-success,
 html[data-theme]:not([data-theme="default"]) .playground-oop-summary,
 html[data-theme]:not([data-theme="default"]) .playground-oop-summary span,
 html[data-theme]:not([data-theme="default"]) .playground-token-list > div,
@@ -2324,10 +2313,7 @@ html[data-theme]:not([data-theme="default"]) .team-card {
   border-color: var(--theme-border) !important;
   color: var(--theme-text) !important;
 }
-html[data-theme]:not([data-theme="default"]) .playground-tab-content {
-  background: var(--theme-bg-soft) !important;
-  color: var(--theme-text) !important;
-}
+
 html[data-theme]:not([data-theme="default"]) .playground-tabs button,
 html[data-theme]:not([data-theme="default"]) .playground-tabs button span,
 html[data-theme]:not([data-theme="default"]) .example-filters button span,
@@ -2413,13 +2399,11 @@ html[data-theme="midnight"] .examples-next {
   background: linear-gradient(135deg, rgba(200, 16, 46, 0.14), rgba(255, 255, 255, 0.04)) !important;
 }
 html[data-theme="emerald-gold"] .example-expected,
-html[data-theme="emerald-gold"] .playground-success,
 html[data-theme="emerald-gold"] .docs-callout,
 html[data-theme="emerald-gold"] .docs-next-card,
 html[data-theme="emerald-gold"] .examples-next {
   background: linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(13, 59, 46, 0.04)) !important;
 }
-
 
 /* Final non-default theme readability pass -------------------------------- */
 html[data-theme]:not([data-theme="default"]) .app-shell,
@@ -2610,15 +2594,10 @@ html[data-theme]:not([data-theme="default"]) .docs-inventory-list > div,
 html[data-theme]:not([data-theme="default"]) .example-expected,
 html[data-theme]:not([data-theme="default"]) .examples-next,
 html[data-theme]:not([data-theme="default"]) .docs-next-card,
-html[data-theme]:not([data-theme="default"]) .playground-tab-content,
-html[data-theme]:not([data-theme="default"]) .playground-output-summary div,
-html[data-theme]:not([data-theme="default"]) .playground-cart-list,
-html[data-theme]:not([data-theme="default"]) .playground-log-list,
 html[data-theme]:not([data-theme="default"]) .playground-token-list > div,
 html[data-theme]:not([data-theme="default"]) .playground-variable-panel,
 html[data-theme]:not([data-theme="default"]) .playground-oop-summary,
 html[data-theme]:not([data-theme="default"]) .playground-oop-summary span,
-html[data-theme]:not([data-theme="default"]) .playground-success,
 html[data-theme]:not([data-theme="default"]) .success-box {
   background: var(--theme-surface-2) !important;
   border-color: var(--theme-border) !important;
@@ -2781,7 +2760,6 @@ html[data-theme="cyber-ochre"] .team-section {
   box-shadow: 0 0 0 1px rgba(255, 179, 0, 0.18), 0 22px 52px rgba(0, 0, 0, 0.55) !important;
 }
 
-
 /* Theme visual polish pass ----------------------------------------------- */
 html[data-theme="emerald-gold"] {
   scrollbar-color: #C5A059 #F3F1E7;
@@ -2932,16 +2910,10 @@ html[data-theme="emerald-gold"] .docs-feature-grid > div,
 html[data-theme="emerald-gold"] .docs-analyzer-grid > div,
 html[data-theme="emerald-gold"] .docs-pipeline > div,
 html[data-theme="emerald-gold"] .docs-status-columns > div,
-html[data-theme="emerald-gold"] .example-expected,
-html[data-theme="emerald-gold"] .playground-output-summary div,
-html[data-theme="emerald-gold"] .playground-cart-list,
-html[data-theme="emerald-gold"] .playground-log-list,
-html[data-theme="emerald-gold"] .playground-success,
-html[data-theme="emerald-gold"] .playground-tab-content {
+html[data-theme="emerald-gold"] .example-expected {
   background: #F6F2E6 !important;
   border-color: #D8C99E !important;
 }
-
 
 /* Documentation and examples typography strength ------------------------- */
 .docs-step,
@@ -3003,7 +2975,6 @@ html[data-theme="emerald-gold"] .playground-tab-content {
   letter-spacing: -0.04em;
 }
 
-
 /* Emerald code panel contrast correction --------------------------------- */
 html[data-theme="emerald-gold"]:not([data-theme="default"]) .docs-section pre,
 html[data-theme="emerald-gold"]:not([data-theme="default"]) .example-code {
@@ -3023,7 +2994,6 @@ html[data-theme="emerald-gold"]:not([data-theme="default"]) .docs-section pre co
 html[data-theme="emerald-gold"]:not([data-theme="default"]) .example-code code * {
   background: transparent !important;
 }
-
 
 /* Cross-theme visual hierarchy pass -------------------------------------- */
 html[data-theme]:not([data-theme="default"]) .docs-section-heading h2,
@@ -3088,12 +3058,7 @@ html[data-theme="emerald-gold"] .docs-status-columns > div,
 html[data-theme="emerald-gold"] .example-expected,
 html[data-theme="emerald-gold"] .docs-callout,
 html[data-theme="emerald-gold"] .docs-next-card,
-html[data-theme="emerald-gold"] .examples-next,
-html[data-theme="emerald-gold"] .playground-output-summary div,
-html[data-theme="emerald-gold"] .playground-cart-list,
-html[data-theme="emerald-gold"] .playground-log-list,
-html[data-theme="emerald-gold"] .playground-success,
-html[data-theme="emerald-gold"] .playground-tab-content {
+html[data-theme="emerald-gold"] .examples-next {
   background: #FBF8EF !important;
   border-color: #E2D7B8 !important;
 }
@@ -3196,14 +3161,12 @@ html[data-theme="cyber-ochre"] .team-card span {
   color: #D9D19A !important;
 }
 
-
 /* Emerald code font weight correction ------------------------------------ */
 html[data-theme="emerald-gold"] .docs-section pre code,
 html[data-theme="emerald-gold"] .example-code code {
   font-weight: 400 !important;
   letter-spacing: 0 !important;
 }
-
 
 /* Playground tabs default-style theme alignment -------------------------- */
 html[data-theme]:not([data-theme="default"]) .playground-tabs {
@@ -3290,7 +3253,6 @@ html[data-theme="cyber-ochre"] .playground-tabs button span {
   background: rgba(255, 230, 0, 0.13) !important;
   color: #FFF8C7 !important;
 }
-
 
 /* Home simulation dark-theme readability and CTA theming ----------------- */
 html[data-theme]:not([data-theme="default"]) .sim-row2 .ss-card [style*="color:hsl(220 20% 18%)"],
@@ -3422,7 +3384,6 @@ html[data-theme="cyber-ochre"] .var-table td {
   border-color: color-mix(in srgb, var(--theme-border) 72%, var(--theme-text)) !important;
 }
 
-
 /* Final editor error visibility layer ------------------------------------ */
 :root,
 html[data-theme="default"] {
@@ -3517,4 +3478,321 @@ html[data-theme="cyber-ochre"] .ide-highlight-line.has-error {
 }
 .playground-editor-footer span:first-child.error::before {
   background: var(--editor-error) !important;
+}
+
+/* Ready status and docs contrast tuning ---------------------------------- */
+.status-state.success {
+  color: #16a34a !important;
+  font-weight: 850 !important;
+}
+.status-state.success .status-dot {
+  background: #22c55e !important;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16);
+}
+html[data-theme="emerald-gold"] .status-state.success {
+  color: #047857 !important;
+}
+html[data-theme="emerald-gold"] .status-state.success .status-dot {
+  background: #10b981 !important;
+}
+html[data-theme="midnight"] .status-state.success {
+  color: #4ade80 !important;
+}
+html[data-theme="midnight"] .status-state.success .status-dot {
+  background: #22c55e !important;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.22), 0 0 10px rgba(34, 197, 94, 0.20);
+}
+html[data-theme="cyber-ochre"] .status-state.success {
+  color: #b6ff00 !important;
+}
+html[data-theme="cyber-ochre"] .status-state.success .status-dot {
+  background: #b6ff00 !important;
+  box-shadow: 0 0 0 3px rgba(182, 255, 0, 0.20), 0 0 12px rgba(182, 255, 0, 0.28);
+}
+.docs-callout {
+  background: hsl(25 95% 53% / 0.075) !important;
+  border-color: hsl(25 95% 53% / 0.24) !important;
+}
+.docs-callout strong {
+  color: hsl(220 24% 12%) !important;
+  font-weight: 900 !important;
+}
+.docs-callout span {
+  color: hsl(220 12% 34%) !important;
+  font-weight: 620 !important;
+}
+.docs-feature-grid > div {
+  background: hsl(30 24% 99%) !important;
+  border-color: hsl(30 20% 91%) !important;
+  box-shadow: none !important;
+}
+.docs-feature-grid strong {
+  color: hsl(220 20% 18%) !important;
+  font-weight: 760 !important;
+}
+.docs-feature-grid span {
+  color: hsl(220 10% 48%) !important;
+  font-weight: 500 !important;
+}
+html[data-theme="emerald-gold"] .docs-callout {
+  background: #F4ECD7 !important;
+  border-color: #D8C99E !important;
+}
+html[data-theme="emerald-gold"] .docs-callout strong {
+  color: #0D3B2E !important;
+}
+html[data-theme="emerald-gold"] .docs-callout span {
+  color: #315C4F !important;
+}
+html[data-theme="emerald-gold"] .docs-feature-grid > div {
+  background: #FFFEF8 !important;
+  border-color: #E8DEC2 !important;
+}
+html[data-theme="emerald-gold"] .docs-feature-grid strong {
+  color: #0D3B2E !important;
+}
+html[data-theme="emerald-gold"] .docs-feature-grid span {
+  color: #5E7469 !important;
+}
+html[data-theme="midnight"] .docs-callout {
+  background: rgba(200, 16, 46, 0.13) !important;
+  border-color: rgba(200, 16, 46, 0.38) !important;
+}
+html[data-theme="midnight"] .docs-callout strong {
+  color: #FFFFFF !important;
+}
+html[data-theme="midnight"] .docs-callout span {
+  color: #D9D9D9 !important;
+}
+html[data-theme="midnight"] .docs-feature-grid > div {
+  background: #1A1A1D !important;
+  border-color: #303036 !important;
+}
+html[data-theme="midnight"] .docs-feature-grid strong {
+  color: #F4F4F4 !important;
+}
+html[data-theme="midnight"] .docs-feature-grid span {
+  color: #A8A8A8 !important;
+}
+html[data-theme="cyber-ochre"] .docs-callout {
+  background: rgba(255, 179, 0, 0.13) !important;
+  border-color: rgba(255, 230, 0, 0.36) !important;
+}
+html[data-theme="cyber-ochre"] .docs-callout strong {
+  color: #FFF8C7 !important;
+}
+html[data-theme="cyber-ochre"] .docs-callout span {
+  color: #D9D19A !important;
+}
+html[data-theme="cyber-ochre"] .docs-feature-grid > div {
+  background: #11100B !important;
+  border-color: #3A2D07 !important;
+}
+html[data-theme="cyber-ochre"] .docs-feature-grid strong {
+  color: #F5F2D8 !important;
+}
+html[data-theme="cyber-ochre"] .docs-feature-grid span {
+  color: #AFA778 !important;
+}
+
+/* Emerald docs feature boxes lighter final override ----------------------- */
+html[data-theme="emerald-gold"] .docs-section .docs-feature-grid > div {
+  background: #FFFFFF !important;
+  border-color: #EEE6D2 !important;
+  box-shadow: none !important;
+}
+html[data-theme="emerald-gold"] .docs-section .docs-feature-grid strong {
+  color: #174A3D !important;
+  font-weight: 720 !important;
+}
+html[data-theme="emerald-gold"] .docs-section .docs-feature-grid span {
+  color: #6B8176 !important;
+  font-weight: 460 !important;
+}
+html[data-theme="emerald-gold"] .docs-section .docs-callout {
+  background: #F3EEDC !important;
+  border-color: #D8C99E !important;
+}
+
+/* Playground output hierarchy normalization -------------------------------
+   Keep non-default themes close to the default information hierarchy:
+   outer result panel = page/card surface, nested data panels = lighter surface,
+   success state = distinct but soft. This avoids broad theme overrides making
+   Emerald and other themes look uniformly tinted or too dark. */
+html[data-theme="emerald-gold"] .playground-results {
+  background: #FFFFFF !important;
+  border-color: #E4D9BA !important;
+  color: #0D3B2E !important;
+}
+
+html[data-theme="emerald-gold"] .playground-tab-content {
+  background: #FFFFFF !important;
+  color: #0D3B2E !important;
+}
+
+html[data-theme="emerald-gold"] .playground-output-summary div,
+html[data-theme="emerald-gold"] .playground-cart-list,
+html[data-theme="emerald-gold"] .playground-log-list {
+  background: #FFFEFA !important;
+  border-color: #E9DFC5 !important;
+  color: #0D3B2E !important;
+}
+
+html[data-theme="emerald-gold"] .playground-success {
+  background: #EEF9F1 !important;
+  border-color: #BDE7C8 !important;
+  color: #0D3B2E !important;
+}
+
+html[data-theme="emerald-gold"] .playground-output-summary span,
+html[data-theme="emerald-gold"] .playground-cart-list small,
+html[data-theme="emerald-gold"] .playground-log-list code {
+  color: #506F63 !important;
+  font-weight: 500 !important;
+}
+
+html[data-theme="emerald-gold"] .playground-output-summary strong,
+html[data-theme="emerald-gold"] .playground-cart-list h3,
+html[data-theme="emerald-gold"] .playground-log-list h3 {
+  color: #0D3B2E !important;
+}
+
+html[data-theme="emerald-gold"] .playground-output-summary div:last-child strong,
+html[data-theme="emerald-gold"] .playground-cart-list strong {
+  color: #946E16 !important;
+}
+
+html[data-theme="emerald-gold"] .playground-log-list {
+  scrollbar-color: #C5A059 #FFFEFA !important;
+}
+
+html[data-theme="midnight"] .playground-results,
+html[data-theme="cyber-ochre"] .playground-results {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+html[data-theme="midnight"] .playground-tab-content,
+html[data-theme="cyber-ochre"] .playground-tab-content {
+  background: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
+}
+
+html[data-theme="midnight"] .playground-output-summary div,
+html[data-theme="midnight"] .playground-cart-list,
+html[data-theme="midnight"] .playground-log-list,
+html[data-theme="cyber-ochre"] .playground-output-summary div,
+html[data-theme="cyber-ochre"] .playground-cart-list,
+html[data-theme="cyber-ochre"] .playground-log-list {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+html[data-theme="midnight"] .playground-success,
+html[data-theme="cyber-ochre"] .playground-success {
+  background: var(--theme-success-bg) !important;
+  border-color: var(--theme-success-border) !important;
+  color: var(--theme-success-text) !important;
+}
+
+/* Syntax keyword category coloring --------------------------------------- */
+.syntax-keyword.keyword-declaration {
+  color: #fb5607 !important;
+  font-weight: 760;
+}
+.syntax-keyword.keyword-command {
+  color: #ea580c !important;
+  font-weight: 780;
+}
+.syntax-keyword.keyword-control {
+  color: #2563eb !important;
+  font-weight: 760;
+}
+.syntax-keyword.keyword-oop {
+  color: #7c3aed !important;
+  font-weight: 760;
+}
+.syntax-keyword.keyword-domain {
+  color: #0f766e !important;
+  font-weight: 730;
+}
+
+.ide-dark .syntax-keyword.keyword-declaration {
+  color: #fb7185 !important;
+}
+.ide-dark .syntax-keyword.keyword-command {
+  color: #ff7a1a !important;
+}
+.ide-dark .syntax-keyword.keyword-control {
+  color: #60a5fa !important;
+}
+.ide-dark .syntax-keyword.keyword-oop {
+  color: #c4b5fd !important;
+}
+.ide-dark .syntax-keyword.keyword-domain {
+  color: #2dd4bf !important;
+}
+
+html[data-theme="emerald-gold"] .syntax-keyword.keyword-declaration {
+  color: #0D3B2E !important;
+}
+html[data-theme="emerald-gold"] .syntax-keyword.keyword-command {
+  color: #A66F00 !important;
+}
+html[data-theme="emerald-gold"] .syntax-keyword.keyword-control {
+  color: #1F5A48 !important;
+}
+html[data-theme="emerald-gold"] .syntax-keyword.keyword-oop {
+  color: #6B4E16 !important;
+}
+html[data-theme="emerald-gold"] .syntax-keyword.keyword-domain {
+  color: #0B6B50 !important;
+}
+html[data-theme="emerald-gold"] .ide-dark .syntax-keyword.keyword-declaration {
+  color: #D9C27B !important;
+}
+html[data-theme="emerald-gold"] .ide-dark .syntax-keyword.keyword-command {
+  color: #F4B955 !important;
+}
+html[data-theme="emerald-gold"] .ide-dark .syntax-keyword.keyword-control {
+  color: #8DD8B7 !important;
+}
+html[data-theme="emerald-gold"] .ide-dark .syntax-keyword.keyword-oop {
+  color: #E6D08A !important;
+}
+html[data-theme="emerald-gold"] .ide-dark .syntax-keyword.keyword-domain {
+  color: #6EE7B7 !important;
+}
+
+html[data-theme="midnight"] .syntax-keyword.keyword-declaration {
+  color: #C8102E !important;
+}
+html[data-theme="midnight"] .syntax-keyword.keyword-command {
+  color: #FF4D64 !important;
+}
+html[data-theme="midnight"] .syntax-keyword.keyword-control {
+  color: #FFFFFF !important;
+}
+html[data-theme="midnight"] .syntax-keyword.keyword-oop {
+  color: #F4A3B5 !important;
+}
+html[data-theme="midnight"] .syntax-keyword.keyword-domain {
+  color: #D9D9D9 !important;
+}
+
+html[data-theme="cyber-ochre"] .syntax-keyword.keyword-declaration {
+  color: #FFE600 !important;
+}
+html[data-theme="cyber-ochre"] .syntax-keyword.keyword-command {
+  color: #FFB300 !important;
+}
+html[data-theme="cyber-ochre"] .syntax-keyword.keyword-control {
+  color: #B6FF00 !important;
+}
+html[data-theme="cyber-ochre"] .syntax-keyword.keyword-oop {
+  color: #FF7A18 !important;
+}
+html[data-theme="cyber-ochre"] .syntax-keyword.keyword-domain {
+  color: #D8FF7A !important;
 }
