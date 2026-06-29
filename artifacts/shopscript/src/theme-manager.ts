@@ -78,7 +78,7 @@ const FAVICON_PALETTES: Record<Theme, FaviconPalette> = {
     bgEnd: "#FFB300",
     bag: "#fff8c7",
     ink: "#050505",
-    accent: "#B6FF00",
+    accent: "#FFB300",
   },
 };
 export class ThemeManager {
@@ -117,12 +117,15 @@ export class ThemeManager {
     return THEMES[(index + 1) % THEMES.length];
   }
 
+  static faviconDataUrl(theme: Theme): string {
+    const palette = FAVICON_PALETTES[theme] ?? FAVICON_PALETTES.default;
+    return "data:image/svg+xml," + encodeURIComponent(ThemeManager.createFaviconSvg(palette));
+  }
 
   private static applyFavicon(theme: Theme): void {
     if (typeof document === "undefined") return;
     const palette = FAVICON_PALETTES[theme] ?? FAVICON_PALETTES.default;
-    const svg = ThemeManager.createFaviconSvg(palette);
-    const href = "data:image/svg+xml," + encodeURIComponent(svg);
+    const href = ThemeManager.faviconDataUrl(theme);
     let link = document.querySelector<HTMLLinkElement>('link[data-shopscript-favicon]');
 
     if (!link) {

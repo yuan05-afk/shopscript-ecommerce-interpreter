@@ -1012,7 +1012,7 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
   );
 }
 
-function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
+function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => void; logoSrc: string }) {
   const importanceItems = [
     ["Learning by execution", "ShopScript lets students see each programming-language phase turn into visible state: tokens, diagnostics, variables, cart items, totals, logs, and receipt output."],
     ["Domain-based grammar", "The e-commerce scenario gives abstract compiler concepts a familiar context, so declarations, expressions, commands, objects, and semantic errors are easier to reason about."],
@@ -1097,7 +1097,7 @@ function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
             <button className="btn-ghost" onClick={() => onNavigate("Docs")}>{Ico.book(14)} Read documentation</button>
           </div>
         </div>
-        <div className="about-mark" aria-hidden="true">{Ico.code(44, "white")}<span>v{APP_VERSION}</span></div>
+        <div className="about-mark" aria-hidden="true"><img className="about-mark-logo" src={logoSrc} alt="" /><span>v{APP_VERSION}</span></div>
       </section>
 
       <section className="about-grid about-animate about-animate-2">
@@ -1237,6 +1237,7 @@ export default function App() {
   const [inventoryView, setInventoryView] = useState<"products" | "coupons">("products");
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [appTheme, setAppTheme] = useState<Theme>(() => ThemeManager.init());
+  const brandLogoSrc = ThemeManager.faviconDataUrl(appTheme);
   const homeHeroImage = HOME_HERO_IMAGES[appTheme];
   const [editorTheme, setEditorTheme] = useState<EditorTheme>("light");
   const [showAllInventory, setShowAllInventory] = useState(false);
@@ -1257,11 +1258,13 @@ export default function App() {
 
     const lenis = new Lenis({
       autoRaf: true,
-      lerp: 0.08,
-      wheelMultiplier: 0.9,
-      touchMultiplier: 1.1,
+      duration: 1.05,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 0.85,
+      touchMultiplier: 1.25,
       allowNestedScroll: true,
-      anchors: { offset: 0, duration: 0.9 },
+      anchors: { offset: -72, duration: 0.95 },
     });
 
     lenisRef.current = lenis;
@@ -1274,6 +1277,11 @@ export default function App() {
   useEffect(() => {
     ThemeManager.applyTheme(appTheme);
   }, [appTheme]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => lenisRef.current?.resize());
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeNav, hasRun, result, products.length, coupons.length]);
 
   const dismissNotification = useCallback((id: number) => {
     setNotifications(current => current.filter(notice => notice.id !== id));
@@ -1555,7 +1563,7 @@ export default function App() {
       return;
     }
     try {
-      downloadReceiptPdf({ user: user ?? "Guest", orderId, items: cart, subtotal, coupon, discount: discountAmt, shipping, total });
+      downloadReceiptPdf({ user: user ?? "Guest", orderId, items: cart, subtotal, coupon, discount: discountAmt, shipping, total, theme: appTheme });
       pushNotification("success", "PDF downloaded", "Your ShopScript receipt was saved as a PDF file.");
     } catch {
       pushNotification("error", "Download failed", "The receipt PDF could not be generated. Please try again.");
@@ -1571,9 +1579,7 @@ export default function App() {
         <div className="header-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"0 24px", height:56, display:"flex", alignItems:"center", gap:16 }}>
           {/* Logo -- always visible */}
           <button type="button" className="brand-button" onClick={() => navigate("Home")} aria-label="Open ShopScript home">
-            <div style={{ background:"var(--theme-accent)", borderRadius:8, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", color:"white", flexShrink:0 }}>
-              {Ico.code(16,"white")}
-            </div>
+            <img className="brand-logo" src={brandLogoSrc} alt="" aria-hidden="true" />
             <div>
               <div className="brand-title" style={{ fontWeight:800, fontSize:15, lineHeight:1.1 }}>ShopScript</div>
               <div className="brand-subtitle" style={{ fontSize:9.5, lineHeight:1 }}>Code. Simulate. Sell.</div>
@@ -2063,7 +2069,7 @@ export default function App() {
                 <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Output Logs</span>
                 {result && <span style={{ background:"hsl(142 76% 36% / 0.14)", color:"hsl(142 76% 28%)", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.logs.length}</span>}
               </div>
-              <div style={{ maxHeight:150, overflowY:"auto", display:"flex", flexDirection:"column", gap:2 }}>
+              <div data-lenis-prevent style={{ maxHeight:150, overflowY:"auto", display:"flex", flexDirection:"column", gap:2 }}>
                 {result?.logs.length ? (
                   result.logs.map((log,i) => (
                     <div key={i} className="log-item">
@@ -2145,7 +2151,7 @@ export default function App() {
           onSelectedExampleChange={setSelectedExampleId}
         />
       ) : (
-        <AboutPage onNavigate={navigate} />
+        <AboutPage onNavigate={navigate} logoSrc={brandLogoSrc} />
       )}
 
       {/* ---- FOOTER --------------------------------------------------- */}
