@@ -259,6 +259,7 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
   let i = 0;
   const peek = () => tokens[i];
   const consume = () => tokens[i++];
+  const isNameToken = (token: Token): boolean => token.type === TOKEN_TYPES.IDENTIFIER || token.type === TOKEN_TYPES.KEYWORD;
   const expect = (type: string, value?: string): boolean => {
     const t = peek();
     if (t.type === type && (value === undefined || t.value === value)) { consume(); return true; }
@@ -281,7 +282,7 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
       // Parse fields until }
       while (i < tokens.length && peek().type !== TOKEN_TYPES.RBRACE && peek().type !== TOKEN_TYPES.EOF) {
         const fieldName = peek();
-        if (fieldName.type !== TOKEN_TYPES.IDENTIFIER) {
+        if (!isNameToken(fieldName)) {
           errors.push({ message: `Expected field name in class body at line ${fieldName.line}`, line: fieldName.line });
           consume(); continue;
         }
@@ -449,7 +450,7 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
       if (peek().type === TOKEN_TYPES.DOT) {
         consume(); // .
         const prop = peek();
-        if (prop.type !== TOKEN_TYPES.IDENTIFIER) {
+        if (!isNameToken(prop)) {
           errors.push({ message: `Expected field name after '.' at line ${prop.line}`, line: prop.line });
         } else { consume(); }
       }

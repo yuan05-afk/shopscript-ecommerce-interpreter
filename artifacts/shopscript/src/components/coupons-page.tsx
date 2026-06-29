@@ -61,7 +61,7 @@ export function CouponsPage({ coupons, onSave, onDelete, onReset, onNotify, onBa
             <h2>{editing ? "Edit coupon" : "Create coupon"}</h2>
             <label>Code<input value={draft.code} onChange={event => setDraft(current => ({ ...current, code: event.target.value }))} placeholder="BLACKFRIDAY" /></label>
             <label>Discount %<input type="number" min="0" max="95" step="1" value={Math.round(draft.discount * 100)} onChange={event => setDraft(current => ({ ...current, discount: Number(event.target.value) / 100 }))} /></label>
-            <label>Description<textarea value={draft.description} onChange={event => setDraft(current => ({ ...current, description: event.target.value }))} placeholder="What this coupon is for" /></label>
+            <label>Description<textarea data-lenis-prevent value={draft.description} onChange={event => setDraft(current => ({ ...current, description: event.target.value }))} placeholder="What this coupon is for" /></label>
             <label className="coupon-checkbox"><input type="checkbox" checked={draft.active} onChange={event => setDraft(current => ({ ...current, active: event.target.checked }))} /> Active coupon</label>
             <div className="coupon-form-actions"><button className="btn-orange" onClick={save}>{editing ? "Save changes" : "Create coupon"}</button><button className="btn-ghost" onClick={openCreate}>Clear</button></div>
           </article>

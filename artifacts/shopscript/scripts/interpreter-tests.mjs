@@ -88,6 +88,23 @@ checkout;
     assert(result.total === 29, "expected total 29");
   });
 
+  run("valid simple OOP class allows keyword field names", `
+let cart = [];
+class Product {
+  name = "Phone Case";
+  price = 29.00;
+  stock = true;
+}
+let item = new Product;
+set item.stock = false;
+add item 1;
+checkout;
+`, result => {
+    expectNoErrors(result.lexErrors, "lex errors");
+    expectNoErrors(result.syntaxErrors, "syntax errors");
+    expectNoErrors(result.semanticErrors, "semantic errors");
+    assert(result.cart[0]?.name === "Phone Case", "expected object item in cart");
+  });
   run("valid manual price override", `
 let cart = [];
 add "Smartphone X" 1 @ 200.00 override;

@@ -137,7 +137,7 @@ export function ShopScriptCodeEditor({
   };
 
   return (
-    <div className={"shopscript-ide ide-" + theme + " " + className}>
+    <div className={"shopscript-ide ide-" + theme + " " + className} data-lenis-prevent>
       <div className="ide-gutter" ref={gutterRef} aria-hidden="true">
         {lines.map((_, index) => <div className={errorLineSet.has(index + 1) ? "ide-error-line" : ""} key={index}>{index + 1}</div>)}
       </div>
@@ -162,6 +162,7 @@ export function ShopScriptCodeEditor({
           autoCorrect="off"
           autoCapitalize="off"
           wrap="off"
+          data-lenis-prevent
           aria-label={ariaLabel}
         />
       </div>

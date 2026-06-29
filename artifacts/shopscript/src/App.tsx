@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import Lenis from "lenis";
 import {
   interpret,
   INVENTORY,
@@ -359,6 +360,13 @@ const APP_VERSION = "0.3.0";
 const NAV_ITEMS = ["Home", "Docs", "Examples", "Playground", "Inventory", "About"] as const;
 type NavItem = typeof NAV_ITEMS[number];
 
+const HOME_HERO_IMAGES: Record<Theme, string> = {
+  default: 'url("/theme-heroes/default.png")',
+  "emerald-gold": 'url("/theme-heroes/emerald-gold.png")',
+  midnight: 'url("/theme-heroes/crimson-dracula.png")',
+  "cyber-ochre": 'url("/theme-heroes/cyber-ochre.png")',
+};
+
 // --- SVG Icons ----------------------------------------------------------------
 const Ico = {
   code: (s=16,c="currentColor") => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
@@ -387,7 +395,7 @@ const Ico = {
 
 
 
-function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
+function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem) => void; onSmoothScrollTo: (target: HTMLElement, block?: ScrollLogicalPosition) => void }) {
   const [query, setQuery] = useState("");
   const sections = [
     { id: "overview", title: "Overview", keywords: "purpose educational ecommerce interpreter scope" },
@@ -405,7 +413,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
     !normalizedQuery || (section.title + " " + section.keywords).toLowerCase().includes(normalizedQuery)
   );
   const visibleIds = new Set(visibleSections.map(section => section.id));
-  const jumpTo = (id: string) => document.getElementById("docs-" + id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const jumpTo = (id: string) => { const section = document.getElementById("docs-" + id); if (section) onSmoothScrollTo(section, "start"); };
 
   return (
     <main className="docs-page">
@@ -433,7 +441,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
       </div>
 
       <div className="docs-layout">
-        <aside className="docs-sidebar" aria-label="Documentation sections">
+        <aside className="docs-sidebar" data-lenis-prevent aria-label="Documentation sections">
           <div className="docs-sidebar-title">On this page</div>
           {sections.map(section => (
             <button
@@ -534,7 +542,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
               <p>Each statement ends with a semicolon. Single-line comments begin with <code>//</code>.</p>
               <h3>Variables and literals</h3>
               <pre><code>{'let user = "Ava";\nlet budget = 1200.00;\nlet inStock = true;\nlet cart = [];'}</code></pre>
-              <div className="docs-table-wrap">
+              <div className="docs-table-wrap" data-lenis-prevent>
                 <table className="docs-table">
                   <thead><tr><th>Value</th><th>Example</th><th>Current runtime type</th></tr></thead>
                   <tbody>
@@ -580,7 +588,7 @@ function DocsPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
                 <div><span className="docs-kicker">Language reference</span><h2>E-commerce commands</h2></div>
                 <span className="docs-status implemented">Implemented</span>
               </div>
-              <div className="docs-table-wrap">
+              <div className="docs-table-wrap" data-lenis-prevent>
                 <table className="docs-table command-table">
                   <thead><tr><th>Action</th><th>Syntax</th><th>Effect</th></tr></thead>
                   <tbody>
@@ -753,7 +761,7 @@ function ExamplesPage({ onOpenExample, onNavigate }: { onOpenExample: (code: str
               </div>
               <h2>{example.title}</h2>
               <p className="example-summary">{example.summary}</p>
-              <pre className="example-code"><code>{example.code}</code></pre>
+              <pre className="example-code" data-lenis-prevent><code>{example.code}</code></pre>
               <div className="example-concepts">
                 {example.concepts.map(concept => <span key={concept}>{concept}</span>)}
               </div>
@@ -912,7 +920,7 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
             ))}
           </div>
 
-          <div className="playground-tab-content">
+          <div className="playground-tab-content" data-lenis-prevent>
             {activeTab === "Output" && (
               <div className="playground-output">
                 {!hasRun || !result ? (
@@ -937,7 +945,7 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
                         ))}
                       </div>
                     )}
-                    <div className="playground-log-list">
+                    <div className="playground-log-list" data-lenis-prevent>
                       <h3>Execution log</h3>
                       {result.logs.map((log, index) => <div key={index}><span className="log-dot" /><code>{log}</code></div>)}
                     </div>
@@ -1005,23 +1013,85 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
 }
 
 function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
+  const importanceItems = [
+    ["Learning by execution", "ShopScript lets students see each programming-language phase turn into visible state: tokens, diagnostics, variables, cart items, totals, logs, and receipt output."],
+    ["Domain-based grammar", "The e-commerce scenario gives abstract compiler concepts a familiar context, so declarations, expressions, commands, objects, and semantic errors are easier to reason about."],
+    ["Immediate feedback", "The browser IDE shortens the feedback loop by combining source editing, syntax highlighting, runtime simulation, analyzer panels, and focused error messages in one workspace."],
+    ["Controlled project scope", "The system demonstrates interpreter behavior without pretending to be a real store, payment processor, account system, or production order platform."],
+  ];
+  const futureUses = [
+    ["Programming language classes", "Use as a teaching aid for lexical analysis, parsing, semantic validation, scope, type conversion, control flow, object creation, and interpreter execution."],
+    ["E-commerce workflow training", "Model carts, coupons, shipping, stock limits, receipt totals, and product data as scripted scenarios for classroom demonstrations or internal training."],
+    ["Low-risk checkout experiments", "Prototype pricing rules, coupon behavior, stock validation, and user-facing checkout feedback before touching a real commerce backend."],
+    ["Assessment and debugging labs", "Provide malformed scripts, semantic mistakes, and object misuse examples so learners can inspect precise line-level errors and fix them."],
+    ["Future visual language sandbox", "Extend the system into a broader browser-based DSL laboratory with AST views, scope diagrams, persistence, and additional business domains."],
+    ["Portfolio and capstone showcase", "Present a complete end-to-end educational app that connects language design, UI engineering, testing, documentation, and project management."],
+  ];
+  const systemAreas = [
+    "Browser IDE with syntax highlighting, cursor state, editor themes, and Ctrl/Cmd+Enter execution.",
+    "Interpreter pipeline covering tokenization, syntax checks, semantic validation, runtime execution, and structured output.",
+    "Store simulation with inventory products, cart quantities, coupons, shipping totals, checkout state, and receipt generation.",
+    "Analyzer panels for tokens, errors, variables, logs, OOP classes, and object instances.",
+    "Theme system, hero artwork, smooth scrolling, responsive layouts, and polished multi-page navigation.",
+  ];
   const team = [
-    { role: "Project Lead", name: "Fitz Tobias" },
-    { role: "Lead Developer", name: "Yuan Mariano" },
-    { role: "Documentation Lead", name: "Dwayne Mongaya" },
+    {
+      role: "Project Lead",
+      name: "Fitz Tobias",
+      focus: "Academic direction, scope control, and final project coordination.",
+      responsibilities: [
+        "Defined the project direction around an educational e-commerce interpreter instead of a production shopping website.",
+        "Aligned the system goals with the required Programming Languages outcomes: lexical analysis, syntax analysis, semantic checks, names and scope, data types, control flow, and OOP.",
+        "Maintained project scope by keeping accounts, payments, production persistence, and real order processing outside the current system boundary.",
+        "Reviewed feature priorities so the interpreter, analyzer output, examples, and simulator stayed connected as one academic demonstration.",
+        "Coordinated final-demo expectations, including how users should move from Home to Docs, Examples, Playground, Inventory, and About.",
+        "Helped validate that user-facing flows support presentation needs: loading examples, running programs, seeing errors, and explaining results clearly.",
+      ],
+    },
+    {
+      role: "Lead Developer",
+      name: "Yuan Mariano",
+      focus: "Interpreter implementation, application architecture, UI behavior, and technical integration.",
+      responsibilities: [
+        "Implemented and maintained the ShopScript interpreter pipeline that tokenizes source code, checks syntax, validates semantics, and executes supported programs.",
+        "Built the runtime behavior for variables, typed declarations, expressions, loops, conditionals, product registration, coupons, shipping, checkout, OOP classes, object creation, method calls, and access rules.",
+        "Integrated interpreter results into the React interface: cart simulation, product inventory, receipt preview, analyzer panels, execution logs, variables, classes, and instances.",
+        "Developed the syntax-highlighted mini IDE, editor theme toggle, keyboard execution, cursor tracking, inline diagnostics, and shared Home/Playground code state.",
+        "Created and refined visual systems including responsive layouts, app themes, hero images, smooth scrolling, notification feedback, and cross-theme readability fixes.",
+        "Maintained implementation quality through interpreter regression tests, TypeScript checks, production builds, and focused fixes for parsing, theme assets, nested scrolling, and editor contrast.",
+      ],
+    },
+    {
+      role: "Documentation Lead",
+      name: "Dwayne Mongaya",
+      focus: "Learning material, examples, explanation flow, and presentation support.",
+      responsibilities: [
+        "Structured the documentation experience around what the implemented language can actually do, including setup, syntax, commands, OOP, analyzer output, and project status.",
+        "Organized example programs that demonstrate variables, carts, coupons, runtime products, price overrides, syntax errors, semantic errors, control flow, and object-oriented features.",
+        "Helped translate technical interpreter behavior into student-readable explanations for tokens, errors, variables, logs, receipts, and simulation output.",
+        "Prepared the content direction for final reporting, including system purpose, educational scope, implementation status, known limitations, and future improvements.",
+        "Supported consistency between the website pages and project narrative so Home, Docs, Examples, Playground, Inventory, and About explain the same system clearly.",
+        "Identified documentation gaps that can become future deliverables, such as a formal language grammar, AST/scope diagrams, edge-case examples, and a final user guide.",
+      ],
+    },
   ];
 
   return (
     <main className="content-page about-page">
-      <section className="about-hero">
+      <section className="about-hero about-animate about-animate-1">
         <div>
           <span className="page-eyebrow">About ShopScript</span>
-          <h1>A mini programming language with an e-commerce simulation</h1>
+          <h1>A browser-based mini programming language for e-commerce simulation</h1>
           <p>
-            ShopScript is a browser-based educational interpreter built for a Programming Languages final project.
-            Users write small programs that are tokenized, checked, validated, and executed as visible cart,
-            discount, checkout, receipt, variable, and output-log updates.
+            ShopScript is an educational interpreter and simulator built for a Programming Languages final project.
+            It turns source code into visible tokens, diagnostics, variables, cart actions, coupon changes, checkout totals,
+            receipt output, and object-oriented runtime state.
           </p>
+          <div className="about-hero-metrics" aria-label="ShopScript system highlights">
+            <div><strong>6</strong><span>pipeline stages</span></div>
+            <div><strong>7</strong><span>example groups</span></div>
+            <div><strong>4</strong><span>interface themes</span></div>
+          </div>
           <div className="page-actions">
             <button className="btn-orange" onClick={() => onNavigate("Home")}>{Ico.play()} Try the interpreter</button>
             <button className="btn-ghost" onClick={() => onNavigate("Docs")}>{Ico.book(14)} Read documentation</button>
@@ -1030,19 +1100,20 @@ function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
         <div className="about-mark" aria-hidden="true">{Ico.code(44, "white")}<span>v{APP_VERSION}</span></div>
       </section>
 
-      <section className="about-grid">
-        <article className="ss-card about-card">
+      <section className="about-grid about-animate about-animate-2">
+        <article className="ss-card about-card about-card-featured">
           <div className="about-card-title">{Ico.zap(18, "var(--theme-accent)")} Project purpose</div>
           <p>
-            The project demonstrates lexical analysis, syntax analysis, semantic analysis, names and scope,
-            data types, control flow, and object-oriented programming through an approachable online-store scenario.
+            The project demonstrates how a custom language is processed from raw source text into executable behavior.
+            The store scenario keeps language concepts concrete: users can see declarations, expressions, commands,
+            loops, classes, and semantic errors affect a simulated cart.
           </p>
         </article>
         <article className="ss-card about-card">
           <div className="about-card-title">{Ico.cart(18, "var(--theme-accent)")} Educational scope</div>
           <p>
             ShopScript simulates store behavior only. It does not process real payments, create customer accounts,
-            store production orders, or operate as a commercial e-commerce platform.
+            persist production orders, or operate as a commercial e-commerce platform.
           </p>
         </article>
         <article className="ss-card about-card">
@@ -1055,16 +1126,62 @@ function AboutPage({ onNavigate }: { onNavigate: (page: NavItem) => void }) {
         </article>
       </section>
 
-      <section className="team-section ss-card">
-        <div className="section-heading">
-          <div className="page-icon small">{Ico.users(20, "var(--theme-accent)")}</div>
-          <div><span className="page-eyebrow">Project team</span><h2>Creators</h2></div>
+      <section className="about-importance ss-card about-animate about-animate-3">
+        <div className="section-heading about-section-heading">
+          <div className="page-icon small">{Ico.zap(20, "var(--theme-accent)")}</div>
+          <div><span className="page-eyebrow">Website importance</span><h2>Why this system matters</h2></div>
         </div>
-        <div className="team-grid">
+        <div className="importance-grid">
+          {importanceItems.map(([title, description]) => (
+            <article key={title} className="importance-card">
+              <strong>{title}</strong>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="about-system ss-card about-animate about-animate-4">
+        <div className="section-heading about-section-heading">
+          <div className="page-icon small">{Ico.table(20, "var(--theme-accent)")}</div>
+          <div><span className="page-eyebrow">System coverage</span><h2>What the current website includes</h2></div>
+        </div>
+        <div className="system-scope-list">
+          {systemAreas.map((item, index) => <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></div>)}
+        </div>
+      </section>
+
+      <section className="future-section ss-card about-animate about-animate-5">
+        <div className="section-heading about-section-heading">
+          <div className="page-icon small">{Ico.book(20, "var(--theme-accent)")}</div>
+          <div><span className="page-eyebrow">Future usage</span><h2>Possible applications and extensions</h2></div>
+        </div>
+        <div className="future-grid">
+          {futureUses.map(([title, description]) => (
+            <article key={title} className="future-card">
+              <strong>{title}</strong>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="team-section ss-card about-animate about-animate-6">
+        <div className="section-heading about-section-heading">
+          <div className="page-icon small">{Ico.users(20, "var(--theme-accent)")}</div>
+          <div><span className="page-eyebrow">Project team</span><h2>Creators and responsibilities</h2></div>
+        </div>
+        <div className="team-grid team-grid-detailed">
           {team.map((member) => (
-            <article key={member.role} className="team-card">
-              <div className="team-avatar">{member.name.split(" ").map(part => part[0]).join("")}</div>
-              <div><strong>{member.name}</strong><span>{member.role}</span></div>
+            <article key={member.role} className="team-card team-card-detailed">
+              <div className="team-card-header">
+                <div className="team-avatar">{member.name.split(" ").map(part => part[0]).join("")}</div>
+                <div><strong>{member.name}</strong><span>{member.role}</span></div>
+              </div>
+              <p className="team-focus">{member.focus}</p>
+              <ul className="team-responsibilities">
+                {member.responsibilities.map(item => <li key={item}>{item}</li>)}
+              </ul>
             </article>
           ))}
         </div>
@@ -1120,6 +1237,7 @@ export default function App() {
   const [inventoryView, setInventoryView] = useState<"products" | "coupons">("products");
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [appTheme, setAppTheme] = useState<Theme>(() => ThemeManager.init());
+  const homeHeroImage = HOME_HERO_IMAGES[appTheme];
   const [editorTheme, setEditorTheme] = useState<EditorTheme>("light");
   const [showAllInventory, setShowAllInventory] = useState(false);
   const [products, setProducts] = useState<InventoryProduct[]>(loadInventory);
@@ -1129,9 +1247,30 @@ export default function App() {
   const [selectedExampleId, setSelectedExampleId] = useState("");
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const notificationIdRef = useRef(0);
+  const lenisRef = useRef<Lenis | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lines = code.split("\n");
 
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const lenis = new Lenis({
+      autoRaf: true,
+      lerp: 0.08,
+      wheelMultiplier: 0.9,
+      touchMultiplier: 1.1,
+      allowNestedScroll: true,
+      anchors: { offset: 0, duration: 0.9 },
+    });
+
+    lenisRef.current = lenis;
+
+    return () => {
+      lenis.destroy();
+      lenisRef.current = null;
+    };
+  }, []);
   useEffect(() => {
     ThemeManager.applyTheme(appTheme);
   }, [appTheme]);
@@ -1183,12 +1322,30 @@ export default function App() {
     const m = { valid:SAMPLE_VALID, syntax:SAMPLE_SYNTAX_ERROR, semantic:SAMPLE_SEMANTIC_ERROR, oop:SAMPLE_OOP };
     setSelectedSample(t); setSelectedExampleId(""); setCode(m[t]); setResult(null); setHasRun(false); setCursorPosition({ line: 1, col: 1 }); pushNotification("info", "Sample loaded", "Run the program to validate and simulate this sample.");
   };
+  const smoothScrollToTarget = useCallback((target: HTMLElement, block: ScrollLogicalPosition = "start") => {
+    if (lenisRef.current) {
+      if (block === "center") {
+        const rect = target.getBoundingClientRect();
+        const centeredTop = window.scrollY + rect.top - ((window.innerHeight - rect.height) / 2);
+        lenisRef.current.scrollTo(Math.max(0, centeredTop), { duration: 0.8 });
+        return;
+      }
+      lenisRef.current.scrollTo(target, { offset: -80, duration: 0.8 });
+      return;
+    }
+
+    target.scrollIntoView({ behavior: "smooth", block });
+  }, []);
   const navigate = useCallback((destination: NavItem) => {
     setNav(destination);
     setMobileMenu(false);
     setThemeMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [products]);
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(0, { duration: 0.8 });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, []);
   const openDocsSearch = useCallback(() => {
     navigate("Docs");
     window.setTimeout(() => document.getElementById("docs-search")?.focus(), 0);
@@ -1204,9 +1361,9 @@ export default function App() {
     navigate("Home");
     window.setTimeout(() => {
       textareaRef.current?.focus();
-      textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (textareaRef.current) smoothScrollToTarget(textareaRef.current, "center");
     }, 0);
-  }, [navigate, products, coupons, notifyInterpreterResult]);
+  }, [navigate, products, coupons, notifyInterpreterResult, smoothScrollToTarget]);
   const updatePlaygroundCode = useCallback((nextCode: string) => {
     setSelectedSample("");
     setSelectedExampleId("");
@@ -1247,7 +1404,7 @@ export default function App() {
     navigate("Home");
     window.setTimeout(() => {
       textareaRef.current?.focus();
-      textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (textareaRef.current) smoothScrollToTarget(textareaRef.current, "center");
     }, 0);
   };
 
@@ -1454,7 +1611,7 @@ export default function App() {
                 {Ico.chevron(13,"var(--theme-muted)")}
               </button>
               {themeMenuOpen && (
-                <div className="theme-menu" role="menu" aria-label="Theme settings">
+                <div className="theme-menu" data-lenis-prevent role="menu" aria-label="Theme settings">
                   <div className="theme-menu-header">
                     <div><strong>Interface theme</strong><span>Choose a high-contrast palette for the ShopScript workspace.</span></div>
                     <button type="button" className="theme-menu-close" onClick={() => setThemeMenuOpen(false)} aria-label="Close theme menu">x</button>
@@ -1499,7 +1656,7 @@ export default function App() {
 
       {activeNav === "Home" ? (<>
       {/* ---- HERO ----------------------------------------------------- */}
-      <div className="hero-gradient" style={{ padding:"34px 28px 26px" }}>
+      <div className="home-hero" style={{ padding:"34px 28px 26px", backgroundImage: `${homeHeroImage}, var(--theme-hero)`, backgroundSize:"cover", backgroundPosition:"center", backgroundRepeat:"no-repeat" }}>
         <div className="hero-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:20 }}>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"white", border:"1px solid hsl(25 95% 53% / 0.22)", borderRadius:999, padding:"4px 12px", fontSize:12, color:"var(--theme-accent)", fontWeight:600, marginBottom:14 }}>
@@ -1525,21 +1682,7 @@ export default function App() {
               ))}
             </div>
           </div>
-
-          {/* Decorative illustration -- hidden on tablets */}
-          <div className="hero-illus" style={{ alignItems:"center", gap:12, flexShrink:0 }}>
-            <div style={{ background:"var(--theme-surface)", borderRadius:18, padding:"16px 20px", boxShadow:"var(--theme-shadow)", border:"1px solid var(--theme-border)", display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:54 }}>-</span>
-              <div style={{ background:"var(--theme-accent)", color:"white", fontSize:11, fontWeight:700, padding:"2px 12px", borderRadius:999 }}>
-                {cart.length > 0 ? `${cart.reduce((s,i) => s+i.quantity,0)} items` : "Ready"}
-              </div>
-            </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {[{ e:"-", bg:"#dbeafe" }, { e:"-", bg:"#dcfce7" }, { e: hasOOP ? "-" : "-", bg:"#fef9c3" }].map((d,i) => (
-                <div key={i} style={{ background:d.bg, borderRadius:10, padding:"10px 14px", fontSize:24, border:"1px solid white", boxShadow:"0 2px 8px hsl(0 0% 0% / 0.07)" }}>{d.e}</div>
-              ))}
-            </div>
-          </div>
+          <div className="hero-art-spacer" aria-hidden="true" />
         </div>
       </div>
 
@@ -1968,7 +2111,7 @@ export default function App() {
         )}
       </div>
       </>) : activeNav === "Docs" ? (
-        <DocsPage onNavigate={navigate} />
+        <DocsPage onNavigate={navigate} onSmoothScrollTo={smoothScrollToTarget} />
       ) : activeNav === "Examples" ? (
         <ExamplesPage onOpenExample={openExample} onNavigate={navigate} />
       ) : activeNav === "Inventory" ? (
