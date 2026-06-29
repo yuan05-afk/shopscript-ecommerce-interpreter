@@ -1660,7 +1660,7 @@ export default function App() {
         <div className="hero-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:20 }}>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"white", border:"1px solid hsl(25 95% 53% / 0.22)", borderRadius:999, padding:"4px 12px", fontSize:12, color:"var(--theme-accent)", fontWeight:600, marginBottom:14 }}>
-              Welcome to ShopScript -
+              Welcome to ShopScript
             </div>
             <h1 style={{ fontSize:"clamp(22px, 3vw, 34px)", fontWeight:900, color:"var(--theme-text)", lineHeight:1.2, margin:"0 0 10px" }}>
               Mini Programming Language<br />
@@ -1986,12 +1986,12 @@ export default function App() {
           <div className="analyzer-grid">
 
             {/* Tokens */}
-            <div className="ss-card" style={{ padding:14 }}>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+            <div className="ss-card analyzer-token-card" style={{ padding:14 }}>
+              <div className="analyzer-token-header">
                 <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Tokens</span>
                 {result && <span style={{ background:"var(--theme-accent)", color:"white", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.tokens.length}</span>}
               </div>
-              <div style={{ display:"flex", flexWrap:"wrap", gap:4, maxHeight:120, overflowY:"auto" }}>
+              <div className="analyzer-token-scroll" data-lenis-prevent>
                 {hasRun && result?.tokens.length ? (
                   result.tokens.map((t:Token,i) => (
                     <span key={i} className={`token-chip ${tokenClass(t.type)}`}>{t.type==="string"?`"${t.value}"`:t.value}</span>
@@ -1999,7 +1999,6 @@ export default function App() {
                 ) : <span style={{ color:"var(--theme-muted)", fontSize:12 }}>Run program to see tokens...</span>}
               </div>
             </div>
-
             {/* Syntax Errors */}
             <div className="ss-card" style={{ padding:14 }}>
               <div style={{ marginBottom:10 }}><span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Syntax Errors</span></div>

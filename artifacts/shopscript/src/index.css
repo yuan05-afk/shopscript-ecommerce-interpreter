@@ -1716,7 +1716,7 @@ html[data-theme="midnight"] {
   --theme-accent-contrast: #FFFFFF;
   --theme-success: #EDEDED;
   --theme-shadow: 0 20px 48px rgba(0, 0, 0, 0.48);
-  --theme-hero: radial-gradient(circle at 72% 14%, rgba(255, 255, 255, 0.20), transparent 24%), linear-gradient(155deg, #F7F7F7 0%, #E5E5E5 35%, #1A1A1D 36%, #111113 62%, #C8102E 63%, #8F0B21 100%);
+  --theme-hero: radial-gradient(circle at 82% 18%, rgba(200, 16, 46, 0.34), transparent 32%), radial-gradient(circle at 14% 16%, rgba(255, 255, 255, 0.08), transparent 28%), linear-gradient(135deg, #0B0B0D 0%, #141416 58%, #5C0714 100%);
 }
 
 html[data-theme="cyber-ochre"] {
@@ -4382,4 +4382,37 @@ html[data-theme] .shopscript-ide textarea::selection {
   .team-card-detailed:hover .team-avatar {
     transform: none !important;
   }
+}
+
+.analyzer-grid {
+  align-items: start;
+}
+
+.analyzer-token-card {
+  overflow: hidden;
+}
+
+.analyzer-token-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.analyzer-token-scroll {
+  max-height: 180px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 0 6px 4px 0;
+  scrollbar-gutter: stable;
+}
+
+.analyzer-token-scroll .token-chip {
+  max-width: 100%;
 }
