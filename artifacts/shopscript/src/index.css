@@ -5394,22 +5394,25 @@ html[data-theme="cyber-ochre"] .shopscript-ide:not(.ide-dark) {
 }
 
 .receipt-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   margin-bottom: 10px;
 }
 
 .receipt-title {
   display: flex;
-  min-width: 0;
+  flex: 1 1 128px;
+  min-width: max-content;
   align-items: center;
   gap: 7px;
 }
 
 .receipt-title > span:last-child {
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 
 .receipt-download {
@@ -6096,14 +6099,21 @@ html[data-theme]:not([data-theme="default"]) .team-responsibilities li strong {
 
 /* Receipt download button alignment and accent contrast ------------------ */
 .receipt-card .receipt-header {
-  grid-template-columns: minmax(0, 1fr) auto !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
 }
 
 .receipt-card .receipt-download {
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
   justify-self: end !important;
   width: auto !important;
   min-width: max-content !important;
-  margin: 0 !important;
+  margin-top: 0 !important;
+  margin-right: 0 !important;
+  margin-bottom: 0 !important;
   padding: 6px 10px !important;
   border: 1px solid var(--theme-accent) !important;
   background: color-mix(in srgb, var(--theme-accent) 7%, var(--theme-surface)) !important;
@@ -6703,15 +6713,18 @@ html[data-theme="emerald-gold"] .oop-panel {
   .receipt-card {
     padding: 10px !important;
   }
-
   .receipt-header,
   .receipt-card .receipt-header {
-    grid-template-columns: 1fr !important;
-    align-items: start !important;
+    align-items: flex-start !important;
     gap: 8px !important;
   }
 
+  .receipt-card .receipt-title {
+    flex-basis: 100% !important;
+    min-width: 0 !important;
+  }
   .receipt-card .receipt-download {
+    margin-left: 0 !important;
     justify-self: start !important;
     width: 100% !important;
     min-width: 0 !important;
@@ -6727,5 +6740,4 @@ html[data-theme="emerald-gold"] .oop-panel {
     font-size: 10px !important;
   }
 }
-
 
