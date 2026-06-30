@@ -735,7 +735,7 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
           <h1>Documentation</h1>
           <p>Learn the syntax currently supported by the browser interpreter, understand each analysis stage, and distinguish implemented behavior from planned course requirements.</p>
         </div>
-        <button className="btn-orange" onClick={() => onNavigate("Home")}>{Ico.play()} Open interpreter</button>
+        <button className="btn-orange" onClick={() => onNavigate("Home")} data-tooltip="Open the full Home workspace with editor, simulator, and analyzer panels.">{Ico.play()} Open interpreter</button>
       </section>
 
       <div className="docs-search-wrap">
@@ -747,9 +747,9 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
           value={query}
           onChange={event => setQuery(event.target.value)}
           placeholder="Search documentation..."
-          aria-label="Search ShopScript documentation"
+          aria-label="Search ShopScript documentation" data-tooltip="Search documentation by syntax, commands, OOP, errors, setup, or analyzer output."
         />
-        {query && <button className="docs-search-clear" onClick={() => setQuery("")} aria-label="Clear documentation search">{Ico.x(12)}</button>}
+        {query && <button className="docs-search-clear" onClick={() => setQuery("")} aria-label="Clear documentation search" data-tooltip="Clear the documentation search field.">{Ico.x(12)}</button>}
       </div>
 
       <div className="docs-layout">
@@ -761,6 +761,7 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
               className={visibleIds.has(section.id) ? "" : "filtered"}
               onClick={() => jumpTo(section.id)}
               disabled={!visibleIds.has(section.id)}
+              data-tooltip={visibleIds.has(section.id) ? "Jump to the " + section.title + " documentation section." : "This section is hidden by the current search."}
             >
               <span>{section.title}</span>
               {Ico.chevron(12)}
@@ -778,7 +779,7 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
               <div className="page-icon">{Ico.book(22, "var(--theme-accent)")}</div>
               <h2>No matching documentation</h2>
               <p>Try searching for syntax, coupon, OOP, errors, setup, or control flow.</p>
-              <button className="btn-ghost" onClick={() => setQuery("")}>Clear search</button>
+              <button className="btn-ghost" onClick={() => setQuery("")} data-tooltip="Clear the documentation search and show all sections again.">Clear search</button>
             </section>
           )}
 
@@ -1006,7 +1007,7 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
               </div>
               <div className="docs-next-card">
                 <div><span className="page-eyebrow">Next project milestone</span><strong>Final submission audit</strong><p>The required runtime, language spec, examples, and regression tests are in place. The next roadmap work is the final requirements and demo-flow audit.</p></div>
-                <button className="btn-orange" onClick={() => onNavigate("Playground")}>Open Playground {Ico.chevron(13, "white")}</button>
+                <button className="btn-orange" onClick={() => onNavigate("Playground")} data-tooltip="Open the focused ShopScript coding workspace.">Open Playground {Ico.chevron(13, "white")}</button>
               </div>
             </article>
           )}
@@ -1042,7 +1043,7 @@ function ExamplesPage({ onOpenExample, onNavigate }: { onOpenExample: (code: str
       <section className="examples-toolbar" aria-label="Filter examples">
         <div className="example-filters">
           {filters.map(item => (
-            <button key={item} className={filter === item ? "active" : ""} onClick={() => setFilter(item)}>
+            <button key={item} className={filter === item ? "active" : ""} onClick={() => setFilter(item)} data-tooltip={"Show " + (item === "All" ? "all" : item.toLowerCase()) + " ShopScript examples."}>
               {item}
               <span>{item === "All" ? EXAMPLE_LIBRARY.length : EXAMPLE_LIBRARY.filter(example => example.category === item).length}</span>
             </button>
@@ -1050,8 +1051,8 @@ function ExamplesPage({ onOpenExample, onNavigate }: { onOpenExample: (code: str
         </div>
         <div className="examples-search-wrap">
           {Ico.code(15, "var(--theme-accent)")}
-          <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search examples..." aria-label="Search examples" />
-          {query && <button onClick={() => setQuery("")} aria-label="Clear examples search">{Ico.x(11)}</button>}
+          <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search examples..." aria-label="Search examples" data-tooltip="Search examples by title, category, concept, or expected behavior." />
+          {query && <button onClick={() => setQuery("")} aria-label="Clear examples search" data-tooltip="Clear the example search field.">{Ico.x(11)}</button>}
         </div>
       </section>
 
@@ -1081,7 +1082,7 @@ function ExamplesPage({ onOpenExample, onNavigate }: { onOpenExample: (code: str
                 <span>{example.isError ? Ico.alert(15, "hsl(0 72% 48%)") : Ico.check(15)}</span>
                 <div><strong>Expected behavior</strong><p>{example.expected}</p></div>
               </div>
-              <button className="btn-orange example-open" onClick={() => onOpenExample(example.code)}>
+              <button className="btn-orange example-open" onClick={() => onOpenExample(example.code)} data-tooltip={"Load and run the " + example.title + " example in the interpreter."}>
                 {Ico.play()} Open and run in interpreter
               </button>
             </article>
@@ -1092,7 +1093,7 @@ function ExamplesPage({ onOpenExample, onNavigate }: { onOpenExample: (code: str
           <div className="page-icon">{Ico.code(22, "var(--theme-accent)")}</div>
           <h2>No matching examples</h2>
           <p>Change the category or clear your search.</p>
-          <button className="btn-ghost" onClick={() => { setFilter("All"); setQuery(""); }}>Reset filters</button>
+          <button className="btn-ghost" onClick={() => { setFilter("All"); setQuery(""); }} data-tooltip="Reset example category and search filters.">Reset filters</button>
         </section>
       )}
 
@@ -1102,7 +1103,7 @@ function ExamplesPage({ onOpenExample, onNavigate }: { onOpenExample: (code: str
           <h2>Dedicated Playground</h2>
           <p>The next step separates the focused coding experience from the Home dashboard.</p>
         </div>
-        <button className="btn-orange" onClick={() => onNavigate("Playground")}>View Playground status {Ico.chevron(13, "white")}</button>
+        <button className="btn-orange" onClick={() => onNavigate("Playground")} data-tooltip="Open the dedicated Playground page and inspect execution status.">View Playground status {Ico.chevron(13, "white")}</button>
       </section>
     </main>
   );
@@ -1157,8 +1158,8 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
           <p>Write and run ShopScript while inspecting execution results without the full storefront dashboard.</p>
         </div>
         <div className="playground-hero-actions">
-          <button className="btn-ghost" onClick={() => onNavigate("Home")}>{Ico.cart(14)} Open Home dashboard</button>
-          <button className="btn-orange" onClick={() => { onRun(); setActiveTab("Output"); }}>{Ico.play()} Run program</button>
+          <button className="btn-ghost" onClick={() => onNavigate("Home")} data-tooltip="Return to the Home dashboard with the full storefront simulation.">{Ico.cart(14)} Open Home dashboard</button>
+          <button className="btn-orange" onClick={() => { onRun(); setActiveTab("Output"); }} data-tooltip="Execute the current ShopScript program and show output first.">{Ico.play()} Run program</button>
         </div>
       </section>
 
@@ -1183,14 +1184,14 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
                   const example = EXAMPLE_LIBRARY.find(item => item.id === nextId);
                   if (example) onLoadExample(example.code);
                 }}
-                aria-label="Load a ShopScript example"
+                aria-label="Load a ShopScript example" data-tooltip="Load a saved ShopScript example into the editor."
               >
                 <option value="" disabled>Load example</option>
                 {EXAMPLE_LIBRARY.map(example => <option key={example.id} value={example.id}>{example.title}</option>)}
               </select>
               <EditorThemeToggle theme={theme} onToggle={onToggleTheme} />
-              <button className="btn-ghost" onClick={onClear}>{Ico.x(11)} Clear</button>
-              <button className="btn-orange" onClick={() => { onRun(); setActiveTab("Output"); }}>{Ico.play()} Run</button>
+              <button className="btn-ghost" onClick={onClear} data-tooltip="Clear the editor and reset the current result.">{Ico.x(11)} Clear</button>
+              <button className="btn-orange" onClick={() => { onRun(); setActiveTab("Output"); }} data-tooltip="Run the program and switch to the Output tab.">{Ico.play()} Run</button>
             </div>
           </div>
           <ShopScriptCodeEditor
@@ -1225,6 +1226,7 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
                 aria-selected={activeTab === tab.name}
                 className={activeTab === tab.name ? "active" : ""}
                 onClick={() => setActiveTab(tab.name)}
+                data-tooltip={tab.name === "Output" ? "Show execution logs, cart state, and totals." : tab.name === "Tokens" ? "Show lexical tokens produced by the lexer." : tab.name === "Errors" ? "Show lexical, syntax, and semantic diagnostics." : "Show current variable names, types, and values."}
               >
                 {tab.name}
                 {tab.count !== undefined && <span>{tab.count}</span>}
@@ -1405,8 +1407,8 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
             <div><strong>4</strong><span>interface themes</span></div>
           </div>
           <div className="page-actions">
-            <button className="btn-orange" onClick={() => onNavigate("Home")}>{Ico.play()} Try the interpreter</button>
-            <button className="btn-ghost" onClick={() => onNavigate("Docs")}>{Ico.book(14)} Read documentation</button>
+            <button className="btn-orange" onClick={() => onNavigate("Home")} data-tooltip="Open the interactive Home interpreter workspace.">{Ico.play()} Try the interpreter</button>
+            <button className="btn-ghost" onClick={() => onNavigate("Docs")} data-tooltip="Read the ShopScript syntax, commands, analyzer, and project status.">{Ico.book(14)} Read documentation</button>
           </div>
         </div>
         <div className="about-mark" aria-hidden="true"><img className="about-mark-logo" src={logoSrc} alt="" /><span>v{APP_VERSION}</span></div>
@@ -1919,7 +1921,7 @@ export default function App() {
       <header className="app-header">
         <div className="header-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"0 24px", height:56, display:"flex", alignItems:"center", gap:16 }}>
           {/* Logo -- always visible */}
-          <button type="button" className="brand-button" onClick={() => navigate("Home")} aria-label="Open ShopScript home">
+          <button type="button" className="brand-button" onClick={() => navigate("Home")} aria-label="Open ShopScript home" data-tooltip="Go to the ShopScript Home workspace.">
             <img className="brand-logo" src={brandLogoSrc} alt="" aria-hidden="true" />
             <div>
               <div className="brand-title" style={{ fontWeight:800, fontSize:15, lineHeight:1.1 }}>ShopScript</div>
@@ -1928,7 +1930,7 @@ export default function App() {
           </button>
 
           {/* Search -- hidden on mobile */}
-          <button type="button" className="header-search nav-search" onClick={openDocsSearch} aria-label="Open documentation">
+          <button type="button" className="header-search nav-search" onClick={openDocsSearch} aria-label="Open documentation" data-tooltip="Open documentation search. Shortcut: Ctrl or Cmd + K.">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--theme-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
@@ -1945,7 +1947,7 @@ export default function App() {
 
           {/* Right actions */}
           <div className="header-actions">
-            <button type="button" className="btn-orange" style={{ fontSize:12.5, padding:"7px 13px" }} onClick={startNewProgram}>
+            <button type="button" className="btn-orange" style={{ fontSize:12.5, padding:"7px 13px" }} onClick={startNewProgram} data-tooltip="Start a blank ShopScript program and focus the editor.">
               <span className="new-program-label">New Program</span> {Ico.plus(13,"white")}
             </button>
 
@@ -1991,7 +1993,7 @@ export default function App() {
             <button
               onClick={() => setMobileMenu(m => !m)}
               style={{ background:"none", border:"none", cursor:"pointer", display:"none", alignItems:"center", padding:4 }}
-              className="mobile-menu-btn"
+              className="mobile-menu-btn" data-tooltip="Open mobile navigation."
             >
               {Ico.menu()}
             </button>
@@ -2126,7 +2128,7 @@ export default function App() {
                     <span style={{ color:"var(--theme-accent)", display:"flex" }}>{Ico.box(14,"var(--theme-accent)")}</span>
                     <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Product Inventory</span>
                   </div>
-                  <button type="button" className="inventory-toggle" onClick={() => setShowAllInventory(value => !value)}>{showAllInventory ? "Show featured" : "View all " + availableProducts.length} {Ico.chevron(11)}</button>
+                  <button type="button" className="inventory-toggle" onClick={() => setShowAllInventory(value => !value)} data-tooltip={showAllInventory ? "Show only featured inventory products." : "Show every active product from the shared inventory."}>{showAllInventory ? "Show featured" : "View all " + availableProducts.length} {Ico.chevron(11)}</button>
                 </div>
 
                 <div className="products-grid">
@@ -2211,12 +2213,12 @@ export default function App() {
                           <div style={{ fontSize:11, color:"var(--theme-accent)", fontWeight:600 }}>${item.price.toFixed(2)}</div>
                         </div>
                         <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-                          <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity - 1, item.price)} aria-label={"Decrease " + item.name + " quantity"}>-</button>
+                          <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity - 1, item.price)} aria-label={"Decrease " + item.name + " quantity"} data-tooltip={"Decrease " + item.name + " quantity in the generated ShopScript code."}>-</button>
                           <span style={{ fontSize:12, fontWeight:700, minWidth:18, textAlign:"center" }}>{item.quantity}</span>
-                          <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity + 1, item.price)} aria-label={"Increase " + item.name + " quantity"}>+</button>
+                          <button type="button" className="qty-btn" onClick={() => setCartItemQuantity(item.name, item.quantity + 1, item.price)} aria-label={"Increase " + item.name + " quantity"} data-tooltip={"Increase " + item.name + " quantity in the generated ShopScript code."}>+</button>
                         </div>
                         <div style={{ fontSize:12, fontWeight:700, color:"var(--theme-text)", minWidth:50, textAlign:"right" }}>${(item.price*item.quantity).toFixed(2)}</div>
-                        <button type="button" className="cart-remove" onClick={() => setCartItemQuantity(item.name, 0, item.price)} aria-label={"Remove " + item.name + " from cart"}>{Ico.x(11,"hsl(0 84% 65%)")}</button>
+                        <button type="button" className="cart-remove" onClick={() => setCartItemQuantity(item.name, 0, item.price)} aria-label={"Remove " + item.name + " from cart"} data-tooltip={"Remove " + item.name + " from the cart and source code."}>{Ico.x(11,"hsl(0 84% 65%)")}</button>
                       </div>
                     ))}
                     <div style={{ display:"flex", justifyContent:"space-between", padding:"8px 0 0", borderTop:"1px solid var(--theme-border)", fontSize:12, marginTop:2 }}>
@@ -2330,7 +2332,7 @@ export default function App() {
                     </div>
                   )}
                 </div>
-                <button style={{ width:"100%", background:"white", color:"var(--theme-accent-strong)", border:"none", borderRadius:8, padding:"9px 0", fontWeight:700, fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }} onClick={runProgram}>
+                <button style={{ width:"100%", background:"white", color:"var(--theme-accent-strong)", border:"none", borderRadius:8, padding:"9px 0", fontWeight:700, fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }} onClick={runProgram} data-tooltip={didCheckout&&!hasErrors ? "Run the current checkout simulation again." : "Run checkout; from the current ShopScript program."}>
                   {Ico.cart(14,"var(--theme-accent-strong)")} {didCheckout&&!hasErrors ? "Run Again" : "Checkout Now"}
                 </button>
               </div>
@@ -2345,7 +2347,7 @@ export default function App() {
             {/* Tokens */}
             <div className="ss-card analyzer-token-card" style={{ padding:14 }}>
               <div className="analyzer-token-header">
-                <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Tokens</span>
+                <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }} data-tooltip="Shows the lexical tokens produced from the current source code." tabIndex={0}>Tokens</span>
                 {result && <span style={{ background:"var(--theme-accent)", color:"white", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.tokens.length}</span>}
               </div>
               <div className="analyzer-token-scroll" data-lenis-prevent>
@@ -2358,7 +2360,7 @@ export default function App() {
             </div>
             {/* Syntax Errors */}
             <div className="ss-card" style={{ padding:14 }}>
-              <div style={{ marginBottom:10 }}><span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Syntax Errors</span></div>
+              <div style={{ marginBottom:10 }}><span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }} data-tooltip="Lists grammar and structure problems found before execution." tabIndex={0}>Syntax Errors</span></div>
               {!hasRun ? <div style={{ color:"var(--theme-muted)", fontSize:12 }}>Not run yet</div>
                 : result?.syntaxErrors.length===0 && result?.lexErrors.length===0 ? (
                   <div>
@@ -2376,7 +2378,7 @@ export default function App() {
 
             {/* Semantic Errors */}
             <div className="ss-card" style={{ padding:14 }}>
-              <div style={{ marginBottom:10 }}><span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Semantic Errors</span></div>
+              <div style={{ marginBottom:10 }}><span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }} data-tooltip="Lists meaning and rule violations such as invalid products, coupons, or values." tabIndex={0}>Semantic Errors</span></div>
               {!hasRun ? <div style={{ color:"var(--theme-muted)", fontSize:12 }}>Not run yet</div>
                 : result?.semanticErrors.length===0 ? (
                   <div>
@@ -2395,7 +2397,7 @@ export default function App() {
             {/* Variable Table */}
             <div className="ss-card" style={{ padding:14 }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
-                <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Variable Table</span>
+                <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }} data-tooltip="Shows declared names, runtime types, and current values." tabIndex={0}>Variable Table</span>
                 {result && <span style={{ background:"var(--theme-accent-soft)", color:"var(--theme-accent)", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.variables.length}</span>}
               </div>
               {result?.variables.length ? (
@@ -2417,7 +2419,7 @@ export default function App() {
             {/* Output Logs */}
             <div className="ss-card" style={{ padding:14 }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
-                <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }}>Output Logs</span>
+                <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }} data-tooltip="Shows interpreter events produced while the program runs." tabIndex={0}>Output Logs</span>
                 {result && <span style={{ background:"hsl(142 76% 36% / 0.14)", color:"hsl(142 76% 28%)", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.logs.length}</span>}
               </div>
               <div data-lenis-prevent style={{ maxHeight:150, overflowY:"auto", display:"flex", flexDirection:"column", gap:2 }}>
