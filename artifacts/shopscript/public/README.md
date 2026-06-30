@@ -120,38 +120,67 @@ Positioned tokens
 
 ## How to Run
 
-### Use the Live Version
+### Option 1: Use the Live Version
 
-Open the deployed app:
+Open the deployed app directly:
 
 <https://shopscript-ecommerce.vercel.app/>
 
-### Run Locally
+### Option 2: Run Locally From GitHub
 
-#### Prerequisites
+#### 1. Install the required tools
 
-Install [Node.js](https://nodejs.org/) 22 or newer. Corepack is recommended so the project can use the pinned pnpm version from `packageManager`.
+Install [Node.js](https://nodejs.org/) 22 or newer and make sure Git is available on your machine.
 
 ```powershell
 node --version
+git --version
 corepack --version
+```
+
+Enable Corepack so the repository can use the pinned pnpm version from `packageManager`:
+
+```powershell
 corepack enable
 ```
 
-This repository is a pnpm workspace. The root configuration intentionally rejects `npm install` to prevent npm and pnpm lockfiles from being mixed.
+#### 2. Clone the repository
 
-#### Windows PowerShell
+```powershell
+git clone https://github.com/yuan05-afk/shopscript-ecommerce-interpreter.git
+cd shopscript-ecommerce-interpreter
+```
+
+If you already downloaded or cloned the project, open a terminal inside the repository root instead. The repository root is the folder that contains `package.json`, `pnpm-lock.yaml`, `vercel.json`, and this `README.md`.
+
+#### 3. Install dependencies
 
 ```powershell
 corepack pnpm install
+```
+
+Do not use `npm install`. This is a pnpm workspace, and the root configuration intentionally blocks npm to avoid mixed lockfiles.
+
+#### 4. Start the development server
+
+```powershell
 corepack pnpm --filter @workspace/shopscript run dev
 ```
 
-Open <http://localhost:5173/>. Keep the terminal running while using the website. Press `Ctrl+C` to stop the development server. `PORT` and `BASE_PATH` are optional local overrides.
+Open the local app:
 
-#### macOS or Linux
+<http://localhost:5173/>
+
+Keep the terminal running while using the website. Press `Ctrl+C` to stop the development server.
+
+### macOS or Linux Commands
+
+The same flow works on macOS and Linux:
 
 ```bash
+git clone https://github.com/yuan05-afk/shopscript-ecommerce-interpreter.git
+cd shopscript-ecommerce-interpreter
+corepack enable
 corepack pnpm install
 corepack pnpm --filter @workspace/shopscript run dev
 ```
@@ -160,28 +189,45 @@ Then open <http://localhost:5173/>.
 
 ### Verify the Project
 
+Run these from the repository root:
+
 ```powershell
 corepack pnpm --filter @workspace/shopscript run typecheck
 corepack pnpm --filter @workspace/shopscript run test:interpreter
 corepack pnpm --filter @workspace/shopscript run build
 ```
 
-### Deploy to Vercel
+### Build for Production
 
-The repository includes `vercel.json` for the primary ShopScript app. Import the repository in Vercel and keep the project root at the repository root (`./`). Vercel will use:
+```powershell
+corepack pnpm --filter @workspace/shopscript run build
+```
+
+The static production output is generated in:
 
 ```text
+artifacts/shopscript/dist/public
+```
+
+### Deploy to Vercel
+
+The repository includes `vercel.json` for the primary ShopScript app. In Vercel, import the GitHub repository and keep the project root at the repository root (`./`). Vercel should use:
+
+```text
+Framework Preset: Other
+Root Directory: ./
 Install Command: corepack enable && pnpm install --frozen-lockfile
 Build Command: pnpm --filter @workspace/shopscript run build
 Output Directory: artifacts/shopscript/dist/public
 ```
 
-No Vercel environment variables are required for the static in-browser interpreter. `PORT` and `BASE_PATH` remain optional local overrides only.
+No Vercel environment variables are required for the static in-browser interpreter. `PORT` and `BASE_PATH` are optional local overrides only.
 
 ### Troubleshooting
 
 * **`Use pnpm instead`** - run `corepack pnpm install`, not `npm install`.
-* **`Missing script: dev`** - the root package has no `dev` script; use the filtered command shown above.
+* **`Missing script: dev`** - the root package has no `dev` script; use `corepack pnpm --filter @workspace/shopscript run dev`.
+* **Port 5173 is already in use** - stop the other dev server or run with a different `PORT` value.
 * **Install pauses at the esbuild postinstall step** - allow it a short time to download the platform binary. If it remains stuck, press `Ctrl+C`, check the network connection, and run `corepack pnpm install` again.
 
 ## Supported ShopScript Commands
