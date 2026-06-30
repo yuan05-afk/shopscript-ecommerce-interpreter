@@ -4,6 +4,8 @@
 
 ---
 
+<img width="1920" height="1861" alt="image" src="https://github.com/user-attachments/assets/8ae7e8fd-65e1-4416-9622-07aef3170cf2" />
+
 ## Overview
 
 **ShopScript** is a mini programming language interpreter built for a Programming Languages final project. It allows users to write simple scripts that simulate common e-commerce operations such as adding products to a cart, applying coupons, setting shipping fees, checking out, and generating a receipt.
