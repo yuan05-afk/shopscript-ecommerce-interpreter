@@ -5406,10 +5406,9 @@ html[data-theme="cyber-ochre"] .shopscript-ide:not(.ide-dark) {
 }
 
 .receipt-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 10px;
 }
@@ -5426,10 +5425,12 @@ html[data-theme="cyber-ochre"] .shopscript-ide:not(.ide-dark) {
 }
 
 .receipt-download {
-  flex: 0 1 auto;
+  justify-self: end;
+  min-width: max-content;
   justify-content: center;
-  padding: 4px 7px;
-  font-size: 9.5px;
+  padding: 5px 9px;
+  font-size: 10px;
+  line-height: 1;
   white-space: nowrap;
 }
 
@@ -6107,14 +6108,15 @@ html[data-theme]:not([data-theme="default"]) .team-responsibilities li strong {
 
 /* Receipt download button alignment and accent contrast ------------------ */
 .receipt-card .receipt-header {
-  justify-content: flex-start !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
 }
 
 .receipt-card .receipt-download {
-  flex: 0 0 auto !important;
-  width: fit-content !important;
-  margin: 8px auto 0 !important;
-  padding: 8px 14px !important;
+  justify-self: end !important;
+  width: auto !important;
+  min-width: max-content !important;
+  margin: 0 !important;
+  padding: 6px 10px !important;
   border: 1px solid var(--theme-accent) !important;
   background: color-mix(in srgb, var(--theme-accent) 7%, var(--theme-surface)) !important;
   color: var(--theme-accent) !important;
@@ -6706,4 +6708,34 @@ html[data-theme="emerald-gold"] .oop-panel {
   .oop-grid { grid-template-columns: 1fr; }
   .oop-syntax-row { grid-template-columns: 1fr; gap: 1px; }
   .oop-syntax-row span { white-space: normal; }
+}
+
+/* Receipt preview mobile action alignment -------------------------------- */
+@media (max-width: 520px) {
+  .receipt-card {
+    padding: 10px !important;
+  }
+
+  .receipt-header,
+  .receipt-card .receipt-header {
+    grid-template-columns: 1fr !important;
+    align-items: start !important;
+    gap: 8px !important;
+  }
+
+  .receipt-card .receipt-download {
+    justify-self: start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 32px !important;
+    padding: 7px 10px !important;
+    font-size: 10px !important;
+  }
+}
+
+@media (min-width: 521px) and (max-width: 1023px) {
+  .receipt-card .receipt-download {
+    padding: 6px 11px !important;
+    font-size: 10px !important;
+  }
 }
