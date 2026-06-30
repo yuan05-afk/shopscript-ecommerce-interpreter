@@ -6903,3 +6903,298 @@ html[data-theme]:not([data-theme="default"]) .app-footer {
     justify-content: space-between;
   }
 }
+/* Docs and Examples interaction layer ----------------------------------- */
+.docs-hero,
+.examples-hero,
+.docs-sidebar,
+.docs-search-wrap,
+.examples-toolbar,
+.examples-search-wrap,
+.docs-section,
+.docs-empty,
+.examples-empty,
+.example-card,
+.examples-next,
+.docs-next-card,
+.docs-callout,
+.docs-feature-grid > div,
+.docs-analyzer-grid > div,
+.docs-pipeline > div,
+.docs-inventory-list div,
+.docs-status-columns > div,
+.example-expected,
+.example-concepts span,
+.examples-count,
+.docs-version-card {
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.docs-section,
+.example-card,
+.docs-sidebar,
+.examples-toolbar,
+.docs-empty,
+.examples-empty,
+.docs-next-card,
+.examples-next {
+  animation: docs-examples-rise 520ms cubic-bezier(.2,.85,.2,1) both;
+}
+
+.docs-content > .docs-section:nth-of-type(1),
+.examples-grid > .example-card:nth-child(1) { animation-delay: 20ms; }
+.docs-content > .docs-section:nth-of-type(2),
+.examples-grid > .example-card:nth-child(2) { animation-delay: 70ms; }
+.docs-content > .docs-section:nth-of-type(3),
+.examples-grid > .example-card:nth-child(3) { animation-delay: 120ms; }
+.docs-content > .docs-section:nth-of-type(4),
+.examples-grid > .example-card:nth-child(4) { animation-delay: 170ms; }
+.docs-content > .docs-section:nth-of-type(5),
+.examples-grid > .example-card:nth-child(5) { animation-delay: 220ms; }
+.docs-content > .docs-section:nth-of-type(6),
+.examples-grid > .example-card:nth-child(6) { animation-delay: 270ms; }
+
+@keyframes docs-examples-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.docs-hero:hover,
+.examples-hero:hover,
+.docs-section:hover,
+.docs-section:focus-within,
+.example-card:hover,
+.example-card:focus-within,
+.docs-empty:hover,
+.examples-empty:hover,
+.docs-sidebar:hover,
+.examples-toolbar:hover,
+.docs-next-card:hover,
+.examples-next:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--theme-accent) 36%, var(--theme-border));
+  box-shadow: 0 18px 46px color-mix(in srgb, var(--theme-accent) 12%, transparent), var(--theme-shadow);
+}
+
+.docs-section:hover .docs-step,
+.docs-section:focus-within .docs-step {
+  transform: scale(1.05) rotate(-2deg);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--theme-accent) 22%, transparent);
+}
+
+.docs-step,
+.example-number,
+.examples-count {
+  transition: transform 190ms ease, box-shadow 190ms ease, color 190ms ease, background 190ms ease;
+}
+
+.example-card:hover .example-number,
+.example-card:focus-within .example-number {
+  transform: translateY(-2px) scale(1.04);
+  color: color-mix(in srgb, var(--theme-accent) 58%, transparent);
+}
+
+.examples-hero:hover .examples-count {
+  transform: rotate(-1.5deg) scale(1.03);
+  box-shadow: 0 18px 34px color-mix(in srgb, var(--theme-accent) 26%, transparent);
+}
+
+.docs-callout:hover,
+.docs-feature-grid > div:hover,
+.docs-analyzer-grid > div:hover,
+.docs-pipeline > div:hover,
+.docs-inventory-list div:hover,
+.docs-status-columns > div:hover,
+.example-expected:hover,
+.example-concepts span:hover,
+.docs-version-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--theme-accent) 34%, var(--theme-border));
+  background: color-mix(in srgb, var(--theme-accent) 7%, var(--theme-surface-2));
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--theme-accent) 10%, transparent);
+}
+
+.docs-pipeline > div:hover span,
+.docs-analyzer-grid > div:hover > span {
+  transform: scale(1.06);
+}
+
+.docs-pipeline > div span,
+.docs-analyzer-grid > div > span {
+  transition: transform 180ms ease;
+}
+
+.example-open,
+.docs-next-card .btn-orange,
+.examples-next .btn-orange {
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.example-open:hover,
+.docs-next-card .btn-orange:hover,
+.examples-next .btn-orange:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--theme-accent) 22%, transparent);
+}
+
+.example-filters button,
+.docs-sidebar button,
+.docs-search-clear,
+.examples-search-wrap button {
+  transition: transform 150ms ease, background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.example-filters button:hover,
+.example-filters button:focus-visible,
+.docs-sidebar button:hover,
+.docs-sidebar button:focus-visible,
+.docs-search-clear:hover,
+.docs-search-clear:focus-visible,
+.examples-search-wrap button:hover,
+.examples-search-wrap button:focus-visible {
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-hero,
+  .examples-hero,
+  .docs-sidebar,
+  .docs-search-wrap,
+  .examples-toolbar,
+  .examples-search-wrap,
+  .docs-section,
+  .docs-empty,
+  .examples-empty,
+  .example-card,
+  .examples-next,
+  .docs-next-card,
+  .docs-callout,
+  .docs-feature-grid > div,
+  .docs-analyzer-grid > div,
+  .docs-pipeline > div,
+  .docs-inventory-list div,
+  .docs-status-columns > div,
+  .example-expected,
+  .example-concepts span,
+  .examples-count,
+  .docs-version-card,
+  .docs-step,
+  .example-number,
+  .example-open,
+  .docs-next-card .btn-orange,
+  .examples-next .btn-orange,
+  .example-filters button,
+  .docs-sidebar button,
+  .docs-search-clear,
+  .examples-search-wrap button {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+/* Docs hover refinements ------------------------------------------------- */
+.docs-table tbody tr,
+.docs-table tbody td,
+.docs-table tbody code {
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.docs-table tbody tr:hover {
+  background: color-mix(in srgb, var(--theme-accent) 7%, var(--theme-surface));
+  box-shadow: inset 3px 0 0 var(--theme-accent);
+}
+
+.docs-table tbody tr:hover td {
+  color: var(--theme-text);
+}
+
+.docs-table tbody tr:hover code {
+  background: color-mix(in srgb, var(--theme-accent) 14%, var(--theme-surface));
+  color: var(--theme-accent-strong);
+}
+
+.docs-analyzer-grid > div > span {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 10px;
+  border: 1px solid color-mix(in srgb, var(--theme-accent) 18%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--theme-accent) 8%, var(--theme-surface));
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+}
+
+.docs-analyzer-grid > div > span svg {
+  flex: 0 0 auto;
+}
+
+.docs-analyzer-grid > div:hover > span {
+  background: color-mix(in srgb, var(--theme-accent) 13%, var(--theme-surface));
+  border-color: color-mix(in srgb, var(--theme-accent) 34%, transparent);
+}
+
+.docs-callout > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+/* Theme-safe Docs and Examples hover colors ----------------------------- */
+html[data-theme]:not([data-theme="default"]) .docs-table tbody tr:hover {
+  background: color-mix(in srgb, var(--theme-accent) 10%, var(--theme-surface-2)) !important;
+  box-shadow: inset 3px 0 0 var(--theme-accent) !important;
+}
+
+html[data-theme]:not([data-theme="default"]) .docs-table tbody tr:hover td {
+  background: transparent !important;
+  color: var(--theme-text) !important;
+}
+
+html[data-theme]:not([data-theme="default"]) .docs-table tbody tr:hover code {
+  background: color-mix(in srgb, var(--theme-accent) 16%, var(--theme-surface)) !important;
+  color: var(--theme-accent) !important;
+}
+
+html[data-theme]:not([data-theme="default"]) .docs-section:hover,
+html[data-theme]:not([data-theme="default"]) .docs-section:focus-within,
+html[data-theme]:not([data-theme="default"]) .example-card:hover,
+html[data-theme]:not([data-theme="default"]) .example-card:focus-within,
+html[data-theme]:not([data-theme="default"]) .docs-sidebar:hover,
+html[data-theme]:not([data-theme="default"]) .examples-toolbar:hover,
+html[data-theme]:not([data-theme="default"]) .docs-next-card:hover,
+html[data-theme]:not([data-theme="default"]) .examples-next:hover,
+html[data-theme]:not([data-theme="default"]) .docs-empty:hover,
+html[data-theme]:not([data-theme="default"]) .examples-empty:hover {
+  border-color: color-mix(in srgb, var(--theme-accent) 40%, var(--theme-border)) !important;
+  background: color-mix(in srgb, var(--theme-accent) 5%, var(--theme-surface)) !important;
+  box-shadow: 0 18px 46px color-mix(in srgb, var(--theme-accent) 15%, transparent), var(--theme-shadow) !important;
+}
+
+html[data-theme]:not([data-theme="default"]) .docs-callout:hover,
+html[data-theme]:not([data-theme="default"]) .docs-feature-grid > div:hover,
+html[data-theme]:not([data-theme="default"]) .docs-analyzer-grid > div:hover,
+html[data-theme]:not([data-theme="default"]) .docs-pipeline > div:hover,
+html[data-theme]:not([data-theme="default"]) .docs-inventory-list div:hover,
+html[data-theme]:not([data-theme="default"]) .docs-status-columns > div:hover,
+html[data-theme]:not([data-theme="default"]) .example-expected:hover,
+html[data-theme]:not([data-theme="default"]) .example-concepts span:hover,
+html[data-theme]:not([data-theme="default"]) .docs-version-card:hover {
+  border-color: color-mix(in srgb, var(--theme-accent) 42%, var(--theme-border)) !important;
+  background: color-mix(in srgb, var(--theme-accent) 9%, var(--theme-surface-2)) !important;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--theme-accent) 14%, transparent) !important;
+}
+
+html[data-theme]:not([data-theme="default"]) .docs-analyzer-grid > div > span {
+  background: color-mix(in srgb, var(--theme-accent) 9%, var(--theme-surface)) !important;
+  border-color: color-mix(in srgb, var(--theme-accent) 24%, var(--theme-border)) !important;
+  color: var(--theme-accent) !important;
+}
+
+html[data-theme]:not([data-theme="default"]) .docs-analyzer-grid > div:hover > span {
+  background: color-mix(in srgb, var(--theme-accent) 16%, var(--theme-surface)) !important;
+  border-color: color-mix(in srgb, var(--theme-accent) 46%, var(--theme-border)) !important;
+}

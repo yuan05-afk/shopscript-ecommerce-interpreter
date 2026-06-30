@@ -807,7 +807,6 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
               className={visibleIds.has(section.id) ? "" : "filtered"}
               onClick={() => jumpTo(section.id)}
               disabled={!visibleIds.has(section.id)}
-              data-tooltip={visibleIds.has(section.id) ? "Jump to the " + section.title + " documentation section." : "This section is hidden by the current search."}
             >
               <span>{section.title}</span>
               {Ico.chevron(12)}
@@ -2155,7 +2154,7 @@ export default function App() {
       <header className="app-header">
         <div className="header-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"0 24px", height:56, display:"flex", alignItems:"center", gap:16 }}>
           {/* Logo -- always visible */}
-          <button type="button" className="brand-button" onClick={() => navigate("Home")} aria-label="Open ShopScript home" data-tooltip="Go to the ShopScript Home workspace.">
+          <button type="button" className="brand-button" onClick={() => navigate("Home")} aria-label="Open ShopScript home">
             <img className="brand-logo" src={brandLogoSrc} alt="" aria-hidden="true" />
             <div>
               <div className="brand-title" style={{ fontWeight:800, fontSize:15, lineHeight:1.1 }}>ShopScript</div>
