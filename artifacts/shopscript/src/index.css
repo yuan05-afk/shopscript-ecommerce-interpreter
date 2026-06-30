@@ -63,14 +63,6 @@ html.lenis body {
   overflow: clip;
 }
 
-.lenis [data-lenis-prevent],
-.lenis [data-lenis-prevent-wheel],
-.lenis [data-lenis-prevent-touch],
-.lenis [data-lenis-prevent-vertical],
-.lenis [data-lenis-prevent-horizontal] {
-  overscroll-behavior: contain;
-}
-
 .lenis.lenis-smooth iframe {
   pointer-events: none;
 }
@@ -4773,10 +4765,6 @@ html.lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
 
-html.lenis.lenis-smooth [data-lenis-prevent] {
-  scroll-behavior: auto;
-}
-
 body {
   overflow-x: hidden;
   font-size: 16px;
@@ -6239,13 +6227,13 @@ html[data-theme="cyber-ochre"] .code-completion-menu {
 .shopscript-ide {
   min-height: 0 !important;
   max-height: none;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
 }
 
 .ide-code-layer,
 .shopscript-ide textarea {
   min-height: 0 !important;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
 }
 
 .shopscript-ide textarea {
@@ -6739,3 +6727,5 @@ html[data-theme="emerald-gold"] .oop-panel {
     font-size: 10px !important;
   }
 }
+
+

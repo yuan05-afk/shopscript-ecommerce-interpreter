@@ -158,7 +158,7 @@ export function InventoryPage({ products, onSave, onDelete, onReset, onNotify, o
           <button type="button" className="btn-ghost inventory-reset" onClick={onReset} data-tooltip="Restore the six default ShopScript products.">Reset defaults</button>
         </div>
 
-        <div className="inventory-table-wrap" data-lenis-prevent>
+        <div className="inventory-table-wrap">
           <table className="inventory-table">
             <thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th><span className="sr-only">Actions</span></th></tr></thead>
             <tbody>{filteredProducts.map(product => {

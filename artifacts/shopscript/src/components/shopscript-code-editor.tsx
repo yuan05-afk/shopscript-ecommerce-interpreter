@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type RefObject, type UIEvent, type WheelEvent } from "react";
+import { useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type RefObject, type UIEvent } from "react";
 import { createPortal } from "react-dom";
 
 export type EditorTheme = "light" | "dark";
@@ -353,7 +353,6 @@ export function ShopScriptCodeEditor({
   const lines = code.split("\n");
   const errorLineSet = new Set(errorLines);
   const [completionState, setCompletionState] = useState<CompletionState | null>(null);
-  const [editorScroll, setEditorScroll] = useState({ top: 0, left: 0 });
   const completionItems = useMemo(() => {
     const merged = [...BASE_COMPLETIONS];
     const seen = new Set(merged.map(item => (item.searchText ?? item.label).toLowerCase() + "|" + item.kind));
@@ -422,30 +421,10 @@ export function ShopScriptCodeEditor({
       highlightRef.current.scrollLeft = textarea.scrollLeft;
     }
     if (gutterRef.current) gutterRef.current.scrollTop = textarea.scrollTop;
-    setEditorScroll({ top: textarea.scrollTop, left: textarea.scrollLeft });
   };
 
   const syncScroll = (event: UIEvent<HTMLTextAreaElement>) => {
     syncEditorScrollPosition(event.currentTarget);
-  };
-
-  const handleWheel = (event: WheelEvent<HTMLTextAreaElement>) => {
-    const textarea = event.currentTarget;
-    const maxTop = Math.max(0, textarea.scrollHeight - textarea.clientHeight);
-    const maxLeft = Math.max(0, textarea.scrollWidth - textarea.clientWidth);
-    if (maxTop <= 0 && maxLeft <= 0) return;
-
-    const nextTop = Math.max(0, Math.min(maxTop, textarea.scrollTop + event.deltaY));
-    const nextLeft = Math.max(0, Math.min(maxLeft, textarea.scrollLeft + event.deltaX));
-    const canMove = nextTop !== textarea.scrollTop || nextLeft !== textarea.scrollLeft;
-
-    event.stopPropagation();
-    event.preventDefault();
-    if (!canMove) return;
-
-    textarea.scrollTop = nextTop;
-    textarea.scrollLeft = nextLeft;
-    syncEditorScrollPosition(textarea);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -528,7 +507,7 @@ export function ShopScriptCodeEditor({
   })() : undefined;
 
   const completionMenu = completionState ? (
-    <div className={"code-completion-menu ide-" + theme} style={completionPosition} role="listbox" data-lenis-prevent>
+    <div className={"code-completion-menu ide-" + theme} style={completionPosition} role="listbox">
       {completionState.items.map((item, index) => (
         <button
           type="button"
@@ -552,7 +531,7 @@ export function ShopScriptCodeEditor({
   ) : null;
 
   return (
-    <div className={"shopscript-ide ide-" + theme + " " + className} data-lenis-prevent>
+    <div className={"shopscript-ide ide-" + theme + " " + className}>
       <div className="ide-gutter" ref={gutterRef} aria-hidden="true">
         {lines.map((_, index) => <div className={errorLineSet.has(index + 1) ? "ide-error-line" : ""} key={index}>{index + 1}</div>)}
       </div>
@@ -584,14 +563,10 @@ export function ShopScriptCodeEditor({
           }}
           onBlur={() => window.setTimeout(() => setCompletionState(null), 120)}
           onScroll={syncScroll}
-          onWheel={handleWheel}
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
           wrap="off"
-          data-lenis-prevent
-          data-lenis-prevent-wheel
-          data-lenis-prevent-touch
           aria-label={ariaLabel}
           aria-autocomplete="list"
           aria-expanded={Boolean(completionState)}

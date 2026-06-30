@@ -799,7 +799,7 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
       </div>
 
       <div className="docs-layout">
-        <aside className="docs-sidebar" data-lenis-prevent aria-label="Documentation sections">
+        <aside className="docs-sidebar" aria-label="Documentation sections">
           <div className="docs-sidebar-title">On this page</div>
           {sections.map(section => (
             <button
@@ -901,7 +901,7 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
               <p>Each statement ends with a semicolon. Single-line comments begin with <code>//</code>.</p>
               <h3>Variables and literals</h3>
               <pre><code>{'let user = "Ava";\nlet budget = 1200.00;\nlet inStock = true;\nlet cart = [];'}</code></pre>
-              <div className="docs-table-wrap" data-lenis-prevent>
+              <div className="docs-table-wrap">
                 <table className="docs-table">
                   <thead><tr><th>Value</th><th>Example</th><th>Current runtime type</th></tr></thead>
                   <tbody>
@@ -947,7 +947,7 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
                 <div><span className="docs-kicker">Language reference</span><h2>E-commerce commands</h2></div>
                 <span className="docs-status implemented">Implemented</span>
               </div>
-              <div className="docs-table-wrap" data-lenis-prevent>
+              <div className="docs-table-wrap">
                 <table className="docs-table command-table">
                   <thead><tr><th>Action</th><th>Syntax</th><th>Effect</th></tr></thead>
                   <tbody>
@@ -1120,7 +1120,7 @@ function ExamplesPage({ onOpenExample, onNavigate }: { onOpenExample: (code: str
               </div>
               <h2>{example.title}</h2>
               <p className="example-summary">{example.summary}</p>
-              <pre className="example-code" data-lenis-prevent><code>{example.code}</code></pre>
+              <pre className="example-code"><code>{example.code}</code></pre>
               <div className="example-concepts">
                 {example.concepts.map(concept => <span key={concept}>{concept}</span>)}
               </div>
@@ -1282,7 +1282,7 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
             ))}
           </div>
 
-          <div className="playground-tab-content" data-lenis-prevent>
+          <div className="playground-tab-content">
             {activeTab === "Output" && (
               <div className="playground-output">
                 {!hasRun || !result ? (
@@ -1307,7 +1307,7 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
                         ))}
                       </div>
                     )}
-                    <div className="playground-log-list" data-lenis-prevent>
+                    <div className="playground-log-list">
                       <h3>Execution log</h3>
                       {result.logs.map((log, index) => <div key={index}><span className="log-dot" /><code>{log}</code></div>)}
                     </div>
@@ -2172,7 +2172,7 @@ export default function App() {
               <span className="search-kbd">Ctrl K</span>
             </div>
             {siteSearchOpen && (
-              <div id="site-search-results" className="site-search-panel" data-lenis-prevent role="listbox" aria-label="Site search results">
+              <div id="site-search-results" className="site-search-panel" role="listbox" aria-label="Site search results">
                 <div className="site-search-panel-head">{siteSearch ? "Search results" : "Quick search"}</div>
                 {siteSearchResults.length > 0 ? siteSearchResults.map((item, index) => (
                   <button type="button" key={item.id} id={"site-search-result-" + index} className={"site-search-result" + (siteSearchIndex === index ? " active" : "")} onMouseEnter={() => setSiteSearchIndex(index)} onClick={() => runSiteSearchResult(item)} role="option" aria-selected={siteSearchIndex === index}>
@@ -2209,7 +2209,7 @@ export default function App() {
                 {Ico.chevron(13,"var(--theme-muted)")}
               </button>
               {themeMenuOpen && (
-                <div className="theme-menu" data-lenis-prevent role="menu" aria-label="Theme settings">
+                <div className="theme-menu" role="menu" aria-label="Theme settings">
                   <div className="theme-menu-header">
                     <div><strong>Interface theme</strong><span>Choose a high-contrast palette for the ShopScript workspace.</span></div>
                     <button type="button" className="theme-menu-close" onClick={() => setThemeMenuOpen(false)} aria-label="Close theme menu">x</button>
@@ -2600,7 +2600,7 @@ export default function App() {
                 <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }} data-tooltip="Shows the lexical tokens produced from the current source code." tabIndex={0}>Tokens</span>
                 {result && <span style={{ background:"var(--theme-accent)", color:"white", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.tokens.length}</span>}
               </div>
-              <div className="analyzer-token-scroll" data-lenis-prevent>
+              <div className="analyzer-token-scroll">
                 {hasRun && result?.tokens.length ? (
                   result.tokens.map((t:Token,i) => (
                     <span key={i} className={`token-chip ${tokenClass(t.type)}`}>{t.type==="string"?`"${t.value}"`:t.value}</span>
@@ -2672,7 +2672,7 @@ export default function App() {
                 <span style={{ fontWeight:700, fontSize:13, color:"var(--theme-text)" }} data-tooltip="Shows interpreter events produced while the program runs." tabIndex={0}>Output Logs</span>
                 {result && <span style={{ background:"hsl(142 76% 36% / 0.14)", color:"hsl(142 76% 28%)", borderRadius:999, fontSize:11, fontWeight:700, padding:"1px 9px" }}>{result.logs.length}</span>}
               </div>
-              <div data-lenis-prevent style={{ maxHeight:150, overflowY:"auto", display:"flex", flexDirection:"column", gap:2 }}>
+              <div style={{ maxHeight:150, overflowY:"auto", display:"flex", flexDirection:"column", gap:2 }}>
                 {result?.logs.length ? (
                   result.logs.map((log,i) => (
                     <div key={i} className="log-item">
