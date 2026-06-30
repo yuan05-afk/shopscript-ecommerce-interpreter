@@ -27,13 +27,15 @@ The project combines programming language concepts with a visual and user-friend
 ## Key Features
 
 * Shared syntax-highlighted ShopScript editor on Home and Playground
-* Light and dark editor themes (Light by default), synchronized line numbers, Tab indentation, and Ctrl/Cmd+Enter execution
+* Autocomplete suggestions, synchronized line numbers, Tab indentation, cursor tracking, and Ctrl/Cmd+Enter execution
+* Light and dark editor modes plus four app interface themes
 * Lexical analyzer with token display
 * Syntax checker with line-based error reporting
 * Semantic checker for product, coupon, quantity, and checkout validation
 * Variable table for declared values
 * Script-backed inventory, cart quantity/removal, and checkout controls
 * Persistent Inventory page with product CRUD, stock levels, search, and status filters
+* Coupon manager with create/edit/disable/delete/reset support through browser localStorage
 * Popup notifications and inline IDE diagnostics for execution, stock, catalog, cart, checkout, and CRUD outcomes
 * Responsive receipt preview, PDF receipt downloads, and output logs
 * Shopee-inspired orange-and-white user interface
@@ -41,6 +43,7 @@ The project combines programming language concepts with a visual and user-friend
 * Searchable in-app documentation and project About page
 * Filterable runnable examples that open directly in the interpreter
 * Dedicated Playground with shared code, result tabs, and keyboard execution
+* Vercel-ready static deployment configuration
 
 ---
 
@@ -78,17 +81,17 @@ The interpreter processes the source code step by step. If lexical or syntax err
 
 #### Prerequisites
 
-Install [Node.js](https://nodejs.org/) 22 or newer and pnpm. Confirm that both are available:
+Install [Node.js](https://nodejs.org/) 22 or newer. Corepack is recommended so the project can use the pinned pnpm version from `packageManager`. Confirm Node is available:
 
 ```powershell
 node --version
-pnpm --version
+corepack --version
 ```
 
-If `pnpm` is not recognized, install it globally and open a new terminal:
+Enable Corepack before installing dependencies:
 
 ```powershell
-npm install --global pnpm
+corepack enable
 ```
 
 This repository is a pnpm workspace. The root configuration intentionally rejects `npm install` to prevent npm and pnpm lockfiles from being mixed.
@@ -98,17 +101,17 @@ This repository is a pnpm workspace. The root configuration intentionally reject
 From the repository root, install dependencies and start the ShopScript website:
 
 ```powershell
-pnpm install
-pnpm --filter @workspace/shopscript run dev
+corepack pnpm install
+corepack pnpm --filter @workspace/shopscript run dev
 ```
 
-Open <http://localhost:5173/>. Keep the terminal running while using the website. Press `Ctrl+C` to stop the development server.
+Open <http://localhost:5173/>. Keep the terminal running while using the website. Press `Ctrl+C` to stop the development server. `PORT` and `BASE_PATH` are optional local overrides.
 
 #### macOS or Linux
 
 ```bash
-pnpm install
-pnpm --filter @workspace/shopscript run dev
+corepack pnpm install
+corepack pnpm --filter @workspace/shopscript run dev
 ```
 
 Then open <http://localhost:5173/>.
@@ -116,14 +119,14 @@ Then open <http://localhost:5173/>.
 #### Verify the project
 
 ```powershell
-pnpm --filter @workspace/shopscript run typecheck
-pnpm --filter @workspace/shopscript run test:interpreter
-pnpm --filter @workspace/shopscript run build
+corepack pnpm --filter @workspace/shopscript run typecheck
+corepack pnpm --filter @workspace/shopscript run test:interpreter
+corepack pnpm --filter @workspace/shopscript run build
 ```
 
 #### Deploy to Vercel
 
-The repository includes `vercel.json` for the primary ShopScript app. Import the repository in Vercel and keep the project root at the repository root. Vercel will use:
+The repository includes `vercel.json` for the primary ShopScript app. Import the repository in Vercel and keep the project root at the repository root (`./`). Vercel will use:
 
 ```text
 Install Command: corepack enable && pnpm install --frozen-lockfile
@@ -131,13 +134,13 @@ Build Command: pnpm --filter @workspace/shopscript run build
 Output Directory: artifacts/shopscript/dist/public
 ```
 
-No Vercel environment variables are required for the static in-browser interpreter. `PORT` and `BASE_PATH` still remain optional local overrides.
+No Vercel environment variables are required for the static in-browser interpreter. `PORT` and `BASE_PATH` remain optional local overrides only.
 
 #### Troubleshooting
 
-* **`Use pnpm instead`** - run `pnpm install`, not `npm install`.
+* **`Use pnpm instead`** - run `corepack pnpm install`, not `npm install`.
 * **`Missing script: dev`** - the root package has no `dev` script; use the filtered command shown above.
-* **Install pauses at the esbuild postinstall step** - allow it a short time to download the Windows binary. If it remains stuck, press `Ctrl+C`, check the network connection, and run `pnpm install` again.
+* **Install pauses at the esbuild postinstall step** - allow it a short time to download the Windows binary. If it remains stuck, press `Ctrl+C`, check the network connection, and run `corepack pnpm install` again.
 
 ---
 
@@ -301,7 +304,7 @@ if (qty == 2) {
 
 ### 7. Object-Oriented Programming
 
-ShopScript supports classes, object creation, public/private fields, public methods, method parameters, and `this` field assignment inside methods.
+ShopScript supports classes, object creation, public/private fields, public methods, method parameters, `this` field assignment inside methods, and adding object products that expose public `name` and `price` fields.
 
 ```shopscript
 class Product {
@@ -357,10 +360,13 @@ ShopScript is designed as an educational programming language interpreter, not a
 * Token analysis
 * Syntax validation
 * Semantic validation
+* Scoped variables, explicit types, expressions, and control flow
+* Basic OOP with fields, methods, privacy checks, and object-backed products
+* Inventory and coupon management
 * Cart simulation
 * Coupon simulation
 * Checkout summary
-* Receipt preview
+* Receipt preview and PDF download
 * Output logs
 
 ### Not Included
@@ -400,3 +406,4 @@ apply coupon "FLASH25";
 ```
 
 Runtime coupons exist only for the current program run and do not overwrite the saved coupon catalog.
+

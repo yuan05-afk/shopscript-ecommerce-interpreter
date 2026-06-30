@@ -859,12 +859,14 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
                 <div><span className="docs-kicker">Local development</span><h2>Quick start</h2></div>
                 <span className="docs-status implemented">Verified</span>
               </div>
-              <p>This is a pnpm workspace. Run commands from the repository root and do not use npm to install project dependencies.</p>
+              <p>This is a pnpm workspace. Run commands from the repository root and do not use npm to install project dependencies. Corepack can run the pinned pnpm version from <code>packageManager</code>.</p>
               <h3>Windows PowerShell</h3>
-              <pre><code>{"pnpm install\npnpm --filter @workspace/shopscript run dev"}</code></pre>
-              <p>Open <strong>http://localhost:5173/</strong>. Keep the terminal running while using the website.</p>
+              <pre><code>{"corepack pnpm install\ncorepack pnpm --filter @workspace/shopscript run dev"}</code></pre>
+              <p>Open <strong>http://localhost:5173/</strong>. Keep the terminal running while using the website. <code>PORT</code> and <code>BASE_PATH</code> are optional local overrides.</p>
               <h3>Verify changes</h3>
-              <pre><code>{"pnpm --filter @workspace/shopscript run typecheck\npnpm --filter @workspace/shopscript run build"}</code></pre>
+              <pre><code>{"corepack pnpm --filter @workspace/shopscript run typecheck\ncorepack pnpm --filter @workspace/shopscript run test:interpreter\ncorepack pnpm --filter @workspace/shopscript run build"}</code></pre>
+              <h3>Vercel deployment</h3>
+              <p>The repository includes <code>vercel.json</code>. Import the Git repository, keep the root directory at <code>./</code>, and Vercel builds the static app to <code>artifacts/shopscript/dist/public</code>. No environment variables are required.</p>
             </article>
           )}
 
@@ -1034,11 +1036,12 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
                     <li>Cart, discount, checkout, and receipt</li>
                     <li>Variables and basic classes/instances</li>
                     <li>Shared syntax-highlighted Light/Dark editor</li>
-                    <li>Script-backed inventory and cart controls</li>
+                    <li>Script-backed inventory, coupon, and cart controls</li>
                     <li>Expression grammar, nested scopes, if/else, while, and for</li>
                     <li>Explicit int, float, bool, and string declarations</li>
                     <li>Public/private fields and public method execution</li>
                     <li>Automated interpreter tests</li>
+                    <li>Vercel-ready static app configuration</li>
                     <li>Final end-to-end demonstration sample</li>
                   </ul>
                 </div>
@@ -1393,8 +1396,9 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
     "Browser IDE with syntax highlighting, cursor state, editor themes, and Ctrl/Cmd+Enter execution.",
     "Interpreter pipeline covering tokenization, syntax checks, semantic validation, runtime execution, and structured output.",
     "Store simulation with inventory products, cart quantities, coupons, shipping totals, checkout state, and receipt generation.",
+    "Inventory and coupon management backed by browser localStorage and passed into semantic validation.",
     "Analyzer panels for tokens, errors, variables, logs, OOP classes, and object instances.",
-    "Theme system, hero artwork, smooth scrolling, responsive layouts, and polished multi-page navigation.",
+    "Theme system, hero artwork, smooth scrolling, responsive layouts, polished multi-page navigation, and Vercel-ready static deployment.",
   ];
   const team = [
     {
@@ -2790,6 +2794,4 @@ export default function App() {
     </div>
   );
 }
-
-
 
