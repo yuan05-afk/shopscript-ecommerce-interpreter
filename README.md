@@ -6,7 +6,7 @@
 
 ---
 
-<img width="1920" height="1861" alt="ShopScript application preview" src="https://github.com/user-attachments/assets/8ae7e8fd-65e1-4416-9622-07aef3170cf2" />
+<img width="1920" height="1876" alt="image" src="https://github.com/user-attachments/assets/3ac04b11-2d13-46c9-bd99-35d1738594cd" />
 
 ## Overview
 
@@ -18,7 +18,7 @@ The project is not a real online store. Its goal is to make programming language
 
 ShopScript was built as a focused academic project with clear responsibilities across planning, implementation, and documentation.
 
-| Role | Member | Focus |
+| Role | Member | Responsibilities |
 | --- | --- | --- |
 | Project Lead | Fitz Tobias | Academic direction, project scope, demo planning, and requirements alignment |
 | Lead Developer | Yuan Mariano | Interpreter pipeline, React application, UI behavior, responsive polish, and deployment setup |
