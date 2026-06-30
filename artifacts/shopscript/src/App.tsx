@@ -1402,6 +1402,7 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
   ];
   const team = [
     {
+      id: "project-team-fitz",
       role: "Project Lead",
       name: "Fitz Tobias",
       focus: "Academic direction, scope control, and final project coordination.",
@@ -1414,6 +1415,7 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
       ],
     },
     {
+      id: "project-team-yuan",
       role: "Lead Developer",
       name: "Yuan Mariano",
       focus: "Interpreter implementation, application architecture, UI behavior, and technical integration.",
@@ -1426,6 +1428,7 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
       ],
     },
     {
+      id: "project-team-dwayne",
       role: "Documentation Lead",
       name: "Dwayne Mongaya",
       focus: "Learning material, examples, explanation flow, and presentation support.",
@@ -1536,7 +1539,7 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
         </div>
         <div className="team-grid team-grid-detailed">
           {team.map((member) => (
-            <article key={member.role} className="team-card team-card-detailed">
+            <article id={member.id} key={member.role} className="team-card team-card-detailed">
               <div className="team-card-header">
                 <div className="team-avatar">{member.name.split(" ").map(part => part[0]).join("")}</div>
                 <div><strong>{member.name}</strong><span>{member.role}</span></div>
@@ -1612,7 +1615,7 @@ export default function App() {
   const [inventorySearch, setInventorySearch] = useState("");
   const [couponSearch, setCouponSearch] = useState("");
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
-  const [pendingAboutTeamScroll, setPendingAboutTeamScroll] = useState(false);
+  const [pendingAboutTeamTarget, setPendingAboutTeamTarget] = useState<string | null>(null);
   const [customCursorEnabled, setCustomCursorEnabled] = useState(() => {
     try {
       return localStorage.getItem("shopscript.customCursor") !== "off";
@@ -1750,19 +1753,19 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, []);
-  const navigateToProjectTeam = useCallback(() => {
+  const navigateToProjectTeam = useCallback((targetId: string) => {
     setNav("About");
     setMobileMenu(false);
     setThemeMenuOpen(false);
-    setPendingAboutTeamScroll(true);
+    setPendingAboutTeamTarget(targetId);
   }, []);
   useEffect(() => {
-    if (!pendingAboutTeamScroll || activeNav !== "About") return;
+    if (!pendingAboutTeamTarget || activeNav !== "About") return;
 
     const frame = window.requestAnimationFrame(() => {
-      const target = document.getElementById("project-team-heading") ?? document.getElementById("project-team");
+      const target = document.getElementById(pendingAboutTeamTarget) ?? document.getElementById("project-team-heading") ?? document.getElementById("project-team");
       if (!target) {
-        setPendingAboutTeamScroll(false);
+        setPendingAboutTeamTarget(null);
         return;
       }
 
@@ -1773,11 +1776,11 @@ export default function App() {
       } else {
         window.scrollTo({ top, behavior: "smooth" });
       }
-      setPendingAboutTeamScroll(false);
+      setPendingAboutTeamTarget(null);
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [activeNav, pendingAboutTeamScroll]);
+  }, [activeNav, pendingAboutTeamTarget]);
   const openSiteSearch = useCallback(() => {
     setSiteSearchOpen(true);
     window.setTimeout(() => siteSearchRef.current?.focus(), 0);
@@ -2809,15 +2812,15 @@ export default function App() {
           </div>
           <div className="footer-credits" aria-label="Project creators">
             {[
-              { role: "Project Lead", name: "Fitz Tobias" },
-              { role: "Lead Developer", name: "Yuan Mariano" },
-              { role: "Documentation Lead", name: "Dwayne Mongaya" },
+              { role: "Project Lead", name: "Fitz Tobias", targetId: "project-team-fitz" },
+              { role: "Lead Developer", name: "Yuan Mariano", targetId: "project-team-yuan" },
+              { role: "Documentation Lead", name: "Dwayne Mongaya", targetId: "project-team-dwayne" },
             ].map((member) => (
               <button
                 type="button"
                 className="footer-credit"
                 key={member.role}
-                onClick={navigateToProjectTeam}
+                onClick={() => navigateToProjectTeam(member.targetId)}
                 aria-label={`View ${member.name} in the project team section`}
               >
                 <span className="footer-credit-role">{member.role}</span>

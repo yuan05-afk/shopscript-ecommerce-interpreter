@@ -6874,7 +6874,10 @@ html[data-theme="emerald-gold"] .oop-panel {
 }
 
 #project-team,
-#project-team-heading {
+#project-team-heading,
+#project-team-fitz,
+#project-team-yuan,
+#project-team-dwayne {
   scroll-margin-top: 52px;
 }
 html[data-theme]:not([data-theme="default"]) .app-footer {
