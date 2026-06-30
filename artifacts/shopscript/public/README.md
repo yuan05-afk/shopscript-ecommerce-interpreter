@@ -18,7 +18,7 @@ The project is not a real online store. Its goal is to make programming language
 
 ShopScript was built as a focused academic project with clear responsibilities across planning, implementation, and documentation.
 
-| Role | Member | Focus |
+| Role | Member | Responsibilities |
 | --- | --- | --- |
 | Project Lead | Fitz Tobias | Academic direction, project scope, demo planning, and requirements alignment |
 | Lead Developer | Yuan Mariano | Interpreter pipeline, React application, UI behavior, responsive polish, and deployment setup |
