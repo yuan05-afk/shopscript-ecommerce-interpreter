@@ -1529,8 +1529,8 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
         </div>
       </section>
 
-      <section className="team-section ss-card about-animate about-animate-6">
-        <div className="section-heading about-section-heading">
+      <section id="project-team" className="team-section ss-card">
+        <div id="project-team-heading" className="section-heading about-section-heading">
           <div className="page-icon small">{Ico.users(20, "var(--theme-accent)")}</div>
           <div><span className="page-eyebrow">Project team</span><h2>Creators and responsibilities</h2></div>
         </div>
@@ -1612,6 +1612,7 @@ export default function App() {
   const [inventorySearch, setInventorySearch] = useState("");
   const [couponSearch, setCouponSearch] = useState("");
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [pendingAboutTeamScroll, setPendingAboutTeamScroll] = useState(false);
   const [customCursorEnabled, setCustomCursorEnabled] = useState(() => {
     try {
       return localStorage.getItem("shopscript.customCursor") !== "off";
@@ -1749,6 +1750,34 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, []);
+  const navigateToProjectTeam = useCallback(() => {
+    setNav("About");
+    setMobileMenu(false);
+    setThemeMenuOpen(false);
+    setPendingAboutTeamScroll(true);
+  }, []);
+  useEffect(() => {
+    if (!pendingAboutTeamScroll || activeNav !== "About") return;
+
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById("project-team-heading") ?? document.getElementById("project-team");
+      if (!target) {
+        setPendingAboutTeamScroll(false);
+        return;
+      }
+
+      const top = Math.max(0, window.scrollY + target.getBoundingClientRect().top - 52);
+      if (lenisRef.current) {
+        lenisRef.current.resize();
+        lenisRef.current.scrollTo(top, { duration: 0.46 });
+      } else {
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+      setPendingAboutTeamScroll(false);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeNav, pendingAboutTeamScroll]);
   const openSiteSearch = useCallback(() => {
     setSiteSearchOpen(true);
     window.setTimeout(() => siteSearchRef.current?.focus(), 0);
@@ -2768,25 +2797,32 @@ export default function App() {
       ) : (
         <AboutPage onNavigate={navigate} logoSrc={brandLogoSrc} />
       )}
-
       {/* ---- FOOTER --------------------------------------------------- */}
-      <footer className="app-footer" style={{ background:"white", borderTop:"1px solid var(--theme-border)" }}>
-        <div className="footer-inner" style={{ maxWidth:"var(--app-content-max)", margin:"0 auto", padding:"14px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:12, color:"var(--theme-muted)" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ color:"var(--theme-accent)", fontWeight:700 }}>ShopScript</span>
-            <span>-</span>
-            <span>Programming Languages Final Project - v{APP_VERSION}</span>
+      <footer className="app-footer">
+        <div className="footer-inner">
+          <div className="footer-brandline">
+            <span className="footer-logo-mark" aria-hidden="true">{Ico.code(16, "currentColor")}</span>
+            <div className="footer-copy">
+              <strong>ShopScript</strong>
+              <span>Programming Languages Final Project - v{APP_VERSION}</span>
+            </div>
           </div>
-          <div className="footer-right" style={{ display:"flex", gap:20 }}>
+          <div className="footer-credits" aria-label="Project creators">
             {[
-              { icon:Ico.sun(13,"hsl(45 90% 50%)"), label:"Light & Clean" },
-              { icon:Ico.heart(13,"hsl(340 75% 55%)"), label:"Friendly" },
-              { icon:Ico.zap(13,"var(--theme-accent)"), label:"Fast & Intuitive" },
-              { icon:Ico.code(13,"hsl(220 60% 55%)"), label:"Built for Developers" },
-            ].map(f => (
-              <span key={f.label} style={{ display:"flex", alignItems:"center", gap:5 }}>
-                <span style={{ display:"flex", alignItems:"center" }}>{f.icon}</span> {f.label}
-              </span>
+              { role: "Project Lead", name: "Fitz Tobias" },
+              { role: "Lead Developer", name: "Yuan Mariano" },
+              { role: "Documentation Lead", name: "Dwayne Mongaya" },
+            ].map((member) => (
+              <button
+                type="button"
+                className="footer-credit"
+                key={member.role}
+                onClick={navigateToProjectTeam}
+                aria-label={`View ${member.name} in the project team section`}
+              >
+                <span className="footer-credit-role">{member.role}</span>
+                <strong>{member.name}</strong>
+              </button>
             ))}
           </div>
         </div>
