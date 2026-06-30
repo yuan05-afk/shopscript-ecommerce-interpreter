@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DEFAULT_COUPONS, normalizeCouponCode, type CouponEntry } from "../coupon-data";
 import "../inventory.css";
 
@@ -9,11 +9,12 @@ function blankCoupon(): CouponEntry {
   return { id: "coupon-" + Date.now(), code: "", discount: 0.1, active: true, description: "" };
 }
 
-export function CouponsPage({ coupons, onSave, onDelete, onReset, onNotify, onBackToInventory }: { coupons: CouponEntry[]; onSave: (coupon: CouponEntry) => void; onDelete: (id: string) => void; onReset: () => void; onNotify: Notice; onBackToInventory?: () => void }) {
-  const [query, setQuery] = useState("");
+export function CouponsPage({ coupons, onSave, onDelete, onReset, onNotify, onBackToInventory, initialSearch = "" }: { coupons: CouponEntry[]; onSave: (coupon: CouponEntry) => void; onDelete: (id: string) => void; onReset: () => void; onNotify: Notice; onBackToInventory?: () => void; initialSearch?: string }) {
+  const [query, setQuery] = useState(initialSearch);
   const [filter, setFilter] = useState<Filter>("all");
   const [editing, setEditing] = useState<CouponEntry | null>(null);
   const [draft, setDraft] = useState<CouponEntry>(blankCoupon);
+  useEffect(() => { setQuery(initialSearch); }, [initialSearch]);
   const normalizedQuery = query.trim().toLowerCase();
   const visibleCoupons = useMemo(() => coupons.filter(coupon => {
     const matchesQuery = !normalizedQuery || coupon.code.toLowerCase().includes(normalizedQuery) || coupon.description.toLowerCase().includes(normalizedQuery);

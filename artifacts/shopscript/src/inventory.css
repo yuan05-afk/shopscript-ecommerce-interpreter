@@ -69,7 +69,7 @@
 .inventory-hero h1 { margin: 5px 0 7px; color: hsl(220 24% 13%); font-size: clamp(28px, 3vw, 42px); letter-spacing: -0.035em; }
 .inventory-hero p { max-width: 680px; margin: 0; color: hsl(220 10% 43%); font-size: 14px; line-height: 1.6; }
 .inventory-add-btn { flex-shrink: 0; padding: 10px 16px; }
-.inventory-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+.inventory-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 18px; }
 .inventory-stats > div { padding: 17px 19px; background: white; border: 1px solid hsl(30 20% 89%); border-radius: 12px; box-shadow: 0 2px 9px hsl(25 40% 20% / 0.04); }
 .inventory-stats span, .inventory-stats small { display: block; color: hsl(220 10% 52%); font-size: 11px; }
 .inventory-stats strong { display: block; margin: 5px 0 3px; color: hsl(220 24% 15%); font-size: 23px; line-height: 1.1; }
@@ -93,6 +93,10 @@
 .inventory-filters { display: flex; gap: 4px; padding: 3px; background: hsl(30 20% 96%); border-radius: 9px; }
 .inventory-filters button { padding: 6px 9px; background: transparent; border: 0; border-radius: 6px; color: hsl(220 10% 45%); cursor: pointer; font: inherit; font-size: 11px; }
 .inventory-filters button.active { background: white; color: hsl(25 95% 45%); box-shadow: 0 1px 5px hsl(0 0% 0% / 0.08); font-weight: 700; }
+.inventory-selects { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.inventory-selects label { display: flex; align-items: center; gap: 5px; color: hsl(220 10% 48%); font-size: 10px; font-weight: 800; }
+.inventory-selects select { height: 32px; min-width: 118px; padding: 0 28px 0 9px; border: 1px solid hsl(30 20% 86%); border-radius: 8px; background: white; color: hsl(220 20% 22%); font: inherit; font-size: 11px; font-weight: 650; outline: 0; cursor: pointer; }
+.inventory-selects select:focus { border-color: hsl(25 95% 53% / 0.65); box-shadow: 0 0 0 3px hsl(25 95% 53% / 0.1); }
 .inventory-reset { flex-shrink: 0; }
 .inventory-table-wrap { overflow-x: auto; }
 .inventory-table { width: 100%; min-width: 850px; border-collapse: collapse; }
@@ -107,10 +111,12 @@
 .inventory-table code { padding: 3px 6px; background: hsl(220 30% 96%); border-radius: 5px; color: hsl(220 50% 45%); font-size: 10px; }
 .stock-count { display: inline-flex; min-width: 30px; justify-content: center; padding: 3px 7px; background: hsl(145 55% 94%); border-radius: 99px; color: hsl(145 65% 33%); font-weight: 700; }
 .stock-count.low { background: hsl(35 95% 93%); color: hsl(25 90% 42%); }
+.stock-count.out { background: hsl(0 84% 95%); color: hsl(0 72% 42%); }
 .inventory-status { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; }
 .inventory-status i { width: 6px; height: 6px; background: currentColor; border-radius: 50%; }
 .inventory-status.active { color: hsl(145 65% 36%); }
-.inventory-status.unavailable { color: hsl(0 60% 50%); }
+.inventory-status.low { color: hsl(25 90% 42%); }
+.inventory-status.out, .inventory-status.unavailable { color: hsl(0 60% 50%); }
 .inventory-row-actions { display: flex; justify-content: flex-end; gap: 5px; }
 .inventory-row-actions button { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; background: white; border: 1px solid hsl(30 20% 86%); border-radius: 7px; color: hsl(220 10% 45%); cursor: pointer; }
 .inventory-row-actions button:hover { border-color: hsl(25 95% 53% / 0.45); color: hsl(25 95% 45%); }
@@ -502,4 +508,28 @@ html[data-theme="emerald-gold"] .coupon-card-meta em,
 html[data-theme="emerald-gold"] .page-eyebrow {
   background: rgba(197, 160, 89, 0.18) !important;
   color: #0D3B2E !important;
+}
+
+/* Inventory semantic status colors --------------------------------------- */
+.inventory-table .inventory-status.active { color: hsl(145 65% 34%) !important; }
+.inventory-table .inventory-status.low { color: hsl(25 90% 42%) !important; }
+.inventory-table .inventory-status.out,
+.inventory-table .inventory-status.unavailable { color: hsl(0 68% 48%) !important; }
+.inventory-table .stock-count.out { background: hsl(0 84% 95%) !important; color: hsl(0 72% 42%) !important; }
+.inventory-table .stock-count.low { background: hsl(35 95% 93%) !important; color: hsl(25 90% 42%) !important; }
+.inventory-table .stock-count:not(.low):not(.out) { background: hsl(145 55% 94%) !important; color: hsl(145 65% 33%) !important; }
+html[data-theme]:not([data-theme="default"]) .inventory-selects select {
+  background: var(--theme-surface-2) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+html[data-theme]:not([data-theme="default"]) .inventory-selects label { color: var(--theme-muted) !important; }
+@media (max-width: 1180px) {
+  .inventory-stats { grid-template-columns: repeat(3, 1fr); }
+  .inventory-selects { flex: 1 1 100%; }
+}
+@media (max-width: 767px) {
+  .inventory-selects { display: grid; grid-template-columns: 1fr; }
+  .inventory-selects label { justify-content: space-between; }
+  .inventory-selects select { min-width: 0; width: min(100%, 220px); }
 }

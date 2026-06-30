@@ -17,6 +17,8 @@ interface InventoryHubProps {
   onSaveCoupon: (coupon: CouponEntry) => void;
   onDeleteCoupon: (id: string) => void;
   onResetCoupons: () => void;
+  productSearch?: string;
+  couponSearch?: string;
 }
 
 export function InventoryPage({
@@ -31,6 +33,8 @@ export function InventoryPage({
   onSaveCoupon,
   onDeleteCoupon,
   onResetCoupons,
+  productSearch = "",
+  couponSearch = "",
 }: InventoryHubProps) {
   if (view === "coupons") {
     return (
@@ -41,6 +45,7 @@ export function InventoryPage({
         onReset={onResetCoupons}
         onNotify={onNotify}
         onBackToInventory={() => onViewChange("products")}
+        initialSearch={couponSearch}
       />
     );
   }
@@ -53,6 +58,7 @@ export function InventoryPage({
       onReset={onReset}
       onNotify={onNotify}
       onOpenCoupons={() => onViewChange("coupons")}
+      initialSearch={productSearch}
     />
   );
 }

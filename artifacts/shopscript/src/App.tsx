@@ -182,10 +182,12 @@ type SiteSearchResult = {
   label: string;
   description: string;
   group: string;
-  action: "navigate" | "docs" | "example" | "inventory" | "coupon" | "playground" | "home-editor";
+  action: "navigate" | "docs" | "example" | "inventory" | "coupon" | "theme" | "playground" | "home-editor";
   nav?: NavItem;
   docsId?: string;
   code?: string;
+  searchTerm?: string;
+  theme?: Theme;
 };
 
 interface ShopScriptExample {
@@ -626,6 +628,27 @@ function GlobalTooltip() {
       showTimerRef.current = null;
     };
 
+    const isTextEntryElement = (element: Element | null) => {
+      if (!element) return false;
+      if (element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) return true;
+      if (element instanceof HTMLElement && element.isContentEditable) return true;
+      if (!(element instanceof HTMLInputElement)) return false;
+      const textTypes = new Set(["", "search", "text", "email", "url", "tel", "password", "number"]);
+      return textTypes.has(element.type);
+    };
+
+    const hideTooltip = () => {
+      clearShowTimer();
+      activeElementRef.current = null;
+      visibleElementRef.current = null;
+      setTooltip(null);
+    };
+
+    const shouldSuppressTooltip = (target: EventTarget | null) => {
+      const targetElement = target instanceof Element ? target : null;
+      return isTextEntryElement(document.activeElement) || isTextEntryElement(targetElement);
+    };
+
     const positionTooltip = (element: HTMLElement) => {
       const text = element.dataset.tooltip?.trim();
       if (!text) return;
@@ -647,6 +670,10 @@ function GlobalTooltip() {
     };
 
     const showFromTarget = (target: EventTarget | null, delayed = true) => {
+      if (shouldSuppressTooltip(target)) {
+        hideTooltip();
+        return;
+      }
       const element = target instanceof Element ? target.closest<HTMLElement>("[data-tooltip]") : null;
       if (!element) return;
       if (activeElementRef.current === element && visibleElementRef.current === element) return;
@@ -673,24 +700,30 @@ function GlobalTooltip() {
       setTooltip(null);
     };
 
-    const hide = () => {
-      clearShowTimer();
-      activeElementRef.current = null;
-      visibleElementRef.current = null;
-      setTooltip(null);
-    };
+    const hide = hideTooltip;
 
     const reposition = () => {
       if (visibleElementRef.current) positionTooltip(visibleElementRef.current);
     };
 
     const handlePointerOver = (event: PointerEvent) => showFromTarget(event.target);
-    const handleFocusIn = (event: FocusEvent) => showFromTarget(event.target, false);
+    const handleFocusIn = (event: FocusEvent) => {
+      if (shouldSuppressTooltip(event.target)) {
+        hideTooltip();
+        return;
+      }
+      showFromTarget(event.target, false);
+    };
+    const hideWhileTyping = () => {
+      if (isTextEntryElement(document.activeElement)) hideTooltip();
+    };
 
     document.addEventListener("pointerover", handlePointerOver);
     document.addEventListener("pointerout", hideIfLeaving);
     document.addEventListener("focusin", handleFocusIn);
     document.addEventListener("focusout", hide);
+    document.addEventListener("input", hideWhileTyping, true);
+    document.addEventListener("keydown", hideWhileTyping, true);
     window.addEventListener("scroll", reposition, true);
     window.addEventListener("resize", reposition);
 
@@ -700,6 +733,8 @@ function GlobalTooltip() {
       document.removeEventListener("pointerout", hideIfLeaving);
       document.removeEventListener("focusin", handleFocusIn);
       document.removeEventListener("focusout", hide);
+      document.removeEventListener("input", hideWhileTyping, true);
+      document.removeEventListener("keydown", hideWhileTyping, true);
       window.removeEventListener("scroll", reposition, true);
       window.removeEventListener("resize", reposition);
     };
@@ -1138,9 +1173,10 @@ interface PlaygroundPageProps {
   onCursorChange: (position: CursorPosition) => void;
   selectedExampleId: string;
   onSelectedExampleChange: (id: string) => void;
+  completionCatalog: { products: string[]; coupons: string[] };
 }
 
-function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, onLoadExample, onNavigate, theme, onToggleTheme, cursorPosition, onCursorChange, selectedExampleId, onSelectedExampleChange }: PlaygroundPageProps) {
+function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, onLoadExample, onNavigate, theme, onToggleTheme, cursorPosition, onCursorChange, selectedExampleId, onSelectedExampleChange, completionCatalog }: PlaygroundPageProps) {
   const [activeTab, setActiveTab] = useState<PlaygroundTab>("Output");
   const lines = code.split("\n");
 
@@ -1214,6 +1250,7 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
             ariaLabel="ShopScript playground editor"
             errorLines={hasRun ? playgroundErrorLines : []}
             onCursorChange={onCursorChange}
+            completionCatalog={completionCatalog}
           />
           {hasRun && primaryPlaygroundError && (
             <div className="editor-diagnostic playground-diagnostic" role="alert">
@@ -1365,12 +1402,11 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
       name: "Fitz Tobias",
       focus: "Academic direction, scope control, and final project coordination.",
       responsibilities: [
-        "Defined the project direction around an educational e-commerce interpreter instead of a production shopping website.",
-        "Aligned the system goals with the required Programming Languages outcomes: lexical analysis, syntax analysis, semantic checks, names and scope, data types, control flow, and OOP.",
-        "Maintained project scope by keeping accounts, payments, production persistence, and real order processing outside the current system boundary.",
-        "Reviewed feature priorities so the interpreter, analyzer output, examples, and simulator stayed connected as one academic demonstration.",
-        "Coordinated final-demo expectations, including how users should move from Home to Docs, Examples, Playground, Inventory, and About.",
-        "Helped validate that user-facing flows support presentation needs: loading examples, running programs, seeing errors, and explaining results clearly.",
+        { label: "Project direction", detail: "Guided ShopScript as an educational e-commerce interpreter, not a production shopping platform." },
+        { label: "Requirement alignment", detail: "Connected the app to required PL topics: lexical analysis, syntax, semantics, scope, data types, control flow, and OOP." },
+        { label: "Scope control", detail: "Kept accounts, real payments, persistence, and live order processing outside the current project boundary." },
+        { label: "Demo planning", detail: "Shaped the final walkthrough across Home, Docs, Examples, Playground, Inventory, and About." },
+        { label: "Flow validation", detail: "Reviewed whether examples, errors, analyzer panels, and simulator output are clear for presentation." },
       ],
     },
     {
@@ -1378,12 +1414,11 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
       name: "Yuan Mariano",
       focus: "Interpreter implementation, application architecture, UI behavior, and technical integration.",
       responsibilities: [
-        "Implemented and maintained the ShopScript interpreter pipeline that tokenizes source code, checks syntax, validates semantics, and executes supported programs.",
-        "Built the runtime behavior for variables, typed declarations, expressions, loops, conditionals, product registration, coupons, shipping, checkout, OOP classes, object creation, method calls, and access rules.",
-        "Integrated interpreter results into the React interface: cart simulation, product inventory, receipt preview, analyzer panels, execution logs, variables, classes, and instances.",
-        "Developed the syntax-highlighted mini IDE, editor theme toggle, keyboard execution, cursor tracking, inline diagnostics, and shared Home/Playground code state.",
-        "Created and refined visual systems including responsive layouts, app themes, hero images, smooth scrolling, notification feedback, and cross-theme readability fixes.",
-        "Maintained implementation quality through interpreter regression tests, TypeScript checks, production builds, and focused fixes for parsing, theme assets, nested scrolling, and editor contrast.",
+        { label: "Interpreter pipeline", detail: "Built tokenization, syntax checks, semantic validation, execution, and structured runtime output." },
+        { label: "Language features", detail: "Implemented variables, types, expressions, control flow, products, coupons, checkout, classes, objects, and access rules." },
+        { label: "React integration", detail: "Connected interpreter results to cart state, inventory, receipts, analyzer panels, logs, classes, and instances." },
+        { label: "Editor experience", detail: "Developed syntax highlighting, editor themes, keyboard execution, cursor tracking, diagnostics, and shared Home/Playground state." },
+        { label: "Quality and polish", detail: "Maintained tests, TypeScript checks, responsive layouts, themes, scrolling, notifications, and cross-theme readability fixes." },
       ],
     },
     {
@@ -1391,12 +1426,11 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
       name: "Dwayne Mongaya",
       focus: "Learning material, examples, explanation flow, and presentation support.",
       responsibilities: [
-        "Structured the documentation experience around what the implemented language can actually do, including setup, syntax, commands, OOP, analyzer output, and project status.",
-        "Organized example programs that demonstrate variables, carts, coupons, runtime products, price overrides, syntax errors, semantic errors, control flow, and object-oriented features.",
-        "Helped translate technical interpreter behavior into student-readable explanations for tokens, errors, variables, logs, receipts, and simulation output.",
-        "Prepared the content direction for final reporting, including system purpose, educational scope, implementation status, known limitations, and future improvements.",
-        "Supported consistency between the website pages and project narrative so Home, Docs, Examples, Playground, Inventory, and About explain the same system clearly.",
-        "Identified documentation gaps that can become future deliverables, such as a formal language grammar, AST/scope diagrams, edge-case examples, and a final user guide.",
+        { label: "Documentation structure", detail: "Organized pages around implemented syntax, commands, OOP, analyzer output, setup, and project status." },
+        { label: "Example coverage", detail: "Prepared examples for variables, carts, coupons, price overrides, errors, control flow, inventory, and OOP." },
+        { label: "Learning explanations", detail: "Translated interpreter behavior into student-readable descriptions of tokens, errors, variables, logs, and receipts." },
+        { label: "Report direction", detail: "Outlined system purpose, educational scope, implementation status, limitations, and future improvements." },
+        { label: "Content consistency", detail: "Kept Home, Docs, Examples, Playground, Inventory, and About aligned around the same project narrative." },
       ],
     },
   ];
@@ -1505,7 +1539,7 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
               </div>
               <p className="team-focus">{member.focus}</p>
               <ul className="team-responsibilities">
-                {member.responsibilities.map(item => <li key={item}>{item}</li>)}
+                {member.responsibilities.map(item => <li key={item.label}><strong>{item.label}:</strong> <span>{item.detail}</span></li>)}
               </ul>
             </article>
           ))}
@@ -1515,43 +1549,54 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
   );
 }
 // --- OOP sub-cards ------------------------------------------------------------
-function ClassCard({ def }: { def: ClassDefinition }) {
-  return (
-    <div style={{ background:"var(--theme-surface-2)", border:"1px solid var(--theme-border)", borderRadius:10, padding:12, fontFamily:"var(--app-font-mono)", fontSize:12 }}>
-      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-        <span style={{ background:"var(--theme-accent)", color:"white", fontSize:10, fontWeight:700, padding:"1px 6px", borderRadius:4 }}>class</span>
-        <span style={{ fontWeight:800, color:"var(--theme-text)", fontSize:13 }}>{def.name}</span>
-        <span style={{ marginLeft:"auto", fontSize:10, color:"var(--theme-muted)" }}>{Object.keys(def.fields).length} fields</span>
-      </div>
-      {Object.entries(def.fields).map(([k,v]) => (
-        <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"3px 8px", background:"var(--theme-surface)", borderRadius:6, border:"1px solid var(--theme-border)", marginBottom:3 }}>
-          <span style={{ color:"#7c3aed" }}>{k}</span>
-          <span style={{ color:"var(--theme-muted)" }}>: {v.type}</span>
-          <span style={{ color: v.type==="string"?"#15803d":"#c2410c" }}>{v.type==="string"?`"${v.value}"`:v.value}</span>
-        </div>
-      ))}
-    </div>
-  );
+type OopField = { type: string; value: string };
+
+function formatOopValue(field: OopField) {
+  return field.type === "string" ? `"${field.value}"` : field.value;
 }
-function InstanceCard({ name, inst }: { name:string; inst:ObjectInstance }) {
+
+function OopFieldRow({ name, field }: { name: string; field: OopField }) {
   return (
-    <div style={{ background:"var(--theme-surface-2)", border:"1px solid var(--theme-border)", borderRadius:10, padding:12, fontFamily:"var(--app-font-mono)", fontSize:12 }}>
-      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-        <span style={{ background:"hsl(220 60% 55%)", color:"white", fontSize:10, fontWeight:700, padding:"1px 6px", borderRadius:4 }}>new</span>
-        <span style={{ fontWeight:800, color:"var(--theme-text)", fontSize:13 }}>{name}</span>
-        <span style={{ marginLeft:"auto", fontSize:10, color:"var(--theme-accent)", fontWeight:600 }}>: {inst.className}</span>
-      </div>
-      {Object.entries(inst.fields).map(([k,v]) => (
-        <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"3px 8px", background:"white", borderRadius:6, border:"1px solid var(--theme-border)", marginBottom:3 }}>
-          <span style={{ color:"#7c3aed" }}>{k}</span>
-          <span style={{ color:"var(--theme-muted)" }}>: {v.type}</span>
-          <span style={{ color: v.type==="string"?"#15803d":"#c2410c" }}>{v.type==="string"?`"${v.value}"`:v.value}</span>
-        </div>
-      ))}
+    <div className="oop-field-row">
+      <span className="oop-field-name">{name}</span>
+      <span className="oop-field-type">: {field.type}</span>
+      <span className={"oop-field-value " + (field.type === "string" ? "is-string" : field.type === "boolean" ? "is-boolean" : "is-number")} title={formatOopValue(field)}>
+        {formatOopValue(field)}
+      </span>
     </div>
   );
 }
 
+function ClassCard({ def }: { def: ClassDefinition }) {
+  const fields = Object.entries(def.fields);
+  return (
+    <article className="oop-entity-card oop-class-card">
+      <div className="oop-card-head">
+        <span className="oop-kind-badge is-class">class</span>
+        <strong>{def.name}</strong>
+        <span className="oop-card-meta">{fields.length} field{fields.length !== 1 ? "s" : ""}</span>
+      </div>
+      <div className="oop-field-list">
+        {fields.map(([name, field]) => <OopFieldRow key={name} name={name} field={field} />)}
+      </div>
+    </article>
+  );
+}
+function InstanceCard({ name, inst }: { name:string; inst:ObjectInstance }) {
+  const fields = Object.entries(inst.fields);
+  return (
+    <article className="oop-entity-card oop-instance-card">
+      <div className="oop-card-head">
+        <span className="oop-kind-badge is-instance">new</span>
+        <strong>{name}</strong>
+        <span className="oop-card-meta">: {inst.className}</span>
+      </div>
+      <div className="oop-field-list">
+        {fields.map(([fieldName, field]) => <OopFieldRow key={fieldName} name={fieldName} field={field} />)}
+      </div>
+    </article>
+  );
+}
 // --- Main App -----------------------------------------------------------------
 export default function App() {
   const [code, setCode]       = useState(SAMPLE_VALID);
@@ -1560,6 +1605,8 @@ export default function App() {
   const [activeNav, setNav]   = useState<NavItem>("Home");
   const [mobileMenu, setMobileMenu] = useState(false);
   const [inventoryView, setInventoryView] = useState<"products" | "coupons">("products");
+  const [inventorySearch, setInventorySearch] = useState("");
+  const [couponSearch, setCouponSearch] = useState("");
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [customCursorEnabled, setCustomCursorEnabled] = useState(() => {
     try {
@@ -1575,6 +1622,10 @@ export default function App() {
   const [showAllInventory, setShowAllInventory] = useState(false);
   const [products, setProducts] = useState<InventoryProduct[]>(loadInventory);
   const [coupons, setCoupons] = useState<CouponEntry[]>(loadCoupons);
+  const editorCompletionCatalog = useMemo(() => ({
+    products: products.map(product => product.name),
+    coupons: coupons.map(coupon => coupon.code),
+  }), [products, coupons]);
   const [cursorPosition, setCursorPosition] = useState<CursorPosition>({ line: 1, col: 1 });
   const [selectedSample, setSelectedSample] = useState<"" | "valid" | "syntax" | "semantic" | "oop">("valid");
   const [selectedExampleId, setSelectedExampleId] = useState("");
@@ -1586,6 +1637,7 @@ export default function App() {
   const siteSearchWrapRef = useRef<HTMLDivElement>(null);
   const [siteSearch, setSiteSearch] = useState("");
   const [siteSearchOpen, setSiteSearchOpen] = useState(false);
+  const [siteSearchIndex, setSiteSearchIndex] = useState(0);
   const lines = code.split("\n");
 
   useEffect(() => {
@@ -1811,6 +1863,7 @@ export default function App() {
       group: "Inventory",
       description: product.category + " product, $" + product.price.toFixed(2) + ", " + product.stock + " in stock.",
       action: "inventory",
+      searchTerm: product.name,
     }));
 
     const couponResults: SiteSearchResult[] = coupons.map(coupon => ({
@@ -1819,6 +1872,16 @@ export default function App() {
       group: "Coupon",
       description: Math.round(coupon.discount * 100) + "% discount - " + (coupon.active ? "active" : "inactive") + ". " + coupon.description,
       action: "coupon",
+      searchTerm: coupon.code,
+    }));
+
+    const themeResults: SiteSearchResult[] = THEME_OPTIONS.map(option => ({
+      id: "theme-" + option.id,
+      label: option.label,
+      group: "Theme",
+      description: "Switch interface theme. " + option.description,
+      action: "theme",
+      theme: option.id,
     }));
 
     const actionResults: SiteSearchResult[] = [
@@ -1826,12 +1889,16 @@ export default function App() {
       { id: "action-final-demo", label: "Final Demo", group: "Action", description: "Open the final end-to-end ShopScript demonstration in Playground.", action: "playground" },
     ];
 
-    const allResults = [...navResults, ...docsResults, ...exampleResults, ...productResults, ...couponResults, ...actionResults];
+    const allResults = [...navResults, ...docsResults, ...exampleResults, ...productResults, ...couponResults, ...themeResults, ...actionResults];
     if (!normalizedSiteSearch) return allResults.slice(0, 8);
     return allResults.filter(result =>
       (result.label + " " + result.group + " " + result.description).toLowerCase().includes(normalizedSiteSearch)
     ).slice(0, 8);
   }, [normalizedSiteSearch, products, coupons]);
+
+  useEffect(() => {
+    setSiteSearchIndex(siteSearchResults.length > 0 ? 0 : -1);
+  }, [siteSearchResults]);
 
   const runSiteSearchResult = useCallback((item: SiteSearchResult) => {
     setSiteSearchOpen(false);
@@ -1853,13 +1920,22 @@ export default function App() {
       return;
     }
     if (item.action === "inventory") {
+      setInventorySearch(item.searchTerm ?? "");
+      setCouponSearch("");
       setInventoryView("products");
       navigate("Inventory");
       return;
     }
     if (item.action === "coupon") {
+      setCouponSearch(item.searchTerm ?? "");
+      setInventorySearch("");
       setInventoryView("coupons");
       navigate("Inventory");
+      return;
+    }
+    if (item.action === "theme" && item.theme) {
+      changeTheme(item.theme);
+      setThemeMenuOpen(false);
       return;
     }
     if (item.action === "playground") {
@@ -1867,7 +1943,7 @@ export default function App() {
       return;
     }
     startNewProgram();
-  }, [navigate, openExample, openFinalDemo, smoothScrollToTarget]);
+  }, [changeTheme, navigate, openExample, openFinalDemo, smoothScrollToTarget]);
 
   useEffect(() => {
     setResult(interpret(SAMPLE_VALID, products, coupons));
@@ -2064,22 +2140,42 @@ export default function App() {
                 onFocus={() => setSiteSearchOpen(true)}
                 onChange={event => { setSiteSearch(event.target.value); setSiteSearchOpen(true); }}
                 onKeyDown={event => {
-                  if (event.key === "Enter" && siteSearchResults[0]) {
+                  if (event.key === "ArrowDown" && siteSearchResults.length > 0) {
                     event.preventDefault();
-                    runSiteSearchResult(siteSearchResults[0]);
+                    setSiteSearchOpen(true);
+                    setSiteSearchIndex(index => index < 0 ? 0 : (index + 1) % siteSearchResults.length);
+                    return;
+                  }
+                  if (event.key === "ArrowUp" && siteSearchResults.length > 0) {
+                    event.preventDefault();
+                    setSiteSearchOpen(true);
+                    setSiteSearchIndex(index => index <= 0 ? siteSearchResults.length - 1 : index - 1);
+                    return;
+                  }
+                  if (event.key === "Enter" && siteSearchResults.length > 0) {
+                    event.preventDefault();
+                    runSiteSearchResult(siteSearchResults[siteSearchIndex >= 0 ? siteSearchIndex : 0]);
+                    return;
+                  }
+                  if (event.key === "Escape") {
+                    event.preventDefault();
+                    setSiteSearchOpen(false);
                   }
                 }}
                 placeholder="Search pages, docs, examples, products..."
                 aria-label="Search the ShopScript website"
+                aria-controls="site-search-results"
+                aria-expanded={siteSearchOpen}
+                aria-activedescendant={siteSearchOpen && siteSearchIndex >= 0 ? "site-search-result-" + siteSearchIndex : undefined}
               />
               {siteSearch && <button type="button" className="site-search-clear" onClick={() => { setSiteSearch(""); siteSearchRef.current?.focus(); }} aria-label="Clear site search">{Ico.x(11)}</button>}
               <span className="search-kbd">Ctrl K</span>
             </div>
             {siteSearchOpen && (
-              <div className="site-search-panel" data-lenis-prevent role="listbox" aria-label="Site search results">
+              <div id="site-search-results" className="site-search-panel" data-lenis-prevent role="listbox" aria-label="Site search results">
                 <div className="site-search-panel-head">{siteSearch ? "Search results" : "Quick search"}</div>
-                {siteSearchResults.length > 0 ? siteSearchResults.map(item => (
-                  <button type="button" key={item.id} className="site-search-result" onClick={() => runSiteSearchResult(item)} role="option">
+                {siteSearchResults.length > 0 ? siteSearchResults.map((item, index) => (
+                  <button type="button" key={item.id} id={"site-search-result-" + index} className={"site-search-result" + (siteSearchIndex === index ? " active" : "")} onMouseEnter={() => setSiteSearchIndex(index)} onClick={() => runSiteSearchResult(item)} role="option" aria-selected={siteSearchIndex === index}>
                     <span className="site-search-group">{item.group}</span>
                     <span className="site-search-title">{item.label}</span>
                     <span className="site-search-desc">{item.description}</span>
@@ -2249,6 +2345,7 @@ export default function App() {
               ariaLabel="ShopScript Home editor"
               errorLines={errorLines}
               onCursorChange={setCursorPosition}
+              completionCatalog={editorCompletionCatalog}
             />
             {hasRun && primaryError && (
               <div className="editor-diagnostic" role="alert"><strong>{primaryError.category} error - Line {primaryError.line}</strong><span>{primaryError.message}{interpreterErrors.length > 1 ? " - " + (interpreterErrors.length - 1) + " more error(s) below" : ""}</span></div>
@@ -2453,7 +2550,7 @@ export default function App() {
                   <div className="receipt" style={{ fontSize:10.5, padding:10 }}>
                     <div style={{ textAlign:"center", marginBottom:8 }}>
                       <div style={{ fontWeight:800, color:"var(--theme-accent-strong)", fontSize:12 }}>ShopScript</div>
-                      <div style={{ fontSize:12.5, fontWeight:700, color:"var(--theme-text)", marginTop:2 }}>Thank you, {user}! -</div>
+                      <div style={{ fontSize:12.5, fontWeight:700, color:"var(--theme-text)", marginTop:2 }}>Thank you, {user}! </div>
                       <div style={{ fontSize:10, color:"#22c55e" }}>Order placed successfully.</div>
                     </div>
                     <div className="receipt-detail-row">
@@ -2591,34 +2688,39 @@ export default function App() {
 
         {/* OOP panel */}
         {hasRun && hasOOP && (
-          <div className="ss-card" style={{ padding:18, marginBottom:28 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
-              <span style={{ color:"var(--theme-accent)", display:"flex" }}>{Ico.dna(17,"var(--theme-accent)")}</span>
-              <span style={{ fontWeight:800, fontSize:15, color:"var(--theme-text)" }}>OOP - Classes &amp; Instances</span>
-              <div style={{ marginLeft:"auto", display:"flex", gap:6 }}>
-                {classes.length>0 && <span style={{ background:"hsl(25 95% 53% / 0.1)", color:"var(--theme-accent-strong)", border:"1px solid hsl(25 95% 53% / 0.25)", borderRadius:999, fontSize:11, fontWeight:700, padding:"2px 10px" }}>{classes.length} class{classes.length!==1?"es":""}</span>}
-                {Object.keys(instances).length>0 && <span style={{ background:"hsl(220 60% 55% / 0.1)", color:"hsl(220 60% 45%)", border:"1px solid hsl(220 60% 55% / 0.25)", borderRadius:999, fontSize:11, fontWeight:700, padding:"2px 10px" }}>{Object.keys(instances).length} instance{Object.keys(instances).length!==1?"s":""}</span>}
+          <section className="ss-card oop-panel" aria-label="ShopScript OOP classes and instances">
+            <div className="oop-panel-head">
+              <div className="oop-panel-title">
+                <span className="oop-title-icon">{Ico.dna(17,"var(--theme-accent)")}</span>
+                <div>
+                  <strong>OOP - Classes &amp; Instances</strong>
+                  <span>Runtime class definitions and object state from the latest run.</span>
+                </div>
+              </div>
+              <div className="oop-count-badges">
+                {classes.length>0 && <span className="oop-count-badge is-class">{classes.length} class{classes.length!==1?"es":""}</span>}
+                {Object.keys(instances).length>0 && <span className="oop-count-badge is-instance">{Object.keys(instances).length} instance{Object.keys(instances).length!==1?"s":""}</span>}
               </div>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(220px, 1fr))", gap:12 }}>
-              {classes.map(def => <ClassCard key={def.name} def={def}/>)}
-              {Object.entries(instances).map(([n,inst]) => <InstanceCard key={n} name={n} inst={inst}/>)}
+            <div className="oop-grid">
+              {classes.map(def => <ClassCard key={def.name} def={def}/>) }
+              {Object.entries(instances).map(([n,inst]) => <InstanceCard key={n} name={n} inst={inst}/>) }
             </div>
-            <div style={{ marginTop:14, background:"#12121c", borderRadius:8, padding:"10px 14px", fontFamily:"var(--app-font-mono)", fontSize:11 }}>
-              <div style={{ color:"#6c7086", marginBottom:6, fontFamily:"sans-serif", fontSize:11 }}>OOP Syntax Reference</div>
+            <div className="oop-syntax-reference">
+              <div className="oop-syntax-title">OOP Syntax Reference</div>
               {[
                 { c:'class Product { name = "?"; price = 0.00; }', m:"// Define" },
                 { c:'let item = new Product;', m:"// Instantiate" },
                 { c:'set item.name = "Phone"; set item.price = 299.00;', m:"// Mutate" },
                 { c:'add item 1;', m:"// Add to cart" },
-              ].map((r,i) => (
-                <div key={i} style={{ display:"flex", gap:12, marginBottom:3 }}>
-                  <span style={{ color:"#cdd6f4" }}>{r.c}</span>
-                  <span style={{ color:"#4a4a6a" }}>{r.m}</span>
+              ].map((row,index) => (
+                <div key={index} className="oop-syntax-row">
+                  <code>{row.c}</code>
+                  <span>{row.m}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
       </div>
       </>) : activeNav === "Docs" ? (
@@ -2638,6 +2740,8 @@ export default function App() {
           onSaveCoupon={saveCoupon}
           onDeleteCoupon={deleteCoupon}
           onResetCoupons={resetCoupons}
+          productSearch={inventorySearch}
+          couponSearch={couponSearch}
         />
       ) : activeNav === "Playground" ? (
         <PlaygroundPage
@@ -2655,6 +2759,7 @@ export default function App() {
           onCursorChange={setCursorPosition}
           selectedExampleId={selectedExampleId}
           onSelectedExampleChange={setSelectedExampleId}
+          completionCatalog={editorCompletionCatalog}
         />
       ) : (
         <AboutPage onNavigate={navigate} logoSrc={brandLogoSrc} />
@@ -2685,3 +2790,6 @@ export default function App() {
     </div>
   );
 }
+
+
+
