@@ -6024,7 +6024,7 @@ html.custom-cursor-enabled [role="button"] {
   50% { transform: rotate(8deg); }
 }
 
-@media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+@media (hover: none), (pointer: coarse) {
   html.custom-cursor-enabled,
   html.custom-cursor-enabled body,
   html.custom-cursor-enabled a,
@@ -6039,7 +6039,9 @@ html.custom-cursor-enabled [role="button"] {
   .cursor-stage {
     display: none;
   }
+}
 
+@media (prefers-reduced-motion: reduce) {
   .splash-logo,
   .splash-loader span,
   .hello-robot-frame,
