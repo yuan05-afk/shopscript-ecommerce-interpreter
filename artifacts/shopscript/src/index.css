@@ -2051,6 +2051,9 @@ html[data-theme="cyber-ochre"] .shopscript-ide.ide-dark {
   border: 1px solid var(--theme-border);
   border-radius: 16px;
   padding: 12px;
+  transform-origin: top right;
+  will-change: opacity, transform;
+  animation: dropdownExpand 260ms cubic-bezier(.2,.88,.2,1) both;
 }
 .theme-menu::before {
   content: "";
@@ -2216,6 +2219,23 @@ html[data-theme="cyber-ochre"] .shopscript-ide.ide-dark {
   font-weight: 700;
 }
 .theme-menu-action:hover { background: var(--theme-accent-soft); border-color: var(--theme-accent); }
+
+@keyframes dropdownExpand {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mobile-nav-panel {
+  transform-origin: top center;
+  will-change: opacity, transform;
+  animation: dropdownExpand 220ms cubic-bezier(.2,.88,.2,1) both;
+}
 
 html[data-theme="midnight"] .online-dot,
 html[data-theme="cyber-ochre"] .online-dot { border-color: var(--theme-surface); }
@@ -4250,6 +4270,36 @@ html[data-theme] .shopscript-ide textarea::selection {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.home-hero,
+.docs-page,
+.examples-page,
+.playground-page,
+.inventory-page,
+.content-page:not(.about-page) {
+  animation: page-enter 560ms cubic-bezier(.2,.85,.2,1) both;
+}
+
+.workspace-outer {
+  animation: page-enter 560ms 80ms cubic-bezier(.2,.85,.2,1) both;
+}
+
+.analyzer-outer {
+  animation: page-enter 560ms 140ms cubic-bezier(.2,.85,.2,1) both;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.992);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
 .about-hero {
   position: relative;
   overflow: hidden;
@@ -4504,7 +4554,17 @@ html[data-theme] .shopscript-ide textarea::selection {
   .team-card-detailed,
   .system-scope-list div,
   .about-mark,
-  .team-avatar {
+  .team-avatar,
+  .theme-menu,
+  .mobile-nav-panel,
+  .home-hero,
+  .workspace-outer,
+  .analyzer-outer,
+  .docs-page,
+  .examples-page,
+  .playground-page,
+  .inventory-page,
+  .content-page {
     animation: none !important;
     transition: none !important;
   }
