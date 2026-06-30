@@ -87,13 +87,13 @@
 .inventory-form-error { grid-column: 1 / -1; margin: 0; padding: 9px 11px; background: hsl(0 80% 97%); border: 1px solid hsl(0 70% 88%); border-radius: 8px; color: hsl(0 65% 43%); font-size: 12px; }
 .inventory-form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
 .inventory-catalog { overflow: hidden; }
-.inventory-toolbar { display: flex; align-items: center; gap: 10px; padding: 14px; border-bottom: 1px solid hsl(30 20% 90%); }
+.inventory-toolbar { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 14px; border-bottom: 1px solid hsl(30 20% 90%); }
 .inventory-search { display: flex; flex: 1 1 320px; align-items: center; gap: 8px; min-width: 220px; padding: 0 11px; color: hsl(220 10% 55%); background: hsl(30 20% 98%); border: 1px solid hsl(30 20% 87%); border-radius: 9px; }
 .inventory-search input { width: 100%; height: 38px; padding: 0; background: transparent; border: 0; color: hsl(220 20% 20%); font: inherit; font-size: 12px; outline: 0; }
 .inventory-filters { display: flex; gap: 4px; padding: 3px; background: hsl(30 20% 96%); border-radius: 9px; }
 .inventory-filters button { padding: 6px 9px; background: transparent; border: 0; border-radius: 6px; color: hsl(220 10% 45%); cursor: pointer; font: inherit; font-size: 11px; }
 .inventory-filters button.active { background: white; color: hsl(25 95% 45%); box-shadow: 0 1px 5px hsl(0 0% 0% / 0.08); font-weight: 700; }
-.inventory-selects { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.inventory-selects { display: flex; align-items: center; gap: 7px; min-width: 0; flex-wrap: wrap; }
 .inventory-selects label { display: flex; align-items: center; gap: 5px; color: hsl(220 10% 48%); font-size: 10px; font-weight: 800; }
 .inventory-selects select { height: 32px; min-width: 118px; padding: 0 28px 0 9px; border: 1px solid hsl(30 20% 86%); border-radius: 8px; background: white; color: hsl(220 20% 22%); font: inherit; font-size: 11px; font-weight: 650; outline: 0; cursor: pointer; }
 .inventory-selects select:focus { border-color: hsl(25 95% 53% / 0.65); box-shadow: 0 0 0 3px hsl(25 95% 53% / 0.1); }
@@ -526,10 +526,80 @@ html[data-theme]:not([data-theme="default"]) .inventory-selects select {
 html[data-theme]:not([data-theme="default"]) .inventory-selects label { color: var(--theme-muted) !important; }
 @media (max-width: 1180px) {
   .inventory-stats { grid-template-columns: repeat(3, 1fr); }
-  .inventory-selects { flex: 1 1 100%; }
+  .inventory-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+  .inventory-search {
+    grid-column: 1;
+    min-width: 0;
+  }
+  .inventory-filters {
+    grid-column: 2;
+    max-width: 100%;
+    justify-self: end;
+    overflow-x: auto;
+  }
+  .inventory-selects {
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: end;
+    gap: 8px;
+    min-width: 0;
+  }
+  .inventory-selects label {
+    align-items: stretch;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .inventory-selects select {
+    width: 100%;
+    min-width: 0;
+  }
+  .inventory-reset {
+    grid-column: 2;
+    justify-self: end;
+    align-self: end;
+    white-space: nowrap;
+  }
 }
 @media (max-width: 767px) {
-  .inventory-selects { display: grid; grid-template-columns: 1fr; }
+  .inventory-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .inventory-search,
+  .inventory-filters,
+  .inventory-selects,
+  .inventory-reset {
+    grid-column: 1;
+  }
+  .inventory-filters {
+    justify-self: stretch;
+  }
+  .inventory-selects {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .inventory-selects label { justify-content: space-between; }
-  .inventory-selects select { min-width: 0; width: min(100%, 220px); }
+  .inventory-selects select { min-width: 0; width: 100%; }
+  .inventory-reset {
+    justify-self: stretch;
+  }
 }
+@media (max-width: 520px) {
+  .inventory-toolbar {
+    padding: 12px;
+  }
+  .inventory-selects {
+    grid-template-columns: 1fr;
+  }
+  .inventory-filters {
+    width: 100%;
+  }
+  .inventory-filters button {
+    flex: 1 0 auto;
+  }
+}
+
