@@ -1,4 +1,4 @@
-# ShopScript: Mini Programming Language for E-commerce Simulation
+<img width="1920" height="1876" alt="image" src="https://github.com/user-attachments/assets/eceb4f62-bed8-4e59-b0bc-62861f6740ae" /># ShopScript: Mini Programming Language for E-commerce Simulation
 
 > A browser-based educational programming language interpreter that demonstrates lexical analysis, syntax analysis, semantic analysis, scoped execution, control flow, and object-oriented features through an interactive e-commerce simulation.
 
@@ -6,7 +6,7 @@
 
 ---
 
-<img width="1920" height="1861" alt="ShopScript application preview" src="https://github.com/user-attachments/assets/8ae7e8fd-65e1-4416-9622-07aef3170cf2" />
+<img width="1920" height="1876" alt="image" src="https://github.com/user-attachments/assets/3ac04b11-2d13-46c9-bd99-35d1738594cd" />
 
 ## Overview
 
