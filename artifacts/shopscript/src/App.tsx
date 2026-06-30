@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import Lenis from "lenis";
 import {
   interpret,
@@ -177,6 +177,16 @@ checkout;`;
 
 type ExampleCategory = "Starter" | "E-commerce" | "Language" | "Errors" | "OOP";
 type CursorPosition = { line: number; col: number };
+type SiteSearchResult = {
+  id: string;
+  label: string;
+  description: string;
+  group: string;
+  action: "navigate" | "docs" | "example" | "inventory" | "coupon" | "playground" | "home-editor";
+  nav?: NavItem;
+  docsId?: string;
+  code?: string;
+};
 
 interface ShopScriptExample {
   id: string;
@@ -707,19 +717,20 @@ function GlobalTooltip() {
     </div>
   );
 }
+const DOC_SECTIONS = [
+  { id: "overview", title: "Overview", keywords: "purpose educational ecommerce interpreter scope" },
+  { id: "quick-start", title: "Quick start", keywords: "install pnpm localhost windows run setup" },
+  { id: "pipeline", title: "Interpreter pipeline", keywords: "lexer lexical syntax semantic execution tokens" },
+  { id: "syntax", title: "Language syntax", keywords: "let string number boolean list grammar semicolon comments" },
+  { id: "editor", title: "Mini IDE", keywords: "editor syntax highlighting light dark theme tab keyboard ctrl enter" },
+  { id: "commands", title: "E-commerce commands", keywords: "add coupon shipping checkout inventory cart price override sale" },
+  { id: "oop", title: "Object-oriented syntax", keywords: "class new instance field set object oop" },
+  { id: "analyzer", title: "Analyzer output", keywords: "tokens errors variables logs receipt panels" },
+  { id: "status", title: "Current status", keywords: "limitations planned control flow scope types methods tests" },
+];
 function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem) => void; onSmoothScrollTo: (target: HTMLElement, block?: ScrollLogicalPosition) => void }) {
   const [query, setQuery] = useState("");
-  const sections = [
-    { id: "overview", title: "Overview", keywords: "purpose educational ecommerce interpreter scope" },
-    { id: "quick-start", title: "Quick start", keywords: "install pnpm localhost windows run setup" },
-    { id: "pipeline", title: "Interpreter pipeline", keywords: "lexer lexical syntax semantic execution tokens" },
-    { id: "syntax", title: "Language syntax", keywords: "let string number boolean list grammar semicolon comments" },
-    { id: "editor", title: "Mini IDE", keywords: "editor syntax highlighting light dark theme tab keyboard ctrl enter" },
-    { id: "commands", title: "E-commerce commands", keywords: "add coupon shipping checkout inventory cart price override sale" },
-    { id: "oop", title: "Object-oriented syntax", keywords: "class new instance field set object oop" },
-    { id: "analyzer", title: "Analyzer output", keywords: "tokens errors variables logs receipt panels" },
-    { id: "status", title: "Current status", keywords: "limitations planned control flow scope types methods tests" },
-  ];
+  const sections = DOC_SECTIONS;
   const normalizedQuery = query.trim().toLowerCase();
   const visibleSections = sections.filter(section =>
     !normalizedQuery || (section.title + " " + section.keywords).toLowerCase().includes(normalizedQuery)
@@ -1395,16 +1406,16 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
       <section className="about-hero about-animate about-animate-1">
         <div>
           <span className="page-eyebrow">About ShopScript</span>
-          <h1>A browser-based mini programming language for e-commerce simulation</h1>
+          <h1>A browser-based mini programming language <span className="about-title-accent">for e-commerce simulation</span></h1>
           <p>
             ShopScript is an educational interpreter and simulator built for a Programming Languages final project.
             It turns source code into visible tokens, diagnostics, variables, cart actions, coupon changes, checkout totals,
             receipt output, and object-oriented runtime state.
           </p>
           <div className="about-hero-metrics" aria-label="ShopScript system highlights">
-            <div><strong>6</strong><span>pipeline stages</span></div>
-            <div><strong>7</strong><span>example groups</span></div>
-            <div><strong>4</strong><span>interface themes</span></div>
+            <div data-tooltip="The interpreter shows tokenization, syntax checks, semantic validation, scope tracking, execution, and runtime output." tabIndex={0}><strong>6</strong><span>pipeline stages</span></div>
+            <div data-tooltip="The Examples page groups supported programs for syntax, semantics, cart behavior, control flow, coupons, inventory, and OOP demos." tabIndex={0}><strong>7</strong><span>example groups</span></div>
+            <div data-tooltip="ShopScript includes Default Orange, Emerald & Gold, Crimson Dracula, and Cyberpunk Ochre interface palettes." tabIndex={0}><strong>4</strong><span>interface themes</span></div>
           </div>
           <div className="page-actions">
             <button className="btn-orange" onClick={() => onNavigate("Home")} data-tooltip="Open the interactive Home interpreter workspace.">{Ico.play()} Try the interpreter</button>
@@ -1571,6 +1582,10 @@ export default function App() {
   const notificationIdRef = useRef(0);
   const lenisRef = useRef<Lenis | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const siteSearchRef = useRef<HTMLInputElement>(null);
+  const siteSearchWrapRef = useRef<HTMLDivElement>(null);
+  const [siteSearch, setSiteSearch] = useState("");
+  const [siteSearchOpen, setSiteSearchOpen] = useState(false);
   const lines = code.split("\n");
 
   useEffect(() => {
@@ -1678,10 +1693,10 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, []);
-  const openDocsSearch = useCallback(() => {
-    navigate("Docs");
-    window.setTimeout(() => document.getElementById("docs-search")?.focus(), 0);
-  }, [navigate, products]);
+  const openSiteSearch = useCallback(() => {
+    setSiteSearchOpen(true);
+    window.setTimeout(() => siteSearchRef.current?.focus(), 0);
+  }, []);
   const openExample = useCallback((exampleCode: string) => {
     const nextResult = interpret(exampleCode, products, coupons);
     setSelectedSample("");
@@ -1756,20 +1771,127 @@ export default function App() {
     }, 0);
   };
 
+  const normalizedSiteSearch = siteSearch.trim().toLowerCase();
+  const siteSearchResults = useMemo<SiteSearchResult[]>(() => {
+    const navResults: SiteSearchResult[] = NAV_ITEMS.map(item => ({
+      id: "nav-" + item,
+      label: item,
+      group: "Page",
+      description: item === "Home" ? "Open the editor, simulator, cart, receipt, and analyzer dashboard."
+        : item === "Docs" ? "Browse syntax, commands, analyzer output, OOP, and project status."
+        : item === "Examples" ? "Find runnable ShopScript programs and error demonstrations."
+        : item === "Playground" ? "Use the focused coding workspace and result tabs."
+        : item === "Inventory" ? "Manage products and coupons used by semantic validation."
+        : "Read project scope, team roles, importance, and future use cases.",
+      action: "navigate",
+      nav: item,
+    }));
+
+    const docsResults: SiteSearchResult[] = DOC_SECTIONS.map(section => ({
+      id: "docs-" + section.id,
+      label: section.title,
+      group: "Docs",
+      description: "Documentation section: " + section.keywords.replace(/ /g, ", ") + ".",
+      action: "docs",
+      docsId: section.id,
+    }));
+
+    const exampleResults: SiteSearchResult[] = EXAMPLE_LIBRARY.map(example => ({
+      id: "example-" + example.id,
+      label: example.title,
+      group: "Example",
+      description: example.summary,
+      action: "example",
+      code: example.code,
+    }));
+
+    const productResults: SiteSearchResult[] = products.map(product => ({
+      id: "product-" + product.id,
+      label: product.name,
+      group: "Inventory",
+      description: product.category + " product, $" + product.price.toFixed(2) + ", " + product.stock + " in stock.",
+      action: "inventory",
+    }));
+
+    const couponResults: SiteSearchResult[] = coupons.map(coupon => ({
+      id: "coupon-" + coupon.id,
+      label: coupon.code,
+      group: "Coupon",
+      description: Math.round(coupon.discount * 100) + "% discount - " + (coupon.active ? "active" : "inactive") + ". " + coupon.description,
+      action: "coupon",
+    }));
+
+    const actionResults: SiteSearchResult[] = [
+      { id: "action-new-program", label: "New Program", group: "Action", description: "Clear the editor and start a blank ShopScript program.", action: "home-editor" },
+      { id: "action-final-demo", label: "Final Demo", group: "Action", description: "Open the final end-to-end ShopScript demonstration in Playground.", action: "playground" },
+    ];
+
+    const allResults = [...navResults, ...docsResults, ...exampleResults, ...productResults, ...couponResults, ...actionResults];
+    if (!normalizedSiteSearch) return allResults.slice(0, 8);
+    return allResults.filter(result =>
+      (result.label + " " + result.group + " " + result.description).toLowerCase().includes(normalizedSiteSearch)
+    ).slice(0, 8);
+  }, [normalizedSiteSearch, products, coupons]);
+
+  const runSiteSearchResult = useCallback((item: SiteSearchResult) => {
+    setSiteSearchOpen(false);
+    setSiteSearch("");
+    if (item.action === "navigate" && item.nav) {
+      navigate(item.nav);
+      return;
+    }
+    if (item.action === "docs" && item.docsId) {
+      navigate("Docs");
+      window.setTimeout(() => {
+        const section = document.getElementById("docs-" + item.docsId);
+        if (section) smoothScrollToTarget(section, "start");
+      }, 80);
+      return;
+    }
+    if (item.action === "example" && item.code) {
+      openExample(item.code);
+      return;
+    }
+    if (item.action === "inventory") {
+      setInventoryView("products");
+      navigate("Inventory");
+      return;
+    }
+    if (item.action === "coupon") {
+      setInventoryView("coupons");
+      navigate("Inventory");
+      return;
+    }
+    if (item.action === "playground") {
+      openFinalDemo();
+      return;
+    }
+    startNewProgram();
+  }, [navigate, openExample, openFinalDemo, smoothScrollToTarget]);
+
   useEffect(() => {
     setResult(interpret(SAMPLE_VALID, products, coupons));
     setHasRun(true);
   }, []); // eslint-disable-line
   useEffect(() => {
-    const openDocs = (event: KeyboardEvent) => {
+    const openSearch = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        openDocsSearch();
+        openSiteSearch();
       }
+      if (event.key === "Escape") setSiteSearchOpen(false);
     };
-    window.addEventListener("keydown", openDocs);
-    return () => window.removeEventListener("keydown", openDocs);
-  }, [openDocsSearch]);
+    window.addEventListener("keydown", openSearch);
+    return () => window.removeEventListener("keydown", openSearch);
+  }, [openSiteSearch]);
+
+  useEffect(() => {
+    const closeSearch = (event: PointerEvent) => {
+      if (!siteSearchWrapRef.current?.contains(event.target as Node)) setSiteSearchOpen(false);
+    };
+    document.addEventListener("pointerdown", closeSearch);
+    return () => document.removeEventListener("pointerdown", closeSearch);
+  }, []);
 
   useEffect(() => {
     try {
@@ -1930,13 +2052,44 @@ export default function App() {
           </button>
 
           {/* Search -- hidden on mobile */}
-          <button type="button" className="header-search nav-search" onClick={openDocsSearch} aria-label="Open documentation" data-tooltip="Open documentation search. Shortcut: Ctrl or Cmd + K.">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--theme-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <span className="header-search-label">Search docs, examples, or commands...</span>
-            <span style={{ fontSize:10.5, background:"var(--theme-border)", padding:"1px 5px", borderRadius:3, color:"var(--theme-muted)", flexShrink:0 }}>Ctrl K</span>
-          </button>
+          <div className="site-search-wrap" ref={siteSearchWrapRef}>
+            <div className="header-search nav-search site-search-box" data-tooltip="Search pages, docs, examples, products, coupons, and actions. Shortcut: Ctrl or Cmd + K.">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--theme-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                ref={siteSearchRef}
+                type="search"
+                value={siteSearch}
+                onFocus={() => setSiteSearchOpen(true)}
+                onChange={event => { setSiteSearch(event.target.value); setSiteSearchOpen(true); }}
+                onKeyDown={event => {
+                  if (event.key === "Enter" && siteSearchResults[0]) {
+                    event.preventDefault();
+                    runSiteSearchResult(siteSearchResults[0]);
+                  }
+                }}
+                placeholder="Search pages, docs, examples, products..."
+                aria-label="Search the ShopScript website"
+              />
+              {siteSearch && <button type="button" className="site-search-clear" onClick={() => { setSiteSearch(""); siteSearchRef.current?.focus(); }} aria-label="Clear site search">{Ico.x(11)}</button>}
+              <span className="search-kbd">Ctrl K</span>
+            </div>
+            {siteSearchOpen && (
+              <div className="site-search-panel" data-lenis-prevent role="listbox" aria-label="Site search results">
+                <div className="site-search-panel-head">{siteSearch ? "Search results" : "Quick search"}</div>
+                {siteSearchResults.length > 0 ? siteSearchResults.map(item => (
+                  <button type="button" key={item.id} className="site-search-result" onClick={() => runSiteSearchResult(item)} role="option">
+                    <span className="site-search-group">{item.group}</span>
+                    <span className="site-search-title">{item.label}</span>
+                    <span className="site-search-desc">{item.description}</span>
+                  </button>
+                )) : (
+                  <div className="site-search-empty">No matching pages, docs, examples, products, or coupons.</div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Nav -- hidden on mobile */}
           <nav className="header-nav" aria-label="Primary navigation">
