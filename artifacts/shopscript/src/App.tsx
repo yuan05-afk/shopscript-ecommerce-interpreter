@@ -395,6 +395,318 @@ const Ico = {
 
 
 
+function SplashScreen({ theme, logoSrc }: { theme: Theme; logoSrc: string }) {
+  const [visible, setVisible] = useState(true);
+  const [phase, setPhase] = useState<"logo" | "hello" | "leaving">("logo");
+  const finishedRef = useRef(false);
+
+  useEffect(() => {
+    const startedAt = performance.now();
+    let helloTimer = 0;
+    let leaveTimer = 0;
+    let removeTimer = 0;
+    let fallbackTimer = 0;
+
+    const finish = () => {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
+      const elapsed = performance.now() - startedAt;
+      const logoDelay = Math.max(1500, 1850 - elapsed);
+      helloTimer = window.setTimeout(() => {
+        setPhase("hello");
+        leaveTimer = window.setTimeout(() => {
+          setPhase("leaving");
+          removeTimer = window.setTimeout(() => setVisible(false), 720);
+        }, 2750);
+      }, logoDelay);
+    };
+
+    const readyTasks: Promise<unknown>[] = [];
+    if (document.fonts?.ready) readyTasks.push(document.fonts.ready.catch(() => undefined));
+    if (document.readyState === "complete") {
+      Promise.all(readyTasks).then(finish);
+    } else {
+      window.addEventListener("load", () => Promise.all(readyTasks).then(finish), { once: true });
+    }
+    fallbackTimer = window.setTimeout(finish, 2600);
+
+    return () => {
+      window.clearTimeout(helloTimer);
+      window.clearTimeout(leaveTimer);
+      window.clearTimeout(removeTimer);
+      window.clearTimeout(fallbackTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("splash-active", visible);
+    return () => document.documentElement.classList.remove("splash-active");
+  }, [visible]);
+
+  if (!visible) return null;
+
+  return (
+    <div className={"splash-screen is-" + phase} data-theme-cursor={theme} role="status" aria-live="polite" aria-label="Loading ShopScript">
+      <div className="splash-backplate" aria-hidden="true" />
+      {phase === "logo" && (
+        <div className="splash-card">
+          <img className="splash-logo" src={logoSrc} alt="" aria-hidden="true" />
+          <div className="splash-copy">
+            <span>ShopScript</span>
+            <strong>Preparing workspace</strong>
+          </div>
+          <div className="splash-loader" aria-hidden="true"><span /></div>
+        </div>
+      )}
+      {phase === "hello" && (
+        <div className="splash-hello" aria-hidden="true">
+          <div className="hello-arc-title" aria-hidden="true">
+            <svg className="hello-arc-svg" viewBox="0 0 620 620" focusable="false">
+              <defs>
+                <path id="helloArcPath" d="M 20 316 A 290 290 0 0 1 600 316" />
+              </defs>
+              <text className="hello-arc-word hello-arc-word-lets"><textPath href="#helloArcPath" startOffset="34%" textAnchor="middle">Let&apos;s</textPath></text>
+              <text className="hello-arc-word hello-arc-word-get"><textPath href="#helloArcPath" startOffset="50%" textAnchor="middle">Get</textPath></text>
+              <text className="hello-arc-word hello-arc-word-started"><textPath href="#helloArcPath" startOffset="69%" textAnchor="middle">Started!</textPath></text>
+            </svg>
+          </div>
+          <div className="hello-robot-frame">
+            <svg className="hello-robot-svg" viewBox="0 0 320 320" role="img" aria-label="ShopScript robot waving hello">
+              <defs>
+                <linearGradient id="helloShell" x1="80" y1="62" x2="246" y2="260" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stopColor="#ffffff" />
+                  <stop offset="1" stopColor="var(--cursor-face)" />
+                </linearGradient>
+                <linearGradient id="helloAccent" x1="88" y1="252" x2="234" y2="286" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stopColor="var(--cursor-tile)" />
+                  <stop offset="1" stopColor="var(--cursor-accent)" />
+                </linearGradient>
+                <radialGradient id="helloVisorGlow" cx="50%" cy="42%" r="62%">
+                  <stop offset="0" stopColor="#1e293b" />
+                  <stop offset="1" stopColor="var(--cursor-ink)" />
+                </radialGradient>
+                <filter id="helloRobotShadow" x="-30%" y="-30%" width="160%" height="170%">
+                  <feDropShadow dx="0" dy="18" stdDeviation="18" floodColor="var(--cursor-accent)" floodOpacity="0.24" />
+                </filter>
+              </defs>
+              <g className="hello-robot-figure" filter="url(#helloRobotShadow)">
+                <ellipse className="hello-robot-shadow" cx="160" cy="286" rx="76" ry="16" />
+                <path className="hello-robot-neck" d="M126 235h68v27c0 13-11 24-24 24h-20c-13 0-24-11-24-24z" />
+                <path className="hello-robot-body" d="M96 266c13-25 35-38 64-38s51 13 64 38v24H96z" />
+                <rect className="hello-robot-head" x="56" y="72" width="208" height="174" rx="72" />
+                <path className="hello-robot-chin" d="M114 225h92c-8 14-21 23-46 23s-38-9-46-23z" />
+                <rect className="hello-robot-visor" x="80" y="108" width="160" height="96" rx="42" />
+                <path className="hello-eye hello-eye-left" d="M109 155c0-15 9-27 21-27s21 12 21 27" />
+                <path className="hello-eye hello-eye-right" d="M169 155c0-15 9-27 21-27s21 12 21 27" />
+                <path className="hello-smile" d="M132 176c16 17 42 17 58 0" />
+                <ellipse className="hello-cheek" cx="211" cy="174" rx="12" ry="8" />
+                <rect className="hello-ear hello-ear-left" x="42" y="135" width="22" height="54" rx="11" />
+                <rect className="hello-ear hello-ear-right" x="256" y="135" width="22" height="54" rx="11" />
+                <path className="hello-antenna" d="M160 72V43" />
+                <circle className="hello-antenna-tip" cx="160" cy="34" r="16" />
+                <path className="hello-arm hello-arm-left" d="M82 226c-25 13-43 8-52-10" />
+                <g className="hello-wave-arm">
+                  <path className="hello-arm hello-arm-right" d="M234 218c30-17 48-43 56-74" />
+                  <circle className="hello-hand" cx="291" cy="136" r="19" />
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+      )}
+      <div className="splash-reveal splash-reveal-a" aria-hidden="true" />
+      <div className="splash-reveal splash-reveal-b" aria-hidden="true" />
+    </div>
+  );
+}
+function ThemeCursor({ theme, enabled: cursorEnabled }: { theme: Theme; enabled: boolean }) {
+  const cursorRef = useRef<HTMLDivElement>(null);
+  const auraRef = useRef<HTMLDivElement>(null);
+  const targetRef = useRef({ x: -100, y: -100 });
+  const currentRef = useRef({ x: -100, y: -100 });
+  const frameRef = useRef(0);
+  const [enabled, setEnabled] = useState(false);
+  const [hovering, setHovering] = useState(false);
+  const [pressing, setPressing] = useState(false);
+
+  useEffect(() => {
+    const supportsCursor = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setEnabled(cursorEnabled && supportsCursor && !reducedMotion);
+  }, [cursorEnabled]);
+
+  useEffect(() => {
+    if (!enabled) {
+      document.documentElement.classList.remove("custom-cursor-enabled");
+      return;
+    }
+
+    document.documentElement.classList.add("custom-cursor-enabled");
+    const interactiveSelector = "a, button, input, textarea, select, summary, [role='button'], [tabindex]:not([tabindex='-1']), .product-card, .theme-option";
+
+    const render = () => {
+      const target = targetRef.current;
+      const current = currentRef.current;
+      current.x += (target.x - current.x) * 0.22;
+      current.y += (target.y - current.y) * 0.22;
+      const robot = cursorRef.current;
+      const aura = auraRef.current;
+      if (robot) robot.style.transform = `translate3d(${current.x}px, ${current.y}px, 0)`;
+      if (aura) aura.style.transform = `translate3d(${target.x}px, ${target.y}px, 0)`;
+      frameRef.current = window.requestAnimationFrame(render);
+    };
+
+    const move = (event: PointerEvent) => {
+      targetRef.current = { x: event.clientX, y: event.clientY };
+      if (currentRef.current.x < 0) currentRef.current = { x: event.clientX, y: event.clientY };
+    };
+    const over = (event: PointerEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      setHovering(Boolean(target?.closest(interactiveSelector)));
+    };
+    const down = () => setPressing(true);
+    const up = () => setPressing(false);
+
+    window.addEventListener("pointermove", move, { passive: true });
+    window.addEventListener("pointerover", over, { passive: true });
+    window.addEventListener("pointerdown", down, { passive: true });
+    window.addEventListener("pointerup", up, { passive: true });
+    frameRef.current = window.requestAnimationFrame(render);
+
+    return () => {
+      document.documentElement.classList.remove("custom-cursor-enabled");
+      window.cancelAnimationFrame(frameRef.current);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerover", over);
+      window.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointerup", up);
+    };
+  }, [enabled]);
+
+  if (!enabled) return null;
+
+  return (
+    <div className={"cursor-stage" + (hovering ? " is-hovering" : "") + (pressing ? " is-pressing" : "")} data-theme-cursor={theme} aria-hidden="true">
+      <div ref={auraRef} className="cursor-aura" />
+      <div ref={cursorRef} className="cursor-robot">
+        <span className="cursor-antenna" />
+        <span className="cursor-ear cursor-ear-left" />
+        <span className="cursor-ear cursor-ear-right" />
+        <span className="cursor-face"><i /><i /><b /></span>
+        <span className="cursor-body" />
+      </div>
+    </div>
+  );
+}
+function GlobalTooltip() {
+  const [tooltip, setTooltip] = useState<{ text: string; left: number; top: number } | null>(null);
+  const activeElementRef = useRef<HTMLElement | null>(null);
+  const visibleElementRef = useRef<HTMLElement | null>(null);
+  const showTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const edge = 12;
+    const showDelay = 120;
+    const estimatedHeight = 58;
+
+    const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+    const clearShowTimer = () => {
+      if (showTimerRef.current === null) return;
+      window.clearTimeout(showTimerRef.current);
+      showTimerRef.current = null;
+    };
+
+    const positionTooltip = (element: HTMLElement) => {
+      const text = element.dataset.tooltip?.trim();
+      if (!text) return;
+      const rect = element.getBoundingClientRect();
+      const tooltipWidth = Math.min(280, window.innerWidth - edge * 2);
+      let left = rect.left + rect.width / 2 - tooltipWidth / 2;
+      let top = rect.bottom + 10;
+
+      if (top + estimatedHeight > window.innerHeight - edge) {
+        top = rect.top - estimatedHeight - 10;
+      }
+
+      visibleElementRef.current = element;
+      setTooltip({
+        text,
+        left: clamp(left, edge, window.innerWidth - tooltipWidth - edge),
+        top: clamp(top, edge, window.innerHeight - estimatedHeight - edge),
+      });
+    };
+
+    const showFromTarget = (target: EventTarget | null, delayed = true) => {
+      const element = target instanceof Element ? target.closest<HTMLElement>("[data-tooltip]") : null;
+      if (!element) return;
+      if (activeElementRef.current === element && visibleElementRef.current === element) return;
+      activeElementRef.current = element;
+      clearShowTimer();
+      if (!delayed) {
+        positionTooltip(element);
+        return;
+      }
+      showTimerRef.current = window.setTimeout(() => {
+        if (activeElementRef.current === element) positionTooltip(element);
+        showTimerRef.current = null;
+      }, showDelay);
+    };
+
+    const hideIfLeaving = (event: PointerEvent) => {
+      const active = activeElementRef.current;
+      if (!active) return;
+      const next = event.relatedTarget instanceof Node ? event.relatedTarget : null;
+      if (next && active.contains(next)) return;
+      clearShowTimer();
+      activeElementRef.current = null;
+      visibleElementRef.current = null;
+      setTooltip(null);
+    };
+
+    const hide = () => {
+      clearShowTimer();
+      activeElementRef.current = null;
+      visibleElementRef.current = null;
+      setTooltip(null);
+    };
+
+    const reposition = () => {
+      if (visibleElementRef.current) positionTooltip(visibleElementRef.current);
+    };
+
+    const handlePointerOver = (event: PointerEvent) => showFromTarget(event.target);
+    const handleFocusIn = (event: FocusEvent) => showFromTarget(event.target, false);
+
+    document.addEventListener("pointerover", handlePointerOver);
+    document.addEventListener("pointerout", hideIfLeaving);
+    document.addEventListener("focusin", handleFocusIn);
+    document.addEventListener("focusout", hide);
+    window.addEventListener("scroll", reposition, true);
+    window.addEventListener("resize", reposition);
+
+    return () => {
+      clearShowTimer();
+      document.removeEventListener("pointerover", handlePointerOver);
+      document.removeEventListener("pointerout", hideIfLeaving);
+      document.removeEventListener("focusin", handleFocusIn);
+      document.removeEventListener("focusout", hide);
+      window.removeEventListener("scroll", reposition, true);
+      window.removeEventListener("resize", reposition);
+    };
+  }, []);
+
+  if (!tooltip) return null;
+
+  return (
+    <div
+      className="global-tooltip"
+      style={{ left: tooltip.left, top: tooltip.top }}
+      role="tooltip"
+    >
+      {tooltip.text}
+    </div>
+  );
+}
 function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem) => void; onSmoothScrollTo: (target: HTMLElement, block?: ScrollLogicalPosition) => void }) {
   const [query, setQuery] = useState("");
   const sections = [
@@ -1236,6 +1548,13 @@ export default function App() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [inventoryView, setInventoryView] = useState<"products" | "coupons">("products");
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [customCursorEnabled, setCustomCursorEnabled] = useState(() => {
+    try {
+      return localStorage.getItem("shopscript.customCursor") !== "off";
+    } catch {
+      return true;
+    }
+  });
   const [appTheme, setAppTheme] = useState<Theme>(() => ThemeManager.init());
   const brandLogoSrc = ThemeManager.faviconDataUrl(appTheme);
   const homeHeroImage = HOME_HERO_IMAGES[appTheme];
@@ -1322,6 +1641,9 @@ export default function App() {
     setHasRun(true);
     notifyInterpreterResult(nextResult, successTitle, successMessage);
   }, [products, coupons, notifyInterpreterResult]);
+  useEffect(() => {
+    setEditorTheme(appTheme === "midnight" || appTheme === "cyber-ochre" ? "dark" : "light");
+  }, [appTheme]);
   const toggleEditorTheme = useCallback(() => {
     setEditorTheme(current => current === "light" ? "dark" : "light");
   }, [products]);
@@ -1387,6 +1709,22 @@ export default function App() {
     setCursorPosition({ line: 1, col: 1 });
     navigate("Playground");
   }, [navigate, products]);
+  useEffect(() => {
+    try {
+      localStorage.setItem("shopscript.customCursor", customCursorEnabled ? "on" : "off");
+    } catch {
+      // Storage can fail in private or restricted browser modes.
+    }
+  }, [customCursorEnabled]);
+
+  useEffect(() => {
+    if (!themeMenuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setThemeMenuOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [themeMenuOpen]);
   const changeTheme = useCallback((theme: Theme) => {
     setAppTheme(theme);
     const option = THEME_OPTIONS.find(item => item.id === theme);
@@ -1572,6 +1910,9 @@ export default function App() {
 
   return (
     <div className="app-shell" style={{ background:"hsl(36 33% 97%)" }}>
+      <SplashScreen theme={appTheme} logoSrc={brandLogoSrc} />
+      <ThemeCursor theme={appTheme} enabled={customCursorEnabled} />
+      <GlobalTooltip />
       <NotificationCenter notices={notifications} onDismiss={dismissNotification} />
 
       {/* ---- HEADER --------------------------------------------------- */}
@@ -1631,6 +1972,13 @@ export default function App() {
                       </button>
                     ))}
                   </div>
+                  <div className="theme-cursor-setting">
+                    <div><strong>Custom cursor</strong><span>Use the animated ShopScript robot pointer.</span></div>
+                    <button type="button" className={"cursor-toggle" + (customCursorEnabled ? " active" : "")} onClick={() => setCustomCursorEnabled(enabled => !enabled)} role="switch" aria-checked={customCursorEnabled}>
+                      <span />
+                      <b>{customCursorEnabled ? "On" : "Off"}</b>
+                    </button>
+                  </div>
                   <div className="theme-menu-actions">
                     <button type="button" className="theme-menu-action" onClick={openFinalDemo}>Open final demo <span>Playground</span></button>
                     <button type="button" className="theme-menu-action" onClick={() => navigate("About")}>Project overview <span>About</span></button>
@@ -1677,12 +2025,15 @@ export default function App() {
             </p>
             <div className="hero-badges" style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
               {[
-                { icon:Ico.zap(12), label:"Lexical" }, { icon:Ico.code(12), label:"Syntax" },
-                { icon:Ico.table(12), label:"Semantic" }, { icon:Ico.clipboard(12), label:"Scope" },
-                { icon:Ico.tag(12), label:"Data Types" }, { icon:Ico.zap(12), label:"Control Flow" },
-                { icon:Ico.dna(12), label:"OOP" },
+                { icon:Ico.zap(12), label:"Lexical", tooltip:"Shows how ShopScript breaks source code into tokens before analysis." },
+                { icon:Ico.code(12), label:"Syntax", tooltip:"Highlights the grammar rules used to validate ShopScript statements." },
+                { icon:Ico.table(12), label:"Semantic", tooltip:"Checks whether valid syntax also makes sense for cart and inventory rules." },
+                { icon:Ico.clipboard(12), label:"Scope", tooltip:"Tracks declared names, bindings, and where variables or objects can be used." },
+                { icon:Ico.tag(12), label:"Data Types", tooltip:"Displays the supported string, number, boolean, list, class, and object values." },
+                { icon:Ico.zap(12), label:"Control Flow", tooltip:"Represents implemented if, loop, and execution-order behavior in programs." },
+                { icon:Ico.dna(12), label:"OOP", tooltip:"Connects class definitions, object creation, fields, and methods to the simulator." },
               ].map(b => (
-                <span key={b.label} className="feature-badge">
+                <span key={b.label} className="feature-badge" data-tooltip={b.tooltip} tabIndex={0}>
                   <span style={{ display:"flex", alignItems:"center" }}>{b.icon}</span>{b.label}
                 </span>
               ))}
@@ -1788,7 +2139,7 @@ export default function App() {
                         className="product-card"
                         onClick={() => addInventoryProduct(p.name, p.price)}
                         aria-label={"Add " + p.name + " to the ShopScript cart"}
-                        title={"Add " + p.name + " - " + p.stock + " in stock"}
+                        data-tooltip={"Add " + p.name + " to the cart. " + p.stock + " items are in stock."}
                       >
                         <div style={{ position:"relative" }}>
                           <img
@@ -1938,7 +2289,7 @@ export default function App() {
                     <span style={{ fontWeight:700, fontSize:12.5, color:"var(--theme-text)" }}>Receipt Preview</span>
                   </div>
                   {didCheckout && !hasErrors && (
-                    <button className="btn-ghost receipt-download" onClick={downloadReceipt}>
+                    <button className="btn-ghost receipt-download" onClick={downloadReceipt} data-tooltip="Download a theme-styled PDF receipt for this simulated checkout.">
                       {Ico.down(11)} Download PDF
                     </button>
                   )}
