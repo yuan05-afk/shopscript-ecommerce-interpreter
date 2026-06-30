@@ -861,10 +861,10 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
               </div>
               <p>This is a pnpm workspace. Run commands from the repository root and do not use npm to install project dependencies.</p>
               <h3>Windows PowerShell</h3>
-              <pre><code>{"pnpm install\n$env:PORT = \"5173\"\n$env:BASE_PATH = \"/\"\npnpm --filter @workspace/shopscript run dev"}</code></pre>
+              <pre><code>{"pnpm install\npnpm --filter @workspace/shopscript run dev"}</code></pre>
               <p>Open <strong>http://localhost:5173/</strong>. Keep the terminal running while using the website.</p>
               <h3>Verify changes</h3>
-              <pre><code>{"pnpm --filter @workspace/shopscript run typecheck\n$env:PORT = \"5173\"\n$env:BASE_PATH = \"/\"\npnpm --filter @workspace/shopscript run build"}</code></pre>
+              <pre><code>{"pnpm --filter @workspace/shopscript run typecheck\npnpm --filter @workspace/shopscript run build"}</code></pre>
             </article>
           )}
 

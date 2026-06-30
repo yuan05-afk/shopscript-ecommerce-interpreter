@@ -97,8 +97,6 @@ From the repository root, install dependencies and start the ShopScript website:
 
 ```powershell
 pnpm install
-$env:PORT = "5173"
-$env:BASE_PATH = "/"
 pnpm --filter @workspace/shopscript run dev
 ```
 
@@ -108,7 +106,7 @@ Open <http://localhost:5173/>. Keep the terminal running while using the website
 
 ```bash
 pnpm install
-PORT=5173 BASE_PATH=/ pnpm --filter @workspace/shopscript run dev
+pnpm --filter @workspace/shopscript run dev
 ```
 
 Then open <http://localhost:5173/>.
@@ -118,16 +116,25 @@ Then open <http://localhost:5173/>.
 ```powershell
 pnpm --filter @workspace/shopscript run typecheck
 pnpm --filter @workspace/shopscript run test:interpreter
-$env:PORT = "5173"
-$env:BASE_PATH = "/"
 pnpm --filter @workspace/shopscript run build
 ```
+
+#### Deploy to Vercel
+
+The repository includes `vercel.json` for the primary ShopScript app. Import the repository in Vercel and keep the project root at the repository root. Vercel will use:
+
+```text
+Install Command: corepack enable && pnpm install --frozen-lockfile
+Build Command: pnpm --filter @workspace/shopscript run build
+Output Directory: artifacts/shopscript/dist/public
+```
+
+No Vercel environment variables are required for the static in-browser interpreter. `PORT` and `BASE_PATH` still remain optional local overrides.
 
 #### Troubleshooting
 
 * **`Use pnpm instead`** - run `pnpm install`, not `npm install`.
 * **`Missing script: dev`** - the root package has no `dev` script; use the filtered command shown above.
-* **`PORT environment variable is required`** - set `PORT` and `BASE_PATH` in the same terminal before starting or building the app.
 * **Install pauses at the esbuild postinstall step** - allow it a short time to download the Windows binary. If it remains stuck, press `Ctrl+C`, check the network connection, and run `pnpm install` again.
 
 ---

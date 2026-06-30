@@ -26,7 +26,7 @@ Do not claim a planned feature is implemented without checking the interpreter. 
   - `src/shopscript-interpreter.ts`: lexer, syntax checker, semantic checks, executor, inventory, coupons, classes, and instances. This is the language behavior source of truth.
   - `src/index.css`: global theme, responsive layout, and component classes.
   - `src/components/ui/`: reusable generated UI primitives; most current page composition remains in `App.tsx`.
-  - `vite.config.ts`: requires `PORT` and `BASE_PATH` environment variables.
+  - `vite.config.ts`: defaults to port `5173` and base path `/`; `PORT` and `BASE_PATH` are optional overrides for local/dev hosting.
 - `artifacts/api-server/`: Express API scaffold; currently exposes `/api/healthz` and is not needed for the in-browser interpreter.
 - `artifacts/mockup-sandbox/`: separate visual mockup package; not the primary app.
 - `lib/api-spec/`: OpenAPI contract for the API scaffold.
@@ -90,12 +90,10 @@ On Windows PowerShell, Corepack is available. Use:
 
 ```powershell
 corepack pnpm install
-$env:PORT = "5173"
-$env:BASE_PATH = "/"
 corepack pnpm --filter @workspace/shopscript run dev
 ```
 
-Then open `http://localhost:5173/`. Use `corepack pnpm run typecheck` for the workspace typecheck and `corepack pnpm run build` for the full build. The primary app alone can be checked with `corepack pnpm --filter @workspace/shopscript run typecheck`.
+Then open `http://localhost:5173/`. Use `corepack pnpm run typecheck` for the workspace typecheck, `corepack pnpm --filter @workspace/shopscript run build` for the primary app build, and Vercel uses `vercel.json` at the repository root. The primary app alone can be checked with `corepack pnpm --filter @workspace/shopscript run typecheck`.
 
 ## Change discipline
 
