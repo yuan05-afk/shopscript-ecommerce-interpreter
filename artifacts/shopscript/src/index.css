@@ -5388,6 +5388,8 @@ html[data-theme="cyber-ochre"] .shopscript-ide:not(.ide-dark) {
 
 /* Receipt preview layout ------------------------------------------------- */
 .receipt-card {
+  container-name: receipt-card;
+  container-type: inline-size;
   min-width: 0;
   overflow: hidden;
   padding: 12px;
@@ -6133,6 +6135,18 @@ html[data-theme]:not([data-theme="default"]) .team-responsibilities li strong {
   background: var(--theme-accent) !important;
   border-color: var(--theme-accent) !important;
   color: var(--theme-accent-contrast) !important;
+}
+@container receipt-card (max-width: 320px) {
+  .receipt-card .receipt-title {
+    flex-basis: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .receipt-card .receipt-download {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+  }
 }
 
 
