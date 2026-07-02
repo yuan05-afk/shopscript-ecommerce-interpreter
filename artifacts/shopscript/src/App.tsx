@@ -1456,10 +1456,12 @@ interface PlaygroundPageProps {
   code: string;
   result: InterpreterResult | null;
   hasRun: boolean;
+  products: InventoryProduct[];
   onCodeChange: (code: string) => void;
   onRun: () => void;
   onClear: () => void;
   onLoadExample: (code: string) => void;
+  onEvaluateCode: (code: string) => InterpreterResult;
   onNavigate: (page: NavItem) => void;
   theme: EditorTheme;
   onToggleTheme: () => void;
@@ -1470,7 +1472,7 @@ interface PlaygroundPageProps {
   completionCatalog: { products: string[]; coupons: string[] };
 }
 
-function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, onLoadExample, onNavigate, theme, onToggleTheme, cursorPosition, onCursorChange, selectedExampleId, onSelectedExampleChange, completionCatalog }: PlaygroundPageProps) {
+function PlaygroundPage({ code, result, hasRun, products, onCodeChange, onRun, onClear, onLoadExample, onEvaluateCode, onNavigate, theme, onToggleTheme, cursorPosition, onCursorChange, selectedExampleId, onSelectedExampleChange, completionCatalog }: PlaygroundPageProps) {
   const [activeTab, setActiveTab] = useState<PlaygroundTab>("Output");
   const [learningOpen, setLearningOpen] = useState(false);
   const [activeLessonId, setActiveLessonId] = useState(PLAYGROUND_LESSONS[0].id);
@@ -1478,19 +1480,27 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(() => new Set());
   const [learningUnlocked, setLearningUnlocked] = useState(false);
   const [learningConfirm, setLearningConfirm] = useState<"solution" | "unlock" | null>(null);
-  const lines = code.split("\n");
+  const [learningCode, setLearningCode] = useState("");
+  const [learningResult, setLearningResult] = useState<InterpreterResult | null>(null);
+  const [learningHasRun, setLearningHasRun] = useState(false);
+  const [learningCursorPosition, setLearningCursorPosition] = useState<CursorPosition>({ line: 1, col: 1 });
+  const editorCode = learningOpen ? learningCode : code;
+  const editorResult = learningOpen ? learningResult : result;
+  const editorHasRun = learningOpen ? learningHasRun : hasRun;
+  const editorCursorPosition = learningOpen ? learningCursorPosition : cursorPosition;
+  const lines = editorCode.split("\n");
 
-  const totalErrors = (result?.lexErrors.length ?? 0) + (result?.syntaxErrors.length ?? 0) + (result?.semanticErrors.length ?? 0);
+  const totalErrors = (editorResult?.lexErrors.length ?? 0) + (editorResult?.syntaxErrors.length ?? 0) + (editorResult?.semanticErrors.length ?? 0);
   const errorGroups: Array<{ label: string; items: Array<{ message: string; line: number }> }> = [
-    { label: "Lexical", items: result?.lexErrors ?? [] },
-    { label: "Syntax", items: result?.syntaxErrors ?? [] },
-    { label: "Semantic", items: result?.semanticErrors ?? [] },
+    { label: "Lexical", items: editorResult?.lexErrors ?? [] },
+    { label: "Syntax", items: editorResult?.syntaxErrors ?? [] },
+    { label: "Semantic", items: editorResult?.semanticErrors ?? [] },
   ];
   const playgroundErrors = errorGroups.flatMap(group => group.items.map(error => ({ ...error, category: group.label })));
   const playgroundErrorLines = [...new Set(playgroundErrors.map(error => error.line))];
   const primaryPlaygroundError = playgroundErrors[0];
   const activeLesson = PLAYGROUND_LESSONS.find(lesson => lesson.id === activeLessonId) ?? PLAYGROUND_LESSONS[0];
-  const activeLessonRunStatus = getPlaygroundLessonStatus(activeLesson, result, hasRun, totalErrors);
+  const activeLessonRunStatus = getPlaygroundLessonStatus(activeLesson, editorResult, editorHasRun, totalErrors);
   const activeLessonCompleted = completedLessonIds.has(activeLesson.id) || activeLessonRunStatus.complete;
   const lessonStatus: LessonStatus = activeLessonCompleted
     ? { complete: true, label: "Mastered", note: "Module passed. The next lesson is unlocked." }
@@ -1503,14 +1513,33 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
   const activeLessonSolution = getPlaygroundLessonSolution(activeLesson.id);
   const learningSignals = [
     { label: "Editor", value: lines.length + " lines", detail: "Source statements and comments" },
-    { label: "Tokens", value: String(result?.tokens.length ?? 0), detail: "Lexer output" },
+    { label: "Tokens", value: String(editorResult?.tokens.length ?? 0), detail: "Lexer output" },
     { label: "Errors", value: String(totalErrors), detail: "Lexical, syntax, semantic" },
-    { label: "Variables", value: String(result?.variables.length ?? 0), detail: "Names, scope, values" },
-    { label: "Cart", value: String(result?.cart.reduce((sum, item) => sum + item.quantity, 0) ?? 0), detail: "Products added by code" },
-    { label: "Receipt", value: result?.didCheckout && totalErrors === 0 ? "Ready" : "Pending", detail: "Checkout result" },
-    { label: "Inventory", value: String(result?.runtimeInventory.length ?? 0), detail: "Runtime product changes" },
-    { label: "OOP", value: (result?.classes.length ?? 0) + "/" + Object.keys(result?.instances ?? {}).length, detail: "Classes / instances" },
+    { label: "Variables", value: String(editorResult?.variables.length ?? 0), detail: "Names, scope, values" },
+    { label: "Cart", value: String(editorResult?.cart.reduce((sum, item) => sum + item.quantity, 0) ?? 0), detail: "Products added by code" },
+    { label: "Receipt", value: editorResult?.didCheckout && totalErrors === 0 ? "Ready" : "Pending", detail: "Checkout result" },
+    { label: "Inventory", value: String(editorResult?.runtimeInventory.length ?? 0), detail: "Runtime product changes" },
+    { label: "OOP", value: (editorResult?.classes.length ?? 0) + "/" + Object.keys(editorResult?.instances ?? {}).length, detail: "Classes / instances" },
   ];
+  const learningRuntimeInventoryMap = useMemo(() => new Map((editorResult?.runtimeInventory ?? []).map(product => [product.name, product])), [editorResult]);
+  const learningEffectiveProducts = useMemo(() => products.map(product => {
+    const runtimeProduct = learningRuntimeInventoryMap.get(product.name);
+    return runtimeProduct
+      ? { ...product, price: runtimeProduct.price, stock: runtimeProduct.stock, inStock: runtimeProduct.inStock, runtimeUpdated: runtimeProduct.price !== product.price || runtimeProduct.stock !== product.stock || runtimeProduct.inStock !== product.inStock }
+      : { ...product, runtimeUpdated: false };
+  }), [products, learningRuntimeInventoryMap]);
+  const learningVisibleProducts = learningEffectiveProducts.filter(product => product.inStock).slice(0, 6);
+  const learningCart = editorResult?.cart ?? [];
+  const learningSubtotal = editorResult?.subtotal ?? 0;
+  const learningDiscountAmount = learningSubtotal * (editorResult?.discount ?? 0);
+  const learningShipping = editorResult?.shipping ?? 0;
+  const learningTotal = editorResult?.total ?? 0;
+  const learningCoupon = editorResult?.coupon ?? null;
+  const learningDidCheckout = editorResult?.didCheckout ?? false;
+  const learningUser = editorResult?.user ?? "Guest";
+  const learningHasErrors = editorHasRun && totalErrors > 0;
+  const learningOrderDate = new Date();
+  const learningOrderId = `#SS-${learningOrderDate.getFullYear()}-${String(learningOrderDate.getMonth()+1).padStart(2,"0")}${String(learningOrderDate.getDate()).padStart(2,"0")}-001`;
   useEffect(() => {
     if (!activeLessonRunStatus.complete) return;
     setCompletedLessonIds(current => {
@@ -1523,7 +1552,10 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
 
   const loadActiveLesson = () => {
     onSelectedExampleChange("");
-    onCodeChange(activeLesson.starterCode);
+    setLearningCode(activeLesson.starterCode);
+    setLearningResult(null);
+    setLearningHasRun(false);
+    setLearningCursorPosition({ line: 1, col: 1 });
     setActiveTab("Output");
     setLearningOpen(true);
     setRevealedHints(1);
@@ -1541,10 +1573,59 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
   };
   const revealLessonSolution = () => {
     onSelectedExampleChange("");
-    onCodeChange(activeLessonSolution);
+    setLearningCode(activeLessonSolution);
+    setLearningResult(null);
+    setLearningHasRun(false);
+    setLearningCursorPosition({ line: 1, col: 1 });
     setActiveTab("Output");
     setRevealedHints(activeLesson.hints.length);
     setLearningConfirm(null);
+  };
+  const openLearningPath = () => {
+    if (learningOpen) {
+      setLearningOpen(false);
+      setLearningConfirm(null);
+      return;
+    }
+    setLearningOpen(true);
+    setLearningCode("");
+    setLearningResult(null);
+    setLearningHasRun(false);
+    setLearningCursorPosition({ line: 1, col: 1 });
+    setActiveTab("Output");
+    setRevealedHints(1);
+    setLearningConfirm(null);
+    onSelectedExampleChange("");
+  };
+  const updateCurrentCode = (nextCode: string) => {
+    if (learningOpen) {
+      setLearningCode(nextCode);
+      setLearningResult(null);
+      setLearningHasRun(false);
+      return;
+    }
+    onCodeChange(nextCode);
+  };
+  const runCurrentProgram = () => {
+    if (learningOpen) {
+      const nextResult = onEvaluateCode(learningCode);
+      setLearningResult(nextResult);
+      setLearningHasRun(true);
+      return nextResult;
+    }
+    onRun();
+    return null;
+  };
+  const clearCurrentEditor = () => {
+    if (learningOpen) {
+      setLearningCode("");
+      setLearningResult(null);
+      setLearningHasRun(false);
+      setLearningCursorPosition({ line: 1, col: 1 });
+      setLearningConfirm(null);
+      return;
+    }
+    onClear();
   };
   const confirmUnlockAll = () => {
     setLearningUnlocked(true);
@@ -1552,10 +1633,10 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
   };
 
   const tabs: Array<{ name: PlaygroundTab; count?: number }> = [
-    { name: "Output", count: result?.logs.length },
-    { name: "Tokens", count: result?.tokens.length },
+    { name: "Output", count: editorResult?.logs.length },
+    { name: "Tokens", count: editorResult?.tokens.length },
     { name: "Errors", count: totalErrors },
-    { name: "Variables", count: result?.variables.length },
+    { name: "Variables", count: editorResult?.variables.length },
   ];
 
   return (
@@ -1568,17 +1649,17 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
         </div>
         <div className="playground-hero-actions">
           <button className="btn-ghost" onClick={() => onNavigate("Home")} data-tooltip="Return to the Home dashboard with the full storefront simulation.">{Ico.cart(14)} Open Home dashboard</button>
-          <button className={"btn-ghost playground-learn-toggle" + (learningOpen ? " active" : "")} onClick={() => setLearningOpen(open => !open)} data-tooltip="Open the guided ShopScript learning path inside Playground.">{Ico.book(14)} {learningOpen ? "Hide learning path" : "Learning path"}</button>
-          <button className="btn-orange" onClick={() => { onRun(); setActiveTab("Output"); }} data-tooltip="Execute the current ShopScript program and show output first.">{Ico.play()} Run program</button>
+          <button className={"btn-ghost playground-learn-toggle" + (learningOpen ? " active" : "")} onClick={openLearningPath} data-tooltip="Open the guided ShopScript learning path inside Playground.">{Ico.book(14)} {learningOpen ? "Hide learning path" : "Learning path"}</button>
+          <button className="btn-orange" onClick={() => { runCurrentProgram(); setActiveTab("Output"); }} data-tooltip="Execute the current ShopScript program and show output first.">{Ico.play()} Run program</button>
         </div>
       </section>
 
       <section className="playground-status-strip">
-        <div><span className={"playground-dot " + (!hasRun ? "idle" : totalErrors > 0 ? "error" : "success")} /><strong>{!hasRun ? "Ready to run" : totalErrors > 0 ? "Needs attention" : "Execution successful"}</strong></div>
+        <div><span className={"playground-dot " + (!editorHasRun ? "idle" : totalErrors > 0 ? "error" : "success")} /><strong>{!editorHasRun ? "Ready to run" : totalErrors > 0 ? "Needs attention" : "Execution successful"}</strong></div>
         <div><span>Lines</span><strong>{lines.length}</strong></div>
-        <div><span>Tokens</span><strong>{result?.tokens.length ?? 0}</strong></div>
+        <div><span>Tokens</span><strong>{editorResult?.tokens.length ?? 0}</strong></div>
         <div><span>Errors</span><strong>{totalErrors}</strong></div>
-        <div><span>Total</span><strong>{"$"}{(result?.total ?? 0).toFixed(2)}</strong></div>
+        <div><span>Total</span><strong>{"$"}{(editorResult?.total ?? 0).toFixed(2)}</strong></div>
       </section>
 
       {learningOpen && (
@@ -1595,261 +1676,63 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
               <button type="button" onClick={() => learningUnlocked ? setLearningUnlocked(false) : setLearningConfirm("unlock")}>{learningUnlocked ? "Use locks" : "Unlock all modules"}</button>
             </div>
           </div>
-
-          {learningConfirm === "unlock" && (
-            <div className="learning-confirm learning-confirm-unlock" role="alert">
-              <div><strong>Confirm unlock all modules</strong><span>This opens every lesson for browsing, but the mastery counter still only tracks passed modules.</span></div>
-              <button type="button" className="confirm-primary" onClick={confirmUnlockAll}>Unlock all</button>
-              <button type="button" className="confirm-secondary" onClick={() => setLearningConfirm(null)}>Cancel</button>
-            </div>
-          )}
-
-          <div className="learning-progress-rail" aria-label="Lesson progression">
-            {PLAYGROUND_LESSONS.map((lesson, index) => {
-              const mastered = completedLessonIds.has(lesson.id) || (lesson.id === activeLesson.id && activeLessonRunStatus.complete);
-              const unlocked = isLessonUnlocked(index);
-              return <span key={lesson.id} className={(mastered ? "mastered " : "") + (lesson.id === activeLesson.id ? "active " : "") + (!unlocked ? "locked" : "")} />;
-            })}
-          </div>
-
+          {learningConfirm === "unlock" && <div className="learning-confirm learning-confirm-unlock" role="alert"><div><strong>Confirm unlock all modules</strong><span>This opens every lesson for browsing, but the mastery counter still only tracks passed modules.</span></div><button type="button" className="confirm-primary" onClick={confirmUnlockAll}>Unlock all</button><button type="button" className="confirm-secondary" onClick={() => setLearningConfirm(null)}>Cancel</button></div>}
+          <div className="learning-progress-rail" aria-label="Lesson progression">{PLAYGROUND_LESSONS.map((lesson, index) => { const mastered = completedLessonIds.has(lesson.id) || (lesson.id === activeLesson.id && activeLessonRunStatus.complete); const unlocked = isLessonUnlocked(index); return <span key={lesson.id} className={(mastered ? "mastered " : "") + (lesson.id === activeLesson.id ? "active " : "") + (!unlocked ? "locked" : "")} />; })}</div>
           <div className="learning-layout">
-            <aside className="learning-steps" aria-label="Tutorial lessons">
-              {PLAYGROUND_LESSONS.map((lesson, index) => {
-                const mastered = completedLessonIds.has(lesson.id) || (lesson.id === activeLesson.id && activeLessonRunStatus.complete);
-                const unlocked = isLessonUnlocked(index);
-                return (
-                  <button
-                    key={lesson.id}
-                    type="button"
-                    disabled={!unlocked}
-                    className={(lesson.id === activeLesson.id ? "active " : "") + (mastered ? "complete " : "") + (!unlocked ? "locked" : "")}
-                    onClick={() => { if (!unlocked) return; setActiveLessonId(lesson.id); setRevealedHints(1); }}
-                    aria-label={(unlocked ? "Open " : "Locked ") + lesson.title}
-                  >
-                    <span>{mastered ? Ico.check(13) : unlocked ? index + 1 : "LOCK"}</span>
-                    <div><strong>{lesson.title}</strong><small>{lesson.level} - {lesson.focus}</small></div>
-                  </button>
-                );
-              })}
-            </aside>
-
+            <aside className="learning-steps" aria-label="Tutorial lessons">{PLAYGROUND_LESSONS.map((lesson, index) => { const mastered = completedLessonIds.has(lesson.id) || (lesson.id === activeLesson.id && activeLessonRunStatus.complete); const unlocked = isLessonUnlocked(index); return <button key={lesson.id} type="button" disabled={!unlocked} className={(lesson.id === activeLesson.id ? "active " : "") + (mastered ? "complete " : "") + (!unlocked ? "locked" : "")} onClick={() => { if (!unlocked) return; setActiveLessonId(lesson.id); setRevealedHints(1); }} aria-label={(unlocked ? "Open " : "Locked ") + lesson.title}><span>{mastered ? Ico.check(13) : unlocked ? index + 1 : "LOCK"}</span><div><strong>{lesson.title}</strong><small>{lesson.level} - {lesson.focus}</small></div></button>; })}</aside>
             <div className="learning-main">
               <div className="lesson-card">
-                <div className="lesson-card-top">
-                  <div>
-                    <span className="lesson-level">{activeLesson.level}</span>
-                    <h3>{activeLesson.title}</h3>
-                    <p>{activeLesson.objective}</p>
-                  </div>
-                  <span className={"lesson-status " + (lessonStatus.complete ? "complete" : totalErrors > 0 && hasRun ? "error" : "idle")}>{lessonStatus.label}</span>
-                </div>
+                <div className="lesson-card-top"><div><span className="lesson-level">{activeLesson.level}</span><h3>{activeLesson.title}</h3><p>{activeLesson.objective}</p></div><span className={"lesson-status " + (lessonStatus.complete ? "complete" : totalErrors > 0 && editorHasRun ? "error" : "idle")}>{lessonStatus.label}</span></div>
                 <div className="lesson-task"><strong>Mission</strong><span>{activeLesson.task}</span></div>
-                <div className="syntax-targets" aria-label="Syntax targets for this lesson">
-                  <strong>Syntax to practice</strong>
-                  <div>{activeLesson.syntaxTargets.map(target => <code key={target}>{target}</code>)}</div>
-                </div>
-                <div className="lesson-actions">
-                  <button className="btn-orange lesson-action-primary" onClick={loadActiveLesson}>{Ico.play()} Start exercise</button>
-                  <button className="btn-ghost lesson-action-check" onClick={() => { onRun(); setActiveTab(totalErrors > 0 ? "Errors" : "Output"); }} data-tooltip="Run the current code and check this lesson against its checkpoints.">{Ico.check(13)} Check my code</button>
-                  <button className="btn-ghost lesson-action-hint" onClick={() => setRevealedHints(count => Math.min(activeLesson.hints.length, count + 1))} disabled={revealedHints >= activeLesson.hints.length}>Need hint</button>
-                  <button className="btn-ghost lesson-action-solution" onClick={() => setLearningConfirm("solution")}>Show solution</button>
-                  <button className="btn-ghost lesson-action-nav" onClick={() => moveLesson(-1)} disabled={lessonIndex === 0}>Previous</button>
-                  <button className="btn-ghost lesson-action-nav" onClick={() => moveLesson(1)} disabled={lessonIndex === PLAYGROUND_LESSONS.length - 1 || !nextLessonUnlocked}>Next</button>
-                </div>
-                {learningConfirm === "solution" && (
-                  <div className="learning-confirm learning-confirm-solution" role="alert">
-                    <div><strong>Show the solution?</strong><span>This will replace the editor with the completed answer for this lesson. Use it when you are reviewing or truly stuck.</span></div>
-                    <button type="button" className="confirm-primary" onClick={revealLessonSolution}>Show solution</button>
-                    <button type="button" className="confirm-secondary" onClick={() => setLearningConfirm(null)}>Keep trying</button>
-                  </div>
-                )}
+                <div className="syntax-targets" aria-label="Syntax targets for this lesson"><strong>Syntax to practice</strong><div>{activeLesson.syntaxTargets.map(target => <code key={target}>{target}</code>)}</div></div>
+                <div className="lesson-actions"><button className="btn-orange lesson-action-primary" onClick={loadActiveLesson}>{Ico.play()} Start exercise</button><button className="btn-ghost lesson-action-check" onClick={() => { const nextResult = runCurrentProgram(); const nextErrors = nextResult ? nextResult.lexErrors.length + nextResult.syntaxErrors.length + nextResult.semanticErrors.length : totalErrors; setActiveTab(nextErrors > 0 ? "Errors" : "Output"); }} data-tooltip="Run the current code and check this lesson against its checkpoints.">{Ico.check(13)} Check my code</button><button className="btn-ghost lesson-action-hint" onClick={() => setRevealedHints(count => Math.min(activeLesson.hints.length, count + 1))} disabled={revealedHints >= activeLesson.hints.length}>Need hint</button><button className="btn-ghost lesson-action-solution" onClick={() => setLearningConfirm("solution")}>Show solution</button><button className="btn-ghost lesson-action-nav" onClick={() => moveLesson(-1)} disabled={lessonIndex === 0}>Previous</button><button className="btn-ghost lesson-action-nav" onClick={() => moveLesson(1)} disabled={lessonIndex === PLAYGROUND_LESSONS.length - 1 || !nextLessonUnlocked}>Next</button></div>
+                {learningConfirm === "solution" && <div className="learning-confirm learning-confirm-solution" role="alert"><div><strong>Show the solution?</strong><span>This will replace the editor with the completed answer for this lesson. Use it when you are reviewing or truly stuck.</span></div><button type="button" className="confirm-primary" onClick={revealLessonSolution}>Show solution</button><button type="button" className="confirm-secondary" onClick={() => setLearningConfirm(null)}>Keep trying</button></div>}
                 <div className="lesson-note">{lessonStatus.note}</div>
-              </div>
-
-              <div className="lesson-support-grid">
-                <section>
-                  <h4>Pass conditions</h4>
-                  <ul>{activeLesson.checkpoints.map(item => <li key={item}>{item}</li>)}</ul>
-                </section>
-                <section>
-                  <h4>Hints unlocked</h4>
-                  <ol>{activeLesson.hints.slice(0, revealedHints).map(item => <li key={item}>{item}</li>)}</ol>
-                </section>
-                <section>
-                  <h4>Inspect after running</h4>
-                  <div className="lesson-watch-list">{activeLesson.watch.map(item => <span key={item}>{item}</span>)}</div>
-                </section>
+              </div>              <div className="lesson-support-grid">
+                <section className="lesson-support-card lesson-pass-card"><div className="lesson-support-head"><h4>Pass conditions</h4><span>{lessonStatus.complete ? "Passed" : "Checklist"}</span></div><ul className="lesson-checklist">{activeLesson.checkpoints.map((item, index) => <li key={item} className={lessonStatus.complete ? "passed" : editorHasRun ? "review" : "pending"}><span>{lessonStatus.complete ? Ico.check(11) : index + 1}</span><em>{item}</em></li>)}</ul></section>
+                <section className="lesson-support-card lesson-hint-card"><div className="lesson-support-head"><h4>Hints unlocked</h4><span>{revealedHints}/{activeLesson.hints.length}</span></div><ol className="lesson-hints">{activeLesson.hints.slice(0, revealedHints).map((item, index) => <li key={item}><span>{index + 1}</span><em>{item}</em></li>)}</ol>{revealedHints < activeLesson.hints.length && <div className="lesson-hint-locked">More guidance unlocks from the Need hint button.</div>}</section>
+                <section className="lesson-support-card lesson-inspect-card"><div className="lesson-support-head"><h4>Inspect after running</h4><span>{editorHasRun ? "Live" : "Waiting"}</span></div><div className="lesson-watch-list">{activeLesson.watch.map(item => <span key={item}>{item}</span>)}</div></section>
               </div>
             </div>
           </div>
-
-          <div className="learning-signal-grid" aria-label="Live Home component signals">
-            {learningSignals.map(signal => (
-              <div key={signal.label}>
-                <span>{signal.label}</span>
-                <strong>{signal.value}</strong>
-                <small>{signal.detail}</small>
-              </div>
-            ))}
-          </div>
+          <div className="learning-signal-grid" aria-label="Live Home component signals">{learningSignals.map(signal => <div key={signal.label}><span>{signal.label}</span><strong>{signal.value}</strong><small>{signal.detail}</small></div>)}</div>
         </section>
       )}
+
       <div className="playground-layout">
         <section className="playground-editor ss-card">
-          <div className="playground-panel-bar">
-            <div className="playground-panel-title">{Ico.code(16, "var(--theme-accent)")}<div><strong>main.shop</strong><span>ShopScript source</span></div></div>
-            <div className="playground-editor-actions">
-              <select
-                value={selectedExampleId}
-                onChange={event => {
-                  const nextId = event.target.value;
-                  onSelectedExampleChange(nextId);
-                  const example = EXAMPLE_LIBRARY.find(item => item.id === nextId);
-                  if (example) onLoadExample(example.code);
-                }}
-                aria-label="Load a ShopScript example" data-tooltip="Load a saved ShopScript example into the editor."
-              >
-                <option value="" disabled>Load example</option>
-                {EXAMPLE_LIBRARY.map(example => <option key={example.id} value={example.id}>{example.title}</option>)}
-              </select>
-              <EditorThemeToggle theme={theme} onToggle={onToggleTheme} />
-              <button className="btn-ghost" onClick={onClear} data-tooltip="Clear the editor and reset the current result.">{Ico.x(11)} Clear</button>
-              <button className="btn-orange" onClick={() => { onRun(); setActiveTab("Output"); }} data-tooltip="Run the program and switch to the Output tab.">{Ico.play()} Run</button>
-            </div>
-          </div>
-          <ShopScriptCodeEditor
-            code={code}
-            onCodeChange={onCodeChange}
-            onRun={() => { onRun(); setActiveTab("Output"); }}
-            theme={theme}
-            className="playground-ide"
-            ariaLabel="ShopScript playground editor"
-            errorLines={hasRun ? playgroundErrorLines : []}
-            onCursorChange={onCursorChange}
-            completionCatalog={completionCatalog}
-          />
-          {hasRun && primaryPlaygroundError && (
-            <div className="editor-diagnostic playground-diagnostic" role="alert">
-              <strong>{primaryPlaygroundError.category} error - Line {primaryPlaygroundError.line}</strong>
-              <span>{primaryPlaygroundError.message}{playgroundErrors.length > 1 ? " - " + (playgroundErrors.length - 1) + " more error(s) below" : ""}</span>
-            </div>
-          )}
-          <div className="playground-editor-footer">
-            <span className={!hasRun ? "idle" : totalErrors > 0 ? "error" : "success"}>{!hasRun ? "Ready" : totalErrors > 0 ? "Error" : "Ready"}</span>
-            <span>Line {cursorPosition.line}, Col {cursorPosition.col} / {lines.length} lines</span>
-            <span>ShopScript v{APP_VERSION}</span>
-          </div>
+          <div className="playground-panel-bar"><div className="playground-panel-title">{Ico.code(16, "var(--theme-accent)")}<div><strong>main.shop</strong><span>ShopScript source</span></div></div><div className="playground-editor-actions">
+            <select value={learningOpen ? "" : selectedExampleId} onChange={event => { const nextId = event.target.value; const example = EXAMPLE_LIBRARY.find(item => item.id === nextId); if (learningOpen) { if (example) { setLearningCode(example.code); setLearningResult(null); setLearningHasRun(false); setLearningCursorPosition({ line: 1, col: 1 }); } return; } onSelectedExampleChange(nextId); if (example) onLoadExample(example.code); }} aria-label="Load a ShopScript example" data-tooltip="Load a saved ShopScript example into the editor."><option value="" disabled>Load example</option>{EXAMPLE_LIBRARY.map(example => <option key={example.id} value={example.id}>{example.title}</option>)}</select>
+            <EditorThemeToggle theme={theme} onToggle={onToggleTheme} /><button className="btn-ghost" onClick={clearCurrentEditor} data-tooltip="Clear the editor and reset the current result.">{Ico.x(11)} Clear</button><button className="btn-orange" onClick={() => { runCurrentProgram(); setActiveTab("Output"); }} data-tooltip="Run the program and switch to the Output tab.">{Ico.play()} Run</button>
+          </div></div>
+          <ShopScriptCodeEditor code={editorCode} onCodeChange={updateCurrentCode} onRun={() => { runCurrentProgram(); setActiveTab("Output"); }} theme={theme} className="playground-ide" ariaLabel="ShopScript playground editor" errorLines={editorHasRun ? playgroundErrorLines : []} onCursorChange={position => learningOpen ? setLearningCursorPosition(position) : onCursorChange(position)} completionCatalog={completionCatalog} />
+          {editorHasRun && primaryPlaygroundError && <div className="editor-diagnostic playground-diagnostic" role="alert"><strong>{primaryPlaygroundError.category} error - Line {primaryPlaygroundError.line}</strong><span>{primaryPlaygroundError.message}{playgroundErrors.length > 1 ? " - " + (playgroundErrors.length - 1) + " more error(s) below" : ""}</span></div>}
+          <div className="playground-editor-footer"><span className={!editorHasRun ? "idle" : totalErrors > 0 ? "error" : "success"}>{!editorHasRun ? "Ready" : totalErrors > 0 ? "Error" : "Ready"}</span><span>Line {editorCursorPosition.line}, Col {editorCursorPosition.col} / {lines.length} lines</span><span>ShopScript v{APP_VERSION}</span></div>
         </section>
-
         <section className="playground-results ss-card">
-          <div className="playground-tabs" role="tablist" aria-label="Playground results">
-            {tabs.map(tab => (
-              <button
-                key={tab.name}
-                role="tab"
-                aria-selected={activeTab === tab.name}
-                className={activeTab === tab.name ? "active" : ""}
-                onClick={() => setActiveTab(tab.name)}
-                data-tooltip={tab.name === "Output" ? "Show execution logs, cart state, and totals." : tab.name === "Tokens" ? "Show lexical tokens produced by the lexer." : tab.name === "Errors" ? "Show lexical, syntax, and semantic diagnostics." : "Show current variable names, types, and values."}
-              >
-                {tab.name}
-                {tab.count !== undefined && <span>{tab.count}</span>}
-              </button>
-            ))}
-          </div>
-
+          <div className="playground-tabs" role="tablist" aria-label="Playground results">{tabs.map(tab => <button key={tab.name} role="tab" aria-selected={activeTab === tab.name} className={activeTab === tab.name ? "active" : ""} onClick={() => setActiveTab(tab.name)} data-tooltip={tab.name === "Output" ? "Show execution logs, cart state, and totals." : tab.name === "Tokens" ? "Show lexical tokens produced by the lexer." : tab.name === "Errors" ? "Show lexical, syntax, and semantic diagnostics." : "Show current variable names, types, and values."}>{tab.name}{tab.count !== undefined && <span>{tab.count}</span>}</button>)}</div>
           <div className="playground-tab-content">
-            {activeTab === "Output" && (
-              <div className="playground-output">
-                {!hasRun || !result ? (
-                  <div className="playground-empty">
-                    <div className="page-icon">{Ico.play()}</div>
-                    <h2>Run your program</h2>
-                    <p>Execution logs, cart state, and totals will appear here.</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="playground-output-summary">
-                      <div><span>Cart items</span><strong>{result.cart.reduce((sum, item) => sum + item.quantity, 0)}</strong></div>
-                      <div><span>Subtotal</span><strong>{"$"}{result.subtotal.toFixed(2)}</strong></div>
-                      <div><span>Discount</span><strong>{(result.discount * 100).toFixed(0)}%</strong></div>
-                      <div><span>Total</span><strong>{"$"}{result.total.toFixed(2)}</strong></div>
-                    </div>
-                    {result.cart.length > 0 && (
-                      <div className="playground-cart-list">
-                        <h3>Cart</h3>
-                        {result.cart.map(item => (
-                          <div key={item.name}><span>{item.name}<small> - {item.quantity}</small></span><strong>{"$"}{(item.price * item.quantity).toFixed(2)}</strong></div>
-                        ))}
-                      </div>
-                    )}
-                    <div className="playground-log-list">
-                      <h3>Execution log</h3>
-                      {result.logs.map((log, index) => <div key={index}><span className="log-dot" /><code>{log}</code></div>)}
-                    </div>
-                    {result.didCheckout && totalErrors === 0 && (
-                      <div className="playground-success">{Ico.check(18)}<div><strong>Checkout completed</strong><span>Final simulated total: {"$"}{result.total.toFixed(2)}</span></div></div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-
-            {activeTab === "Tokens" && (
-              <div className="playground-token-panel">
-                {!result?.tokens.length ? <div className="playground-empty"><h2>No tokens yet</h2><p>Run a program to inspect lexical output.</p></div> : (
-                  <>
-                    <div className="playground-panel-note">Token type, lexeme, and source position</div>
-                    <div className="playground-token-list">
-                      {result.tokens.map((token, index) => (
-                        <div key={index}><span className={"token-chip " + tokenClass(token.type)}>{token.value || token.type}</span><small>{token.type} - L{token.line}:C{token.col}</small></div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {activeTab === "Errors" && (
-              <div className="playground-error-panel">
-                {!hasRun ? <div className="playground-empty"><h2>No analysis yet</h2><p>Run a program to check lexical, syntax, and semantic errors.</p></div> : totalErrors === 0 ? (
-                  <div className="playground-no-errors">{Ico.check(22)}<strong>No errors found</strong><span>The program passed all currently implemented checks.</span></div>
-                ) : (
-                  errorGroups.map(group => group.items.length > 0 && (
-                    <section key={group.label}>
-                      <h3>{group.label} errors <span>{group.items.length}</span></h3>
-                      {group.items.map((error, index) => <div className="playground-error-row" key={index}>{Ico.alert(14)}<div><strong>Line {error.line}</strong><span>{error.message}</span></div></div>)}
-                    </section>
-                  ))
-                )}
-              </div>
-            )}
-
-            {activeTab === "Variables" && (
-              <div className="playground-variable-panel">
-                {!result?.variables.length ? <div className="playground-empty"><h2>No variables yet</h2><p>Declare values and run the program to populate the table.</p></div> : (
-                  <>
-                    <table className="docs-table">
-                      <thead><tr><th>Name</th><th>Type</th><th>Value</th></tr></thead>
-                      <tbody>{result.variables.map(variable => <tr key={variable.name}><td><code>{variable.name}</code></td><td>{variable.type}</td><td>{variable.value}</td></tr>)}</tbody>
-                    </table>
-                    {(result.classes.length > 0 || Object.keys(result.instances).length > 0) && (
-                      <div className="playground-oop-summary">
-                        <h3>OOP state</h3>
-                        <span>{result.classes.length} classes</span><span>{Object.keys(result.instances).length} instances</span>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
+            {activeTab === "Output" && <div className="playground-output">{!editorHasRun || !editorResult ? <div className="playground-empty"><div className="page-icon">{Ico.play()}</div><h2>Run your program</h2><p>Execution logs, cart state, and totals will appear here.</p></div> : <><div className="playground-output-summary"><div><span>Cart items</span><strong>{editorResult.cart.reduce((sum, item) => sum + item.quantity, 0)}</strong></div><div><span>Subtotal</span><strong>{"$"}{editorResult.subtotal.toFixed(2)}</strong></div><div><span>Discount</span><strong>{(editorResult.discount * 100).toFixed(0)}%</strong></div><div><span>Total</span><strong>{"$"}{editorResult.total.toFixed(2)}</strong></div></div>{editorResult.cart.length > 0 && <div className="playground-cart-list"><h3>Cart</h3>{editorResult.cart.map(item => <div key={item.name}><span>{item.name}<small> - {item.quantity}</small></span><strong>{"$"}{(item.price * item.quantity).toFixed(2)}</strong></div>)}</div>}<div className="playground-log-list"><h3>Execution log</h3>{editorResult.logs.map((log, index) => <div key={index}><span className="log-dot" /><code>{log}</code></div>)}</div>{editorResult.didCheckout && totalErrors === 0 && <div className="playground-success">{Ico.check(18)}<div><strong>Checkout completed</strong><span>Final simulated total: {"$"}{editorResult.total.toFixed(2)}</span></div></div>}</>}</div>}
+            {activeTab === "Tokens" && <div className="playground-token-panel">{!editorResult?.tokens.length ? <div className="playground-empty"><h2>No tokens yet</h2><p>Run a program to inspect lexical output.</p></div> : <><div className="playground-panel-note">Token type, lexeme, and source position</div><div className="playground-token-list">{editorResult.tokens.map((token, index) => <div key={index}><span className={"token-chip " + tokenClass(token.type)}>{token.value || token.type}</span><small>{token.type} - L{token.line}:C{token.col}</small></div>)}</div></>}</div>}
+            {activeTab === "Errors" && <div className="playground-error-panel">{!editorHasRun ? <div className="playground-empty"><h2>No analysis yet</h2><p>Run a program to check lexical, syntax, and semantic errors.</p></div> : totalErrors === 0 ? <div className="playground-no-errors">{Ico.check(22)}<strong>No errors found</strong><span>The program passed all currently implemented checks.</span></div> : errorGroups.map(group => group.items.length > 0 && <section key={group.label}><h3>{group.label} errors <span>{group.items.length}</span></h3>{group.items.map((error, index) => <div className="playground-error-row" key={index}>{Ico.alert(14)}<div><strong>Line {error.line}</strong><span>{error.message}</span></div></div>)}</section>)}</div>}
+            {activeTab === "Variables" && <div className="playground-variable-panel">{!editorResult?.variables.length ? <div className="playground-empty"><h2>No variables yet</h2><p>Declare values and run the program to populate the table.</p></div> : <><table className="docs-table"><thead><tr><th>Name</th><th>Type</th><th>Value</th></tr></thead><tbody>{editorResult.variables.map(variable => <tr key={variable.name}><td><code>{variable.name}</code></td><td>{variable.type}</td><td>{variable.value}</td></tr>)}</tbody></table>{(editorResult.classes.length > 0 || Object.keys(editorResult.instances).length > 0) && <div className="playground-oop-summary"><h3>OOP state</h3><span>{editorResult.classes.length} classes</span><span>{Object.keys(editorResult.instances).length} instances</span></div>}</>}</div>}
           </div>
         </section>
       </div>
+      {learningOpen && (
+        <section className="learning-simulator ss-card" aria-label="Learning storefront simulation">
+          <div className="learning-simulator-header"><div><span className="page-eyebrow">Live storefront feedback</span><h2>See what your code changed</h2><p>Run the lesson, then compare the script with inventory, cart, discount, total, and receipt state.</p></div><span className={"learning-simulator-state " + (!editorHasRun ? "idle" : learningHasErrors ? "error" : "success")}>{!editorHasRun ? "Waiting for run" : learningHasErrors ? "Fix code first" : "Synced with output"}</span></div>
+          <div className="learning-simulator-grid">
+            <section className="learning-sim-card learning-inventory-card"><div className="learning-sim-card-title">{Ico.box(14, "var(--theme-accent)")}<strong>Product Inventory</strong><span>{learningVisibleProducts.length}</span></div><div className="learning-inventory-list">{learningVisibleProducts.map(product => { const quantity = learningCart.find(item => item.name === product.name)?.quantity ?? 0; return <div key={product.name} className={product.runtimeUpdated ? "runtime" : ""}><img src={product.img} alt="" onError={event => { (event.target as HTMLImageElement).src = "https://placehold.co/60x60/f0f0f0/999?text=" + encodeURIComponent(product.name[0]); }} /><div><strong>{product.name}</strong><span>{"$"}{product.price.toFixed(2)} - {product.stock} in stock{product.runtimeUpdated ? " for this run" : ""}</span></div>{quantity > 0 && <em>{quantity}</em>}</div>; })}</div></section>
+            <section className="learning-sim-card learning-cart-card"><div className="learning-sim-card-title">{Ico.cart(14, "var(--theme-accent)")}<strong>Shopping Cart</strong><span>{learningCart.reduce((sum, item) => sum + item.quantity, 0)}</span></div>{!editorHasRun ? <div className="learning-sim-empty">Run code to populate the cart.</div> : learningCart.length === 0 ? <div className="learning-sim-empty">No products added yet.</div> : <div className="learning-cart-list">{learningCart.map(item => <div key={item.name}><span><strong>{item.name}</strong><small>{item.quantity} x {"$"}{item.price.toFixed(2)}</small></span><em>{"$"}{(item.price * item.quantity).toFixed(2)}</em></div>)}<div className="learning-cart-subtotal"><span>Subtotal ({learningCart.length} item{learningCart.length !== 1 ? "s" : ""})</span><strong>{"$"}{learningSubtotal.toFixed(2)}</strong></div></div>}</section>
+            <section className="learning-sim-card learning-money-card"><div className="learning-sim-card-title">{Ico.receipt(14, "var(--theme-accent)")}<strong>Checkout Summary</strong></div><div className="learning-money-rows"><div><span>Subtotal</span><strong>{"$"}{learningSubtotal.toFixed(2)}</strong></div><div><span>Discount</span><strong>{learningCoupon ? "-$" + learningDiscountAmount.toFixed(2) : "$0.00"}</strong></div><div><span>Shipping</span><strong>{"$"}{learningShipping.toFixed(2)}</strong></div><div className="total"><span>Total</span><strong>{"$"}{learningTotal.toFixed(2)}</strong></div></div><div className="learning-coupon-state"><span>Coupon</span><strong>{learningCoupon ?? "None"}</strong></div></section>
+            <section className="learning-sim-card learning-receipt-card"><div className="learning-sim-card-title">{Ico.clipboard(14, "var(--theme-accent)")}<strong>Receipt Preview</strong></div>{learningDidCheckout && !learningHasErrors ? <div className="learning-mini-receipt"><strong>ShopScript</strong><span>Thank you, {learningUser}!</span><small>Order placed successfully.</small><div><span>Order ID</span><em>{learningOrderId}</em></div><div><span>Total Paid</span><em>{"$"}{learningTotal.toFixed(2)}</em></div></div> : <div className="learning-sim-empty">{learningHasErrors ? "Fix errors to unlock receipt." : "Use checkout; and run code."}</div>}</section>
+          </div>
+        </section>
+      )}
     </main>
   );
 }
-
 function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => void; logoSrc: string }) {
   const importanceItems = [
     ["Learning by execution", "ShopScript lets students see each programming-language phase turn into visible state: tokens, diagnostics, variables, cart items, totals, logs, and receipt output."],
@@ -2184,6 +2067,11 @@ export default function App() {
     setHasRun(true);
     notifyInterpreterResult(nextResult);
   }, [code, products, coupons, notifyInterpreterResult]);
+  const evaluateCode = useCallback((source: string) => {
+    const nextResult = interpret(source, products, coupons);
+    notifyInterpreterResult(nextResult, "Lesson checked", "Review the learning signals and checkpoints to continue.");
+    return nextResult;
+  }, [products, coupons, notifyInterpreterResult]);
   const executeCode = useCallback((nextCode: string, successTitle = "Cart updated", successMessage = "The source and simulation are synchronized.") => {
     const nextResult = interpret(nextCode, products, coupons);
     setCode(nextCode);
@@ -3294,10 +3182,12 @@ export default function App() {
           code={code}
           result={result}
           hasRun={hasRun}
+          products={products}
           onCodeChange={updatePlaygroundCode}
           onRun={runProgram}
           onClear={clearEditor}
           onLoadExample={loadExampleInPlayground}
+          onEvaluateCode={evaluateCode}
           onNavigate={navigate}
           theme={editorTheme}
           onToggleTheme={toggleEditorTheme}
