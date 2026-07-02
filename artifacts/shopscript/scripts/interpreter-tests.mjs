@@ -129,6 +129,28 @@ checkout;
     assert(result.didCheckout, "expected checkout to complete");
   });
 
+  run("valid runtime product update", `
+let cart = [];
+update product "Phone Case" @ 29.00 stock 25;
+add "Phone Case" 24 @ 29.00;
+checkout;
+`, result => {
+    expectNoErrors(result.lexErrors, "lex errors");
+    expectNoErrors(result.syntaxErrors, "syntax errors");
+    expectNoErrors(result.semanticErrors, "semantic errors");
+    assert(result.cart.some(item => item.name === "Phone Case" && item.quantity === 24 && item.price === 29), "expected updated Phone Case stock to allow 24 units");
+    const phoneCase = result.runtimeInventory.find(item => item.name === "Phone Case");
+    assert(phoneCase?.stock === 25, "expected runtime inventory to expose updated Phone Case stock");
+    assert(phoneCase?.price === 29, "expected runtime inventory to expose updated Phone Case price");
+    assert(result.didCheckout, "expected checkout to complete");
+  });
+
+  run("semantic rejects unknown runtime product update", `
+let cart = [];
+update product "Tablet Z" @ 300.00 stock 2;
+`, result => {
+    expectError(result.semanticErrors, "cannot be updated because it does not exist", "semantic error");
+  });
   run("semantic rejects duplicate runtime product", `
 let cart = [];
 product "Phone Case" @ 19.00 stock 5;

@@ -89,7 +89,7 @@ Reserved words:
 
 ```text
 let int float string bool void
-add apply coupon set checkout override
+add apply coupon set checkout override update
 class new public private method this
 if else while for true false
 ```
@@ -167,6 +167,8 @@ program           ::= statement*
 
 statement         ::= declaration
                     | assignment
+                    | product_declaration
+                    | product_update
                     | add_command
                     | coupon_command
                     | checkout_command
@@ -185,6 +187,7 @@ assignment        ::= ["set"] assignment_target "=" expression ";"
 assignment_target ::= identifier | identifier "." identifier | "this" "." identifier
 
 product_declaration ::= "product" string "@" expression "stock" expression ";"
+product_update      ::= "update" "product" string "@" expression "stock" expression ";"
 add_command       ::= "add" string expression "@" expression ["override"] ";"
                     | "add" identifier expression ";"
 
@@ -301,7 +304,22 @@ Meaning:
 - Product name must not duplicate an existing inventory product.
 - Price must be non-negative.
 - Stock must be a non-negative whole number.
-### 8.2 Add a catalog product
+### 8.2 Update a runtime catalog product
+
+```shopscript
+update product "Phone Case" @ 29.00 stock 25;
+```
+
+Meaning:
+
+- Overrides an existing inventory product for the current program execution.
+- The command is runtime-only and does not permanently modify the Inventory CRUD page or browser-stored catalog.
+- Product name must already exist in the current inventory.
+- Price must be non-negative.
+- Stock must be a non-negative whole number.
+- Later `add` commands validate against the updated runtime price and stock.
+
+### 8.3 Add a catalog product
 
 ```shopscript
 add "Smartphone X" 1 @ 599.00;
@@ -315,7 +333,7 @@ Meaning:
 - Quantity must not exceed available stock.
 - Catalog price must match inventory price unless `override` is used.
 
-### 8.3 Manual sale price override
+### 8.4 Manual sale price override
 
 ```shopscript
 add "Smartphone X" 1 @ 200.00 override;
@@ -323,7 +341,7 @@ add "Smartphone X" 1 @ 200.00 override;
 
 Use `override` only when the script intentionally uses a manual or sale price. Without `override`, a catalog-price mismatch is a semantic error.
 
-### 8.4 Add an object product
+### 8.5 Add an object product
 
 ```shopscript
 add item 1;
@@ -331,7 +349,7 @@ add item 1;
 
 The object must have public `name` and `price` fields.
 
-### 8.5 Register runtime coupon
+### 8.6 Register runtime coupon
 
 ```shopscript
 coupon "FLASH25" 25%;
@@ -339,7 +357,7 @@ coupon "FLASH25" 25%;
 
 A runtime coupon registers a temporary discount code for the current program run. The discount must be from 0% to 95%. Runtime coupons cannot duplicate an existing managed/default coupon code and are not saved to the browser coupon catalog.
 
-### 8.6 Apply coupon
+### 8.7 Apply coupon
 
 ```shopscript
 apply coupon "SAVE10";
@@ -355,7 +373,7 @@ Supported default coupons in the current project. The Inventory > Coupons view c
 
 Unsupported coupon codes produce a semantic error. A script can define a temporary code before applying it with `coupon "CODE" 25%;`.
 
-### 8.7 Set shipping
+### 8.8 Set shipping
 
 ```shopscript
 set shipping = 40.00;
@@ -363,7 +381,7 @@ set shipping = 40.00;
 
 Shipping must be a non-negative number.
 
-### 8.8 Checkout
+### 8.9 Checkout
 
 ```shopscript
 checkout;
@@ -492,6 +510,7 @@ Common semantic errors:
 | --- | --- |
 | Unknown product | `add "Tablet Z" 1 @ 300.00;` |
 | Duplicate runtime product | `product "Phone Case" @ 19.00 stock 5;` |
+| Unknown runtime product update | `update product "Tablet Z" @ 300.00 stock 2;` |
 | Quantity is not positive | `add "Phone Case" 0 @ 29.00;` |
 | Quantity exceeds stock | `add "Smartphone X" 30 @ 599.00;` |
 | Price mismatch without override | `add "Smartphone X" 1 @ 200.00;` |

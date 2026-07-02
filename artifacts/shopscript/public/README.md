@@ -238,6 +238,7 @@ No Vercel environment variables are required for the static in-browser interpret
 | Declare explicit type | `<type> <name> = <value>;` | `int qty = 2;` |
 | Declare empty list | `let <name> = [];` | `let cart = [];` |
 | Register runtime product | `product "<Product>" @ <price> stock <qty>;` | `product "Hoverboard" @ 250.00 stock 2;` |
+| Update runtime product | `update product "<Product>" @ <price> stock <qty>;` | `update product "Phone Case" @ 29.00 stock 25;` |
 | Add to cart | `add "<Product>" <qty> @ <price>;` | `add "Smartphone X" 1 @ 599.00;` |
 | Override price | `add "<Product>" <qty> @ <price> override;` | `add "Smartphone X" 1 @ 200.00 override;` |
 | Create runtime coupon | `coupon "<CODE>" <percent>%;` | `coupon "FLASH25" 25%;` |
@@ -338,6 +339,19 @@ checkout;
 
 Runtime products exist for the current program run only. They do not permanently change the Inventory CRUD page.
 
+### Runtime Product Update
+
+Use `update product` when a script needs to override an existing catalog product for the current run, such as adjusting stock or price for a scenario:
+
+```shopscript
+let cart = [];
+update product "Phone Case" @ 29.00 stock 25;
+add "Phone Case" 24 @ 29.00;
+checkout;
+```
+
+`update product` affects interpreter validation for the current run only. It does not save changes to the Inventory page or browser localStorage.
+
 ### Manual Price Override
 
 ShopScript validates catalog prices by default. If a script intentionally uses a sale/manual price, add `override` after the price:
@@ -418,4 +432,3 @@ ShopScript is designed as an educational programming language interpreter, not a
 
 **ShopScript v0.3.0**  
 Programming Languages Final Project
-

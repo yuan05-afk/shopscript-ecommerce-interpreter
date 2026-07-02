@@ -47,7 +47,7 @@ interface CompletionState {
 }
 
 const DECLARATION_KEYWORDS = new Set(["let", "int", "float", "string", "bool", "void"]);
-const COMMAND_KEYWORDS = new Set(["product", "add", "apply", "coupon", "set", "checkout", "override"]);
+const COMMAND_KEYWORDS = new Set(["product", "update", "add", "apply", "coupon", "set", "checkout", "override"]);
 const CONTROL_KEYWORDS = new Set(["if", "else", "for", "while", "return"]);
 const OOP_KEYWORDS = new Set(["class", "new", "public", "private", "method", "this"]);
 const DOMAIN_KEYWORDS = new Set(["stock", "shipping", "budget", "cart", "user"]);
@@ -70,6 +70,7 @@ const BASE_COMPLETIONS: CompletionItem[] = [
   { label: "true", insertText: "true", detail: "Boolean true literal.", kind: "value", priority: 80 },
   { label: "false", insertText: "false", detail: "Boolean false literal.", kind: "value", priority: 80 },
   { label: "product", insertText: "product ", detail: "Register a product for this run.", kind: "command", priority: 90 },
+  { label: "update product", insertText: "update product ", detail: "Override an existing catalog product for this run.", kind: "command", priority: 94 },
   { label: "add", insertText: "add ", detail: "Add a product or object instance to the cart.", kind: "command", priority: 95 },
   { label: "apply coupon", insertText: "apply coupon ", detail: "Apply a known coupon code.", kind: "command", priority: 96 },
   { label: "coupon", insertText: "coupon ", detail: "Create a runtime coupon for this program.", kind: "command", priority: 88 },

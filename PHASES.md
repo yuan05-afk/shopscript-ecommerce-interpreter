@@ -1,4 +1,4 @@
-﻿# ShopScript Full Phase Documentation
+# ShopScript Full Phase Documentation
 
 Version: ShopScript v0.3.0  
 Project: Design and Implementation of a Mini Programming Language  
@@ -68,7 +68,7 @@ The editor visually distinguishes:
 - Numbers such as `1`, `29.00`, and `1200.50`.
 - Booleans such as `true` and `false`.
 - Declaration keywords such as `let`, `int`, `float`, `string`, and `bool`.
-- E-commerce commands such as `product`, `add`, `apply`, `coupon`, `set`, `checkout`, and `override`.
+- E-commerce commands such as `product`, `update product`, `add`, `apply`, `coupon`, `set`, `checkout`, and `override`.
 - Control-flow keywords such as `if`, `else`, `for`, and `while`.
 - OOP keywords such as `class`, `new`, `public`, `private`, `method`, and `this`.
 - Operators such as `=`, `+`, `-`, `*`, `/`, `%`, `<`, `>`, `==`, `!=`, `<=`, `>=`, `&&`, `||`, and `!`.
@@ -205,20 +205,28 @@ set this.price = this.price * rate;
 product "Hoverboard" @ 250.00 stock 2;
 ```
 
-### 5.4 Add Product To Cart
+### 5.4 Runtime Product Update
+
+```shopscript
+update product "Phone Case" @ 29.00 stock 25;
+```
+
+`update product` overrides an existing catalog product for the current program run only. It does not save changes to the Inventory page. Later `add` commands validate against the updated runtime stock and price.
+
+### 5.5 Add Product To Cart
 
 ```shopscript
 add "Smartphone X" 1 @ 599.00;
 add "Phone Case" qty @ 29.00;
 ```
 
-### 5.5 Manual Price Override
+### 5.6 Manual Price Override
 
 ```shopscript
 add "Smartphone X" 1 @ 200.00 override;
 ```
 
-### 5.6 Coupons
+### 5.7 Coupons
 
 ```shopscript
 coupon "FLASH25" 25%;
@@ -226,14 +234,14 @@ apply coupon "FLASH25";
 apply coupon "SAVE10";
 ```
 
-### 5.7 Shipping And Checkout
+### 5.8 Shipping And Checkout
 
 ```shopscript
 set shipping = 40.00;
 checkout;
 ```
 
-### 5.8 Control Flow
+### 5.9 Control Flow
 
 ```shopscript
 if (ready && qty == 2) {
@@ -251,7 +259,7 @@ for (int i = 0; i < 2; i = i + 1) {
 }
 ```
 
-### 5.9 OOP
+### 5.10 OOP
 
 ```shopscript
 class Product {
@@ -405,7 +413,7 @@ ShopScript recognizes language and domain keywords:
 
 ```text
 let int float string bool void
-product stock add apply coupon set checkout override
+product stock add apply coupon set checkout override update
 if else for while
 class new public private method this
 true false
@@ -563,6 +571,7 @@ program           ::= statement*
 statement         ::= declaration
                     | assignment
                     | product_declaration
+                    | product_update
                     | add_command
                     | coupon_command
                     | checkout_command
@@ -579,6 +588,7 @@ assignment        ::= ["set"] assignment_target "=" expression ";"
 assignment_target ::= identifier | identifier "." identifier | "this" "." identifier
 
 product_declaration ::= "product" string "@" expression "stock" expression ";"
+product_update      ::= "update" "product" string "@" expression "stock" expression ";"
 add_command       ::= "add" string expression "@" expression ["override"] ";"
                     | "add" identifier expression ";"
 
@@ -891,6 +901,7 @@ Expected result:
 The interpreter validates:
 
 - Product must exist in inventory unless registered during the current script.
+- `update product` must target an existing product and affects only the current run.
 - Runtime product names cannot duplicate existing inventory products.
 - Product price must be non-negative.
 - Product stock must be a non-negative whole number.
@@ -1630,4 +1641,3 @@ The interpreter tests cover:
 | Phase 8 | Object-oriented features | Complete |
 
 ShopScript now satisfies the required programming-language phases through a browser-based Mini IDE, interpreter pipeline, analyzer panels, simulator output, examples, documentation, tests, and deployable Vercel app.
-

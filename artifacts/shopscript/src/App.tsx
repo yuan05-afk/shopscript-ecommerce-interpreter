@@ -182,12 +182,13 @@ type SiteSearchResult = {
   label: string;
   description: string;
   group: string;
-  action: "navigate" | "docs" | "example" | "inventory" | "coupon" | "theme" | "playground" | "home-editor";
+  action: "navigate" | "docs" | "example" | "inventory" | "coupon" | "theme" | "playground" | "home-editor" | "creator";
   nav?: NavItem;
   docsId?: string;
   code?: string;
   searchTerm?: string;
   theme?: Theme;
+  targetId?: string;
 };
 
 interface ShopScriptExample {
@@ -280,7 +281,31 @@ const EXAMPLE_LIBRARY: ShopScriptExample[] = [
     ].join("\n"),
     concepts: ["product", "runtime inventory", "stock", "semantic"],
     expected: "Hoverboard is registered for this run, added to the cart, and accepted by semantic validation.",
-  },  {
+  },
+  {
+    id: "runtime-product-update",
+    title: "Update product stock in code",
+    category: "E-commerce",
+    summary: "Override an existing catalog product's runtime price and stock without changing the saved Inventory page.",
+    code: [
+      "// Runtime Product Update",
+      'let user = "Alicia";',
+      "let budget = 1500;",
+      "let cart = [];",
+      "",
+      'update product "Smartphone X" @ 600.00 stock 1;',
+      'add "Smartphone X" 1 @ 599.00 override;',
+      'add "Wireless Earbuds" 1 @ 199.00;',
+      'add "Phone Case" 2 @ 29.00;',
+      "",
+      'apply coupon "SAVE10";',
+      "set shipping = 40.00;",
+      "checkout;",
+    ].join("\n"),
+    concepts: ["update product", "runtime inventory", "stock", "price", "override"],
+    expected: "Smartphone X shows the runtime stock/price in Home, while the saved Inventory page remains unchanged.",
+  },
+  {
     id: "price-override",
     title: "Manual sale price override",
     category: "E-commerce",
@@ -346,6 +371,272 @@ const EXAMPLE_LIBRARY: ShopScriptExample[] = [
     expected: "Class and instance cards appear, then both custom products are added and checked out.",
   },
 ];
+interface PlaygroundLesson {
+  id: string;
+  level: "Beginner" | "Core" | "Intermediate" | "Advanced" | "Expert";
+  title: string;
+  focus: string;
+  objective: string;
+  task: string;
+  starterCode: string;
+  syntaxTargets: string[];
+  hints: string[];
+  checkpoints: string[];
+  watch: string[];
+}
+
+const PLAYGROUND_LESSONS: PlaygroundLesson[] = [
+  {
+    id: "declare-values",
+    level: "Beginner",
+    title: "Declare values and read variables",
+    focus: "Variables, literals, and semicolons",
+    objective: "Write the first valid ShopScript statements yourself and see how declarations become runtime variables.",
+    task: "Complete the four TODO lines. You need user as a string, budget as a number, ready as a boolean, and cart as an empty list.",
+    starterCode: [
+      "// Lesson 1 - variables and literals",
+      "// Complete each TODO using valid ShopScript syntax.",
+      "// 1. Declare user as the string Ava.",
+      "",
+      "// 2. Declare budget as 1200.00.",
+      "",
+      "// 3. Declare ready as true.",
+      "",
+      "// 4. Declare cart as an empty list.",
+    ].join("\n"),
+    syntaxTargets: ['let user = "Ava";', "let budget = 1200.00;", "let ready = true;", "let cart = [];"],
+    hints: [
+      "Shape: let name = value;",
+      "Strings use quotes. Numbers and booleans do not use quotes.",
+      "The empty list literal is []. Every line must end with a semicolon.",
+    ],
+    checkpoints: ["No lexical, syntax, or semantic errors", "Variables include user, budget, ready, and cart", "Tokens panel shows string, number, boolean, and list-related symbols"],
+    watch: ["Variables", "Tokens", "Errors"],
+  },
+  {
+    id: "cart-checkout",
+    level: "Core",
+    title: "Build a real cart",
+    focus: "add commands and checkout",
+    objective: "Move from declarations into executable store behavior by adding a catalog product and checking out.",
+    task: "Complete the add command for Phone Case, quantity 2, price 29.00, then run checkout.",
+    starterCode: [
+      "// Lesson 2 - cart and checkout",
+      'let user = "Noah";',
+      "let cart = [];",
+      "",
+      "// TODO: add Phone Case, quantity 2, at 29.00.",
+      "",
+      "// TODO: checkout when the cart is no longer empty.",
+    ].join("\n"),
+    syntaxTargets: ['add "Phone Case" 2 @ 29.00;', "checkout;"],
+    hints: [
+      "Shape: add \"Product Name\" quantity @ price;",
+      "Product names must match the inventory exactly.",
+      "checkout; only succeeds after at least one product has been added.",
+    ],
+    checkpoints: ["Cart contains Phone Case", "Checkout completes", "Output tab shows subtotal and total"],
+    watch: ["Cart", "Output logs", "Receipt state"],
+  },
+  {
+    id: "discount-shipping",
+    level: "Core",
+    title: "Apply coupon and shipping",
+    focus: "coupon, shipping, totals, receipt",
+    objective: "Learn how discount and shipping statements change the final simulated receipt.",
+    task: "Add the missing coupon and shipping statements before checkout. Use SAVE10 and shipping 40.00.",
+    starterCode: [
+      "// Lesson 3 - coupons and shipping",
+      'let user = "Mika";',
+      "let cart = [];",
+      "",
+      'add "Wireless Earbuds" 1 @ 199.00;',
+      'add "Phone Case" 2 @ 29.00;',
+      "",
+      "// TODO: apply the SAVE10 coupon.",
+      "// TODO: set shipping to 40.00.",
+      "checkout;",
+    ].join("\n"),
+    syntaxTargets: ['apply coupon "SAVE10";', "set shipping = 40.00;"],
+    hints: [
+      "Shape: apply coupon \"CODE\";",
+      "Shape: set shipping = amount;",
+      "Shipping must be zero or higher, and coupon codes are strings.",
+    ],
+    checkpoints: ["SAVE10 is applied", "Shipping is greater than zero", "Receipt-ready checkout completes"],
+    watch: ["Coupon", "Receipt", "Totals"],
+  },
+  {
+    id: "debug-semantics",
+    level: "Intermediate",
+    title: "Debug semantic mistakes",
+    focus: "semantic validation after valid syntax",
+    objective: "Practice fixing code that is shaped correctly but breaks inventory, quantity, coupon, or shipping rules.",
+    task: "Run the program, read the Errors tab, then fix the invalid quantity, coupon, and shipping value.",
+    starterCode: [
+      "// Lesson 4 - fix semantic errors",
+      'let user = "Carol";',
+      "let cart = [];",
+      "",
+      'add "Phone Case" 0 @ 29.00;',
+      'apply coupon "BLACKFRIDAY";',
+      "set shipping = -5.00;",
+      "checkout;",
+    ].join("\n"),
+    syntaxTargets: ['add "Phone Case" 1 @ 29.00;', 'apply coupon "SAVE10";', "set shipping = 0.00;"],
+    hints: [
+      "A quantity must be greater than zero.",
+      "Use a supported coupon such as SAVE10, STUDENT10, or NONE.",
+      "Shipping cannot be negative.",
+    ],
+    checkpoints: ["Errors tab has zero semantic errors", "Cart is non-empty", "Checkout succeeds after fixes"],
+    watch: ["Errors", "Diagnostics", "Output logs"],
+  },
+  {
+    id: "control-flow",
+    level: "Advanced",
+    title: "Use types and control flow",
+    focus: "typed values, while loop, if block",
+    objective: "Use a loop to compute quantity, then conditionally add inventory based on runtime state.",
+    task: "Fix the loop and if conditions so qty becomes 2 before adding Phone Case.",
+    starterCode: [
+      "// Lesson 5 - types and control flow",
+      'string user = "Ava";',
+      "let cart = [];",
+      "int qty = 0;",
+      "float unitPrice = 29.00;",
+      "bool ready = true;",
+      "",
+      "while (qty < 0) { // TODO: change 0 to 2.",
+      "  qty = qty + 1;",
+      "}",
+      "",
+      "if (ready && qty == 0) { // TODO: change 0 to 2.",
+      '  add "Phone Case" qty @ unitPrice;',
+      "}",
+      "",
+      "checkout;",
+    ].join("\n"),
+    syntaxTargets: ["while (qty < 2) {", "qty = qty + 1;", "if (ready && qty == 2) {", 'add "Phone Case" qty @ unitPrice;'],
+    hints: [
+      "while repeats while its condition is true.",
+      "The loop condition must allow qty to climb from 0 to 2.",
+      "The add command can use variables for quantity and price.",
+    ],
+    checkpoints: ["qty becomes 2", "No errors", "Cart contains two Phone Case units"],
+    watch: ["Variables", "Cart", "Execution log"],
+  },
+  {
+    id: "runtime-inventory",
+    level: "Advanced",
+    title: "Change product data from code",
+    focus: "runtime inventory and price override",
+    objective: "Temporarily override a catalog product for the current interpreter run without editing the Inventory page.",
+    task: "Write the update product command for Smartphone X, then add it with intentional override pricing.",
+    starterCode: [
+      "// Lesson 6 - runtime inventory update",
+      'let user = "Alicia";',
+      "let cart = [];",
+      "",
+      "// TODO: update Smartphone X to price 600.00 and stock 1.",
+      "// TODO: add Smartphone X at 599.00 using override.",
+      "checkout;",
+    ].join("\n"),
+    syntaxTargets: ['update product "Smartphone X" @ 600.00 stock 1;', 'add "Smartphone X" 1 @ 599.00 override;'],
+    hints: [
+      "Shape: update product \"Name\" @ price stock quantity;",
+      "Use override when your add price intentionally differs from the runtime/catalog price.",
+      "Runtime updates affect this program result, not saved Inventory data.",
+    ],
+    checkpoints: ["Runtime inventory contains Smartphone X with stock 1", "Cart contains Smartphone X", "Checkout succeeds"],
+    watch: ["Inventory state", "Cart", "Semantic validation"],
+  },
+  {
+    id: "oop-products",
+    level: "Expert",
+    title: "Create products with OOP",
+    focus: "classes, methods, this, encapsulation",
+    objective: "Reach the deepest ShopScript syntax by creating an object product with a method and adding it through a loop.",
+    task: "Complete the method body, instantiate Product, call the method, then add the object twice with a for loop.",
+    starterCode: [
+      "// Lesson 7 - OOP products",
+      "let cart = [];",
+      "",
+      "class Product {",
+      '  public string name = "Phone Case";',
+      "  public float price = 29.00;",
+      "  private float cost = 10.00;",
+      "",
+      "  public method discount(float rate) {",
+      "    // TODO: multiply this.price by rate.",
+      "  }",
+      "}",
+      "",
+      "// TODO: create item from Product.",
+      "// TODO: call item.discount(0.5);",
+      "",
+      "for (int i = 0; i < 2; i = i + 1) {",
+      "  // TODO: add item 1;",
+      "}",
+      "",
+      "checkout;",
+    ].join("\n"),
+    syntaxTargets: ["set this.price = this.price * rate;", "let item = new Product;", "item.discount(0.5);", "add item 1;"],
+    hints: [
+      "Inside a method, use this.price to mutate the current object.",
+      "Object creation shape: let item = new Product;",
+      "A public name and public price are required before add item 1; can work.",
+    ],
+    checkpoints: ["At least one class exists", "At least one object instance exists", "Object product is added and checkout succeeds"],
+    watch: ["OOP state", "Variables", "Cart", "Receipt"],
+  },
+];
+
+type LessonStatus = { complete: boolean; label: string; note: string };
+
+function getPlaygroundLessonStatus(lesson: PlaygroundLesson, result: InterpreterResult | null, hasRun: boolean, totalErrors: number): LessonStatus {
+  if (!hasRun || !result) return { complete: false, label: "Not checked", note: "Start the exercise, write the missing syntax, then run a check." };
+  const noErrors = totalErrors === 0;
+  const variableNames = new Set(result.variables.map(variable => variable.name));
+  const cartUnits = result.cart.reduce((sum, item) => sum + item.quantity, 0);
+  const hasCartItem = (name: string, quantity = 1) => result.cart.some(item => item.name === name && item.quantity >= quantity);
+  const smartphoneRuntime = result.runtimeInventory.find(product => product.name === "Smartphone X");
+  const complete = (() => {
+    switch (lesson.id) {
+      case "declare-values": return noErrors && ["user", "budget", "ready", "cart"].every(name => variableNames.has(name));
+      case "cart-checkout": return noErrors && result.didCheckout && hasCartItem("Phone Case", 2);
+      case "discount-shipping": return noErrors && result.didCheckout && result.discount > 0 && result.shipping > 0;
+      case "debug-semantics": return noErrors && result.didCheckout && cartUnits > 0;
+      case "control-flow": return noErrors && hasCartItem("Phone Case", 2) && result.variables.some(variable => variable.name === "qty" && variable.value === "2");
+      case "runtime-inventory": return noErrors && result.didCheckout && Boolean(smartphoneRuntime && smartphoneRuntime.stock === 1 && smartphoneRuntime.price === 600) && hasCartItem("Smartphone X", 1);
+      case "oop-products": return noErrors && result.didCheckout && result.classes.length > 0 && Object.keys(result.instances).length > 0;
+      default: return noErrors;
+    }
+  })();
+  if (complete) return { complete: true, label: "Mastered", note: "Lesson passed. The next module is now unlocked." };
+  if (totalErrors > 0) return { complete: false, label: "Needs fix", note: "Read the Errors tab, fix the exact line, then run the check again." };
+  return { complete: false, label: "Almost", note: "The code runs, but one or more lesson checkpoints are still missing." };
+}
+function getPlaygroundLessonSolution(lessonId: string) {
+  switch (lessonId) {
+    case "declare-values":
+      return ["// Lesson 1 - variables and literals", 'let user = "Ava";', "let budget = 1200.00;", "let ready = true;", "let cart = [];"].join("\n");
+    case "cart-checkout":
+      return ["// Lesson 2 - cart and checkout", 'let user = "Noah";', "let cart = [];", "", 'add "Phone Case" 2 @ 29.00;', "checkout;"].join("\n");
+    case "discount-shipping":
+      return ["// Lesson 3 - coupons and shipping", 'let user = "Mika";', "let cart = [];", "", 'add "Wireless Earbuds" 1 @ 199.00;', 'add "Phone Case" 2 @ 29.00;', 'apply coupon "SAVE10";', "set shipping = 40.00;", "checkout;"].join("\n");
+    case "debug-semantics":
+      return ["// Lesson 4 - fixed semantic errors", 'let user = "Carol";', "let cart = [];", "", 'add "Phone Case" 1 @ 29.00;', 'apply coupon "SAVE10";', "set shipping = 0.00;", "checkout;"].join("\n");
+    case "control-flow":
+      return SAMPLE_LANGUAGE_FEATURES;
+    case "runtime-inventory":
+      return ["// Lesson 6 - runtime inventory update", 'let user = "Alicia";', "let cart = [];", "", 'update product "Smartphone X" @ 600.00 stock 1;', 'add "Smartphone X" 1 @ 599.00 override;', "checkout;"].join("\n");
+    case "oop-products":
+      return SAMPLE_OOP_METHODS;
+    default:
+      return "";
+  }
+}
 // --- Fallback images for OOP / custom products --------------------------------
 const OOP_IMG = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop&auto=format";
 const OOP_IMG_SM = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=60&h=60&fit=crop&auto=format";
@@ -754,11 +1045,11 @@ function GlobalTooltip() {
 }
 const DOC_SECTIONS = [
   { id: "overview", title: "Overview", keywords: "purpose educational ecommerce interpreter scope" },
-  { id: "quick-start", title: "Quick start", keywords: "install pnpm localhost windows run setup" },
+  { id: "quick-start", title: "Quick start", keywords: "install pnpm localhost windows run setup git clone github vercel deployment" },
   { id: "pipeline", title: "Interpreter pipeline", keywords: "lexer lexical syntax semantic execution tokens" },
   { id: "syntax", title: "Language syntax", keywords: "let string number boolean list grammar semicolon comments" },
   { id: "editor", title: "Mini IDE", keywords: "editor syntax highlighting light dark theme tab keyboard ctrl enter" },
-  { id: "commands", title: "E-commerce commands", keywords: "add coupon shipping checkout inventory cart price override sale" },
+  { id: "commands", title: "E-commerce commands", keywords: "add coupon shipping checkout inventory cart price override sale update product runtime stock" },
   { id: "oop", title: "Object-oriented syntax", keywords: "class new instance field set object oop" },
   { id: "analyzer", title: "Analyzer output", keywords: "tokens errors variables logs receipt panels" },
   { id: "status", title: "Current status", keywords: "limitations planned control flow scope types methods tests" },
@@ -858,10 +1149,10 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
                 <div><span className="docs-kicker">Local development</span><h2>Quick start</h2></div>
                 <span className="docs-status implemented">Verified</span>
               </div>
-              <p>This is a pnpm workspace. Run commands from the repository root and do not use npm to install project dependencies. Corepack can run the pinned pnpm version from <code>packageManager</code>.</p>
+              <p>This is a pnpm workspace. Clone the repository first, run commands from the repository root, and do not use npm to install project dependencies. Corepack can run the pinned pnpm version from <code>packageManager</code>.</p>
               <h3>Windows PowerShell</h3>
-              <pre><code>{"corepack pnpm install\ncorepack pnpm --filter @workspace/shopscript run dev"}</code></pre>
-              <p>Open <strong>http://localhost:5173/</strong>. Keep the terminal running while using the website. <code>PORT</code> and <code>BASE_PATH</code> are optional local overrides.</p>
+              <pre><code>{"node --version\ngit --version\ncorepack --version\ncorepack enable\ngit clone https://github.com/yuan05-afk/shopscript-ecommerce-interpreter.git\ncd shopscript-ecommerce-interpreter\ncorepack pnpm install\ncorepack pnpm --filter @workspace/shopscript run dev"}</code></pre>
+              <p>Open <strong>http://localhost:5173/</strong>. Keep the terminal running while using the website. If the repository is already downloaded, start from its root folder before running <code>corepack pnpm install</code>. <code>PORT</code> and <code>BASE_PATH</code> are optional local overrides.</p>
               <h3>Verify changes</h3>
               <pre><code>{"corepack pnpm --filter @workspace/shopscript run typecheck\ncorepack pnpm --filter @workspace/shopscript run test:interpreter\ncorepack pnpm --filter @workspace/shopscript run build"}</code></pre>
               <h3>Vercel deployment</h3>
@@ -954,6 +1245,7 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
                   <tbody>
                     <tr><td>Add product</td><td><code>{'add "Smartphone X" 1 @ 599.00;'}</code></td><td>Adds a known product and quantity.</td></tr>
                     <tr><td>Register runtime product</td><td><code>{'product "Hoverboard" @ 250.00 stock 2;'}</code></td><td>Registers a product for the current program run.</td></tr>
+                    <tr><td>Update runtime product</td><td><code>{'update product "Phone Case" @ 29.00 stock 25;'}</code></td><td>Overrides an existing catalog product for this run only.</td></tr>
                     <tr><td>Override price</td><td><code>{'add "Smartphone X" 1 @ 200.00 override;'}</code></td><td>Uses an intentional manual or sale price.</td></tr>
                     <tr><td>Create coupon</td><td><code>{'coupon "FLASH25" 25%;'}</code></td><td>Registers a temporary coupon for the current run.</td></tr>
                     <tr><td>Apply coupon</td><td><code>{'apply coupon "SAVE10";'}</code></td><td>Applies a supported discount.</td></tr>
@@ -973,7 +1265,7 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
               </div>
               <div className="docs-callout neutral">
                 {Ico.cart(17, "hsl(220 60% 50%)")}
-                <div><strong>Interactive Home controls</strong><span>Clicking a product, changing its quantity, or removing it updates the matching add statement in the editor and runs the source again. Stock limits and manual price overrides are validated by the interpreter.</span></div>
+                <div><strong>Interactive Home controls</strong><span>Clicking a product, changing its quantity, or removing it updates the matching add statement in the editor and runs the source again. Stock limits, runtime product updates, and manual price overrides are validated by the interpreter.</span></div>
               </div>
             </article>
           )}
@@ -1021,9 +1313,9 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
               <div className="docs-section-heading">
                 <span className="docs-step">09</span>
                 <div><span className="docs-kicker">Roadmap alignment</span><h2>Current implementation status</h2></div>
-                <span className="docs-status progress">In progress</span>
+                <span className="docs-status implemented">Complete</span>
               </div>
-              <p>The website now demonstrates the main academic language requirements. Remaining work is focused on final submission polish and verification.</p>
+              <p>The website now demonstrates the required academic language phases: lexical analysis, syntax analysis, semantic checks, scope and binding, control flow, data types, and OOP. Remaining items are optional presentation improvements, not missing core requirements.</p>
               <div className="docs-status-columns">
                 <div>
                   <h3>{Ico.check(15)} Available now</h3>
@@ -1031,7 +1323,7 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
                     <li>Lexer and token display</li>
                     <li>Current-statement syntax checks</li>
                     <li>E-commerce semantic validation</li>
-                    <li>Runtime product registration from ShopScript code</li>
+                    <li>Runtime product registration and runtime product updates from ShopScript code</li>
                     <li>Cart, discount, checkout, and receipt</li>
                     <li>Variables and basic classes/instances</li>
                     <li>Shared syntax-highlighted Light/Dark editor</li>
@@ -1045,16 +1337,16 @@ function DocsPage({ onNavigate, onSmoothScrollTo }: { onNavigate: (page: NavItem
                   </ul>
                 </div>
                 <div>
-                  <h3>{Ico.alert(15, "var(--theme-accent-strong)")} Remaining polish</h3>
+                  <h3>{Ico.alert(15, "var(--theme-accent-strong)")} Optional final review</h3>
                   <ul>
                     <li>Optional AST and scope visualization in the analyzer</li>
-                    <li>Responsive and keyboard-accessibility audit</li>
-                    <li>Final requirements audit against the project specification PDFs</li>
+                    <li>Extra responsive and keyboard-accessibility review before presentation</li>
+                    <li>Instructor-specific wording or demo-flow changes if requested</li>
                   </ul>
                 </div>
               </div>
               <div className="docs-next-card">
-                <div><span className="page-eyebrow">Next project milestone</span><strong>Final submission audit</strong><p>The required runtime, language spec, examples, and regression tests are in place. The next roadmap work is the final requirements and demo-flow audit.</p></div>
+                <div><span className="page-eyebrow">Current milestone</span><strong>Final submission ready</strong><p>The required runtime, language spec, examples, PHASES documentation, regression tests, and Vercel build are in place. Remaining changes should be limited to presentation polish or instructor feedback.</p></div>
                 <button className="btn-orange" onClick={() => onNavigate("Playground")} data-tooltip="Open the focused ShopScript coding workspace.">Open Playground {Ico.chevron(13, "white")}</button>
               </div>
             </article>
@@ -1180,6 +1472,12 @@ interface PlaygroundPageProps {
 
 function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, onLoadExample, onNavigate, theme, onToggleTheme, cursorPosition, onCursorChange, selectedExampleId, onSelectedExampleChange, completionCatalog }: PlaygroundPageProps) {
   const [activeTab, setActiveTab] = useState<PlaygroundTab>("Output");
+  const [learningOpen, setLearningOpen] = useState(false);
+  const [activeLessonId, setActiveLessonId] = useState(PLAYGROUND_LESSONS[0].id);
+  const [revealedHints, setRevealedHints] = useState(1);
+  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(() => new Set());
+  const [learningUnlocked, setLearningUnlocked] = useState(false);
+  const [learningConfirm, setLearningConfirm] = useState<"solution" | "unlock" | null>(null);
   const lines = code.split("\n");
 
   const totalErrors = (result?.lexErrors.length ?? 0) + (result?.syntaxErrors.length ?? 0) + (result?.semanticErrors.length ?? 0);
@@ -1191,6 +1489,68 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
   const playgroundErrors = errorGroups.flatMap(group => group.items.map(error => ({ ...error, category: group.label })));
   const playgroundErrorLines = [...new Set(playgroundErrors.map(error => error.line))];
   const primaryPlaygroundError = playgroundErrors[0];
+  const activeLesson = PLAYGROUND_LESSONS.find(lesson => lesson.id === activeLessonId) ?? PLAYGROUND_LESSONS[0];
+  const activeLessonRunStatus = getPlaygroundLessonStatus(activeLesson, result, hasRun, totalErrors);
+  const activeLessonCompleted = completedLessonIds.has(activeLesson.id) || activeLessonRunStatus.complete;
+  const lessonStatus: LessonStatus = activeLessonCompleted
+    ? { complete: true, label: "Mastered", note: "Module passed. The next lesson is unlocked." }
+    : activeLessonRunStatus;
+  const completedLessons = completedLessonIds.size;
+  const lessonIndex = PLAYGROUND_LESSONS.findIndex(lesson => lesson.id === activeLesson.id);
+  const isLessonUnlocked = (index: number) => learningUnlocked || index === 0 || PLAYGROUND_LESSONS.slice(0, index).every(lesson => completedLessonIds.has(lesson.id));
+  const nextLessonUnlocked = lessonIndex < PLAYGROUND_LESSONS.length - 1 && isLessonUnlocked(lessonIndex + 1);
+  const currentStageLabel = learningUnlocked ? "Review mode" : activeLessonCompleted ? "Unlocked next" : "Locked path";
+  const activeLessonSolution = getPlaygroundLessonSolution(activeLesson.id);
+  const learningSignals = [
+    { label: "Editor", value: lines.length + " lines", detail: "Source statements and comments" },
+    { label: "Tokens", value: String(result?.tokens.length ?? 0), detail: "Lexer output" },
+    { label: "Errors", value: String(totalErrors), detail: "Lexical, syntax, semantic" },
+    { label: "Variables", value: String(result?.variables.length ?? 0), detail: "Names, scope, values" },
+    { label: "Cart", value: String(result?.cart.reduce((sum, item) => sum + item.quantity, 0) ?? 0), detail: "Products added by code" },
+    { label: "Receipt", value: result?.didCheckout && totalErrors === 0 ? "Ready" : "Pending", detail: "Checkout result" },
+    { label: "Inventory", value: String(result?.runtimeInventory.length ?? 0), detail: "Runtime product changes" },
+    { label: "OOP", value: (result?.classes.length ?? 0) + "/" + Object.keys(result?.instances ?? {}).length, detail: "Classes / instances" },
+  ];
+  useEffect(() => {
+    if (!activeLessonRunStatus.complete) return;
+    setCompletedLessonIds(current => {
+      if (current.has(activeLesson.id)) return current;
+      const next = new Set(current);
+      next.add(activeLesson.id);
+      return next;
+    });
+  }, [activeLesson.id, activeLessonRunStatus.complete]);
+
+  const loadActiveLesson = () => {
+    onSelectedExampleChange("");
+    onCodeChange(activeLesson.starterCode);
+    setActiveTab("Output");
+    setLearningOpen(true);
+    setRevealedHints(1);
+    setLearningConfirm(null);
+  };
+  const moveLesson = (direction: -1 | 1) => {
+    const nextIndex = Math.min(PLAYGROUND_LESSONS.length - 1, Math.max(0, lessonIndex + direction));
+    if (!isLessonUnlocked(nextIndex)) return;
+    const nextLesson = PLAYGROUND_LESSONS[nextIndex];
+    if (nextLesson) {
+      setActiveLessonId(nextLesson.id);
+      setRevealedHints(1);
+      setLearningConfirm(null);
+    }
+  };
+  const revealLessonSolution = () => {
+    onSelectedExampleChange("");
+    onCodeChange(activeLessonSolution);
+    setActiveTab("Output");
+    setRevealedHints(activeLesson.hints.length);
+    setLearningConfirm(null);
+  };
+  const confirmUnlockAll = () => {
+    setLearningUnlocked(true);
+    setLearningConfirm(null);
+  };
+
   const tabs: Array<{ name: PlaygroundTab; count?: number }> = [
     { name: "Output", count: result?.logs.length },
     { name: "Tokens", count: result?.tokens.length },
@@ -1208,6 +1568,7 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
         </div>
         <div className="playground-hero-actions">
           <button className="btn-ghost" onClick={() => onNavigate("Home")} data-tooltip="Return to the Home dashboard with the full storefront simulation.">{Ico.cart(14)} Open Home dashboard</button>
+          <button className={"btn-ghost playground-learn-toggle" + (learningOpen ? " active" : "")} onClick={() => setLearningOpen(open => !open)} data-tooltip="Open the guided ShopScript learning path inside Playground.">{Ico.book(14)} {learningOpen ? "Hide learning path" : "Learning path"}</button>
           <button className="btn-orange" onClick={() => { onRun(); setActiveTab("Output"); }} data-tooltip="Execute the current ShopScript program and show output first.">{Ico.play()} Run program</button>
         </div>
       </section>
@@ -1220,6 +1581,119 @@ function PlaygroundPage({ code, result, hasRun, onCodeChange, onRun, onClear, on
         <div><span>Total</span><strong>{"$"}{(result?.total ?? 0).toFixed(2)}</strong></div>
       </section>
 
+      {learningOpen && (
+        <section className="playground-learning ss-card" aria-label="ShopScript guided learning path">
+          <div className="learning-header">
+            <div>
+              <span className="page-eyebrow">Guided tutorial</span>
+              <h2>Code lessons, not copy-paste examples</h2>
+              <p>Each module gives an incomplete program. Type the missing ShopScript syntax, run the checker, inspect the output panels, then unlock the next lesson when the checkpoints pass.</p>
+            </div>
+            <div className="learning-progress" aria-label="Completed lessons">
+              <strong>{completedLessons}/{PLAYGROUND_LESSONS.length}</strong>
+              <span>{currentStageLabel}</span>
+              <button type="button" onClick={() => learningUnlocked ? setLearningUnlocked(false) : setLearningConfirm("unlock")}>{learningUnlocked ? "Use locks" : "Unlock all modules"}</button>
+            </div>
+          </div>
+
+          {learningConfirm === "unlock" && (
+            <div className="learning-confirm learning-confirm-unlock" role="alert">
+              <div><strong>Confirm unlock all modules</strong><span>This opens every lesson for browsing, but the mastery counter still only tracks passed modules.</span></div>
+              <button type="button" className="confirm-primary" onClick={confirmUnlockAll}>Unlock all</button>
+              <button type="button" className="confirm-secondary" onClick={() => setLearningConfirm(null)}>Cancel</button>
+            </div>
+          )}
+
+          <div className="learning-progress-rail" aria-label="Lesson progression">
+            {PLAYGROUND_LESSONS.map((lesson, index) => {
+              const mastered = completedLessonIds.has(lesson.id) || (lesson.id === activeLesson.id && activeLessonRunStatus.complete);
+              const unlocked = isLessonUnlocked(index);
+              return <span key={lesson.id} className={(mastered ? "mastered " : "") + (lesson.id === activeLesson.id ? "active " : "") + (!unlocked ? "locked" : "")} />;
+            })}
+          </div>
+
+          <div className="learning-layout">
+            <aside className="learning-steps" aria-label="Tutorial lessons">
+              {PLAYGROUND_LESSONS.map((lesson, index) => {
+                const mastered = completedLessonIds.has(lesson.id) || (lesson.id === activeLesson.id && activeLessonRunStatus.complete);
+                const unlocked = isLessonUnlocked(index);
+                return (
+                  <button
+                    key={lesson.id}
+                    type="button"
+                    disabled={!unlocked}
+                    className={(lesson.id === activeLesson.id ? "active " : "") + (mastered ? "complete " : "") + (!unlocked ? "locked" : "")}
+                    onClick={() => { if (!unlocked) return; setActiveLessonId(lesson.id); setRevealedHints(1); }}
+                    aria-label={(unlocked ? "Open " : "Locked ") + lesson.title}
+                  >
+                    <span>{mastered ? Ico.check(13) : unlocked ? index + 1 : "LOCK"}</span>
+                    <div><strong>{lesson.title}</strong><small>{lesson.level} - {lesson.focus}</small></div>
+                  </button>
+                );
+              })}
+            </aside>
+
+            <div className="learning-main">
+              <div className="lesson-card">
+                <div className="lesson-card-top">
+                  <div>
+                    <span className="lesson-level">{activeLesson.level}</span>
+                    <h3>{activeLesson.title}</h3>
+                    <p>{activeLesson.objective}</p>
+                  </div>
+                  <span className={"lesson-status " + (lessonStatus.complete ? "complete" : totalErrors > 0 && hasRun ? "error" : "idle")}>{lessonStatus.label}</span>
+                </div>
+                <div className="lesson-task"><strong>Mission</strong><span>{activeLesson.task}</span></div>
+                <div className="syntax-targets" aria-label="Syntax targets for this lesson">
+                  <strong>Syntax to practice</strong>
+                  <div>{activeLesson.syntaxTargets.map(target => <code key={target}>{target}</code>)}</div>
+                </div>
+                <div className="lesson-actions">
+                  <button className="btn-orange lesson-action-primary" onClick={loadActiveLesson}>{Ico.play()} Start exercise</button>
+                  <button className="btn-ghost lesson-action-check" onClick={() => { onRun(); setActiveTab(totalErrors > 0 ? "Errors" : "Output"); }} data-tooltip="Run the current code and check this lesson against its checkpoints.">{Ico.check(13)} Check my code</button>
+                  <button className="btn-ghost lesson-action-hint" onClick={() => setRevealedHints(count => Math.min(activeLesson.hints.length, count + 1))} disabled={revealedHints >= activeLesson.hints.length}>Need hint</button>
+                  <button className="btn-ghost lesson-action-solution" onClick={() => setLearningConfirm("solution")}>Show solution</button>
+                  <button className="btn-ghost lesson-action-nav" onClick={() => moveLesson(-1)} disabled={lessonIndex === 0}>Previous</button>
+                  <button className="btn-ghost lesson-action-nav" onClick={() => moveLesson(1)} disabled={lessonIndex === PLAYGROUND_LESSONS.length - 1 || !nextLessonUnlocked}>Next</button>
+                </div>
+                {learningConfirm === "solution" && (
+                  <div className="learning-confirm learning-confirm-solution" role="alert">
+                    <div><strong>Show the solution?</strong><span>This will replace the editor with the completed answer for this lesson. Use it when you are reviewing or truly stuck.</span></div>
+                    <button type="button" className="confirm-primary" onClick={revealLessonSolution}>Show solution</button>
+                    <button type="button" className="confirm-secondary" onClick={() => setLearningConfirm(null)}>Keep trying</button>
+                  </div>
+                )}
+                <div className="lesson-note">{lessonStatus.note}</div>
+              </div>
+
+              <div className="lesson-support-grid">
+                <section>
+                  <h4>Pass conditions</h4>
+                  <ul>{activeLesson.checkpoints.map(item => <li key={item}>{item}</li>)}</ul>
+                </section>
+                <section>
+                  <h4>Hints unlocked</h4>
+                  <ol>{activeLesson.hints.slice(0, revealedHints).map(item => <li key={item}>{item}</li>)}</ol>
+                </section>
+                <section>
+                  <h4>Inspect after running</h4>
+                  <div className="lesson-watch-list">{activeLesson.watch.map(item => <span key={item}>{item}</span>)}</div>
+                </section>
+              </div>
+            </div>
+          </div>
+
+          <div className="learning-signal-grid" aria-label="Live Home component signals">
+            {learningSignals.map(signal => (
+              <div key={signal.label}>
+                <span>{signal.label}</span>
+                <strong>{signal.value}</strong>
+                <small>{signal.detail}</small>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       <div className="playground-layout">
         <section className="playground-editor ss-card">
           <div className="playground-panel-bar">
@@ -1433,7 +1907,7 @@ function AboutPage({ onNavigate, logoSrc }: { onNavigate: (page: NavItem) => voi
       focus: "Learning material, examples, explanation flow, and presentation support.",
       responsibilities: [
         { label: "Documentation structure", detail: "Organized pages around implemented syntax, commands, OOP, analyzer output, setup, and project status." },
-        { label: "Example coverage", detail: "Prepared examples for variables, carts, coupons, price overrides, errors, control flow, inventory, and OOP." },
+        { label: "Example coverage", detail: "Prepared examples for variables, carts, coupons, runtime product updates, price overrides, errors, control flow, inventory, and OOP." },
         { label: "Learning explanations", detail: "Translated interpreter behavior into student-readable descriptions of tokens, errors, variables, logs, and receipts." },
         { label: "Report direction", detail: "Outlined system purpose, educational scope, implementation status, limitations, and future improvements." },
         { label: "Content consistency", detail: "Kept Home, Docs, Examples, Playground, Inventory, and About aligned around the same project narrative." },
@@ -1919,12 +2393,38 @@ export default function App() {
       theme: option.id,
     }));
 
+    const creatorResults: SiteSearchResult[] = [
+      {
+        id: "creator-fitz",
+        label: "Fitz Tobias",
+        group: "Creators",
+        description: "Project Lead - academic direction, project scope, demo planning, and requirements alignment.",
+        action: "creator",
+        targetId: "project-team-fitz",
+      },
+      {
+        id: "creator-yuan",
+        label: "Yuan Mariano",
+        group: "Creators",
+        description: "Lead Developer - interpreter pipeline, React application, UI behavior, responsive polish, and deployment setup.",
+        action: "creator",
+        targetId: "project-team-yuan",
+      },
+      {
+        id: "creator-dwayne",
+        label: "Dwayne Mongaya",
+        group: "Creators",
+        description: "Documentation Lead - syntax documentation, examples, learning explanations, and presentation support.",
+        action: "creator",
+        targetId: "project-team-dwayne",
+      },
+    ];
     const actionResults: SiteSearchResult[] = [
       { id: "action-new-program", label: "New Program", group: "Action", description: "Clear the editor and start a blank ShopScript program.", action: "home-editor" },
       { id: "action-final-demo", label: "Final Demo", group: "Action", description: "Open the final end-to-end ShopScript demonstration in Playground.", action: "playground" },
     ];
 
-    const allResults = [...navResults, ...docsResults, ...exampleResults, ...productResults, ...couponResults, ...themeResults, ...actionResults];
+    const allResults = [...navResults, ...docsResults, ...exampleResults, ...productResults, ...couponResults, ...themeResults, ...creatorResults, ...actionResults];
     if (!normalizedSiteSearch) return allResults.slice(0, 8);
     return allResults.filter(result =>
       (result.label + " " + result.group + " " + result.description).toLowerCase().includes(normalizedSiteSearch)
@@ -1973,12 +2473,16 @@ export default function App() {
       setThemeMenuOpen(false);
       return;
     }
+    if (item.action === "creator" && item.targetId) {
+      navigateToProjectTeam(item.targetId);
+      return;
+    }
     if (item.action === "playground") {
       openFinalDemo();
       return;
     }
     startNewProgram();
-  }, [changeTheme, navigate, openExample, openFinalDemo, smoothScrollToTarget]);
+  }, [changeTheme, navigate, navigateToProjectTeam, openExample, openFinalDemo, smoothScrollToTarget]);
 
   useEffect(() => {
     setResult(interpret(SAMPLE_VALID, products, coupons));
@@ -2078,11 +2582,18 @@ export default function App() {
   ];
   const errorLines = [...new Set(interpreterErrors.map(error => error.line))];
   const primaryError = interpreterErrors[0];
-  const availableProducts = products.filter(product => product.inStock && product.stock > 0);
+  const runtimeInventoryMap = useMemo(() => new Map((result?.runtimeInventory ?? []).map(product => [product.name, product])), [result]);
+  const effectiveProducts = useMemo(() => products.map(product => {
+    const runtimeProduct = runtimeInventoryMap.get(product.name);
+    return runtimeProduct
+      ? { ...product, price: runtimeProduct.price, stock: runtimeProduct.stock, inStock: runtimeProduct.inStock, runtimeUpdated: runtimeProduct.price !== product.price || runtimeProduct.stock !== product.stock || runtimeProduct.inStock !== product.inStock }
+      : { ...product, runtimeUpdated: false };
+  }), [products, runtimeInventoryMap]);
+  const availableProducts = effectiveProducts.filter(product => product.inStock && product.stock > 0);
   const visibleProducts = showAllInventory ? availableProducts : availableProducts.slice(0, 4);
 
   const setCartItemQuantity = useCallback((productName: string, nextQuantity: number, price: number) => {
-    const inventoryProduct = products.find(product => product.name === productName);
+    const inventoryProduct = effectiveProducts.find(product => product.name === productName);
     const instanceEntry = Object.entries(instances).find(([, instance]) => instance.fields["name"]?.value === productName);
     const instanceName = instanceEntry?.[0];
 
@@ -2120,7 +2631,7 @@ export default function App() {
     }
 
     executeCode(nextLines.join("\n").replace(/\n{3,}/g, "\n\n"), nextQuantity <= 0 ? "Item removed" : "Cart updated", nextQuantity <= 0 ? productName + " was removed from the cart." : productName + " quantity is now " + nextQuantity + ".");
-  }, [code, executeCode, instances, products, pushNotification]);
+  }, [code, effectiveProducts, executeCode, instances, pushNotification]);
 
   const addInventoryProduct = useCallback((productName: string, price: number) => {
     const currentQuantity = cart.find(item => item.name === productName)?.quantity ?? 0;
@@ -2164,7 +2675,7 @@ export default function App() {
 
           {/* Search -- hidden on mobile */}
           <div className="site-search-wrap" ref={siteSearchWrapRef}>
-            <div className="header-search nav-search site-search-box" data-tooltip="Search pages, docs, examples, products, coupons, and actions. Shortcut: Ctrl or Cmd + K.">
+            <div className="header-search nav-search site-search-box" data-tooltip="Search pages, docs, examples, products, coupons, creators, and actions. Shortcut: Ctrl or Cmd + K.">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--theme-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
@@ -2197,7 +2708,7 @@ export default function App() {
                     setSiteSearchOpen(false);
                   }
                 }}
-                placeholder="Search pages, docs, examples, products..."
+                placeholder="Search pages, docs, examples, creators..."
                 aria-label="Search the ShopScript website"
                 aria-controls="site-search-results"
                 aria-expanded={siteSearchOpen}
@@ -2216,7 +2727,7 @@ export default function App() {
                     <span className="site-search-desc">{item.description}</span>
                   </button>
                 )) : (
-                  <div className="site-search-empty">No matching pages, docs, examples, products, or coupons.</div>
+                  <div className="site-search-empty">No matching pages, docs, examples, products, coupons, or creators.</div>
                 )}
               </div>
             )}
@@ -2426,7 +2937,7 @@ export default function App() {
                         className="product-card"
                         onClick={() => addInventoryProduct(p.name, p.price)}
                         aria-label={"Add " + p.name + " to the ShopScript cart"}
-                        data-tooltip={"Add " + p.name + " to the cart. " + p.stock + " items are in stock."}
+                        data-tooltip={"Add " + p.name + " to the cart. " + p.stock + " items are in stock" + (p.runtimeUpdated ? " for this run." : ".")}
                       >
                         <div style={{ position:"relative" }}>
                           <img
@@ -2443,8 +2954,8 @@ export default function App() {
                         </div>
                         <span className="product-card-body">
                           <strong>{p.name}</strong>
-                          <span className="product-price">{"$"}{p.price.toFixed(2)}</span>
-                          <span className="product-availability"><i /> {p.stock} in stock - click to add</span>
+                          <span className="product-price">{"$"}{p.price.toFixed(2)}{p.runtimeUpdated && <small style={{ marginLeft:4, color:"var(--theme-accent)", fontSize:9, fontWeight:800 }}>RUN</small>}</span>
+                          <span className="product-availability"><i /> {p.stock} in stock{p.runtimeUpdated ? " for this run" : ""} - click to add</span>
                         </span>
                       </button>
                     );
@@ -2832,4 +3343,3 @@ export default function App() {
     </div>
   );
 }
-

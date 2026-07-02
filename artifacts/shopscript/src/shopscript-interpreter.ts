@@ -66,6 +66,7 @@ export interface InterpreterResult {
   total: number;
   user: string | null;
   didCheckout: boolean;
+  runtimeInventory: RuntimeInventoryProduct[];
 }
 
 // ---------------------------------------------------------------------------
@@ -139,7 +140,7 @@ export const TOKEN_TYPES = {
 };
 
 const KEYWORDS = new Set([
-  "let", "int", "float", "string", "bool", "void", "product", "stock", "add", "apply", "coupon", "set", "checkout", "override",
+  "let", "int", "float", "string", "bool", "void", "product", "stock", "add", "apply", "coupon", "set", "checkout", "override", "update",
   "if", "else", "for", "while", "class", "new", "true", "false",
   "shipping", "budget", "cart", "user", "return", "this", "public", "private", "method",
 ]);
@@ -337,6 +338,38 @@ export function checkSyntax(tokens: Token[]): SyntaxError[] {
       continue;
     }
 
+
+    // update product "Name" @ <price> stock <qty>;
+    if (t.type === TOKEN_TYPES.KEYWORD && t.value === "update") {
+      consume();
+      const productKeyword = peek();
+      if (productKeyword.type !== TOKEN_TYPES.KEYWORD || productKeyword.value !== "product") {
+        errors.push({ message: `Expected 'product' after 'update' at line ${productKeyword.line}`, line: productKeyword.line });
+      } else { consume(); }
+      const name = peek();
+      if (name.type !== TOKEN_TYPES.STRING) {
+        errors.push({ message: `Expected product name string after 'update product' at line ${name.line}`, line: name.line });
+      } else { consume(); }
+      if (!expect(TOKEN_TYPES.AT)) {
+        errors.push({ message: `Expected '@' in update product command at line ${peek().line}`, line: peek().line });
+      }
+      const price = peek();
+      if (price.type !== TOKEN_TYPES.NUMBER) {
+        errors.push({ message: `Expected product price number after '@' at line ${price.line}`, line: price.line });
+      } else { consume(); }
+      const stockKeyword = peek();
+      if (stockKeyword.type !== TOKEN_TYPES.KEYWORD || stockKeyword.value !== "stock") {
+        errors.push({ message: `Expected 'stock' in update product command at line ${stockKeyword.line}`, line: stockKeyword.line });
+      } else { consume(); }
+      const stock = peek();
+      if (stock.type !== TOKEN_TYPES.NUMBER) {
+        errors.push({ message: `Expected stock quantity number at line ${stock.line}`, line: stock.line });
+      } else { consume(); }
+      if (!expect(TOKEN_TYPES.SEMICOLON)) {
+        errors.push({ message: `Missing semicolon after update product command at line ${t.line}`, line: t.line });
+      }
+      continue;
+    }
 
     // product "Name" @ <price> stock <qty>;
     if (t.type === TOKEN_TYPES.KEYWORD && t.value === "product") {
@@ -596,6 +629,34 @@ export function interpret(source: string, catalog?: RuntimeInventoryProduct[], c
       }
 
 
+      // runtime product update: update product "Name" @ price stock qty;
+      if (t.type === TOKEN_TYPES.KEYWORD && t.value === "update") {
+        consume();
+        const productKeyword = consume();
+        const nameToken = consume();
+        consume(); // @
+        const priceToken = consume();
+        consume(); // stock
+        const stockToken = consume();
+        consume(); // ;
+        const productName = nameToken.value;
+        const price = parseFloat(priceToken.value);
+        const stock = parseFloat(stockToken.value);
+        if (productKeyword.value !== "product") {
+          semanticErrors.push({ message: "Expected 'product' after 'update'", line: productKeyword.line });
+        } else if (!runtimeInventory.has(productName)) {
+          semanticErrors.push({ message: `Product "${productName}" cannot be updated because it does not exist in inventory`, line: nameToken.line });
+        } else if (isNaN(price) || price < 0) {
+          semanticErrors.push({ message: "Product price must be a valid non-negative number", line: priceToken.line });
+        } else if (!Number.isInteger(stock) || stock < 0) {
+          semanticErrors.push({ message: "Product stock must be a non-negative whole number", line: stockToken.line });
+        } else {
+          runtimeInventory.set(productName, { name: productName, price, stock, inStock: stock > 0 });
+          logs.push(`${ts} Runtime product "${productName}" updated @ $${price.toFixed(2)} with ${stock} unit(s)`);
+        }
+        continue;
+      }
+
       // runtime product declaration: product "Name" @ price stock qty;
       if (t.type === TOKEN_TYPES.KEYWORD && t.value === "product") {
         consume();
@@ -808,6 +869,8 @@ export function interpret(source: string, catalog?: RuntimeInventoryProduct[], c
     logs.push(`${ts} Order total: $${total.toFixed(2)}`);
   }
 
+  const runtimeInventorySnapshot = Array.from(runtimeInventory.values()).map(product => ({ ...product }));
+
   return {
     tokens: tokens.filter(t => t.type !== TOKEN_TYPES.EOF),
     lexErrors,
@@ -825,6 +888,7 @@ export function interpret(source: string, catalog?: RuntimeInventoryProduct[], c
     total,
     user,
     didCheckout,
+    runtimeInventory: runtimeInventorySnapshot,
   };
 }
 
@@ -1139,6 +1203,18 @@ function interpretStructured(source: string, tokens: Token[], lexErrors: LexErro
       return;
     }
 
+    const productUpdate = text.match(/^update\s+product\s+"([^"]+)"\s+@\s+(.+?)\s+stock\s+(.+);$/);
+    if (productUpdate) {
+      const productName = productUpdate[1];
+      const price = Number(evalExpr(productUpdate[2], scope, line, thisObject).value);
+      const stock = Number(evalExpr(productUpdate[3], scope, line, thisObject).value);
+      if (!runtimeInventory.has(productName)) addError(`Product "${productName}" cannot be updated because it does not exist in inventory`, line);
+      else if (isNaN(price) || price < 0) addError("Product price must be a valid non-negative number", line);
+      else if (!Number.isInteger(stock) || stock < 0) addError("Product stock must be a non-negative whole number", line);
+      else { runtimeInventory.set(productName, { name: productName, price, stock, inStock: stock > 0 }); logs.push(`${ts} Runtime product "${productName}" updated @ $${price.toFixed(2)} with ${stock} unit(s)`); }
+      return;
+    }
+
     const productDecl = text.match(/^product\s+"([^"]+)"\s+@\s+(.+?)\s+stock\s+(.+);$/);
     if (productDecl) {
       const productName = productDecl[1];
@@ -1207,7 +1283,8 @@ function interpretStructured(source: string, tokens: Token[], lexErrors: LexErro
   if (didCheckout && semanticErrors.length === 0) logs.push(`${ts} Order total: $${total.toFixed(2)}`);
   const variables: VariableEntry[] = [];
   scopes.forEach(scope => scope.values.forEach(binding => variables.push({ name: scope.depth === 0 ? binding.name : `${binding.name} @scope${scope.id}`, type: binding.declaredType === "let" ? binding.value.type : binding.declaredType, value: display(binding.value) })));
-  return { tokens: tokens.filter(token => token.type !== TOKEN_TYPES.EOF), lexErrors, syntaxErrors, semanticErrors, cart, variables, classes, instances, logs, coupon, discount, shipping, subtotal, total, user, didCheckout };
+  const runtimeInventorySnapshot = Array.from(runtimeInventory.values()).map(product => ({ ...product }));
+  return { tokens: tokens.filter(token => token.type !== TOKEN_TYPES.EOF), lexErrors, syntaxErrors, semanticErrors, cart, variables, classes, instances, logs, coupon, discount, shipping, subtotal, total, user, didCheckout, runtimeInventory: runtimeInventorySnapshot };
 }
 function stripLineComment(line: string): string {
   const index = line.indexOf("//");
